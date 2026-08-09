@@ -42,7 +42,7 @@ export function IndonesiaHero() {
             {t("hero_subtitle")}
           </span>
 
-          <Heading variant="display" className="text-white drop-shadow-lg">
+          <Heading variant="display" className="text-white drop-shadow-lg !text-4xl md:!text-6xl lg:!text-[8.5rem]">
             {t("hero_heading_1")} <br />
             <span className="font-sans font-light italic tracking-tight uppercase text-white/90">{t("hero_heading_2")}</span>
           </Heading>
