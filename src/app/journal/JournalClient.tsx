@@ -118,9 +118,21 @@ export function JournalClient() {
     setSlideIndex((prev) => Math.min(maxSlides, prev + 1));
   };
 
+  const galleryScrollRef = React.useRef<HTMLDivElement>(null);
+
+  const scrollGallery = (direction: "left" | "right") => {
+    if (galleryScrollRef.current) {
+      const scrollAmount = galleryScrollRef.current.clientWidth * 0.75;
+      galleryScrollRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth"
+      });
+    }
+  };
+
   const openLightbox = (index: number) => setSelectedImageIndex(index);
   const closeLightbox = () => setSelectedImageIndex(null);
-  
+
   const prevLightboxImage = () => {
     if (selectedImageIndex === null) return;
     setSelectedImageIndex((prev) => (prev! === 0 ? galleryItems.length - 1 : prev! - 1));
@@ -133,21 +145,21 @@ export function JournalClient() {
 
   return (
     <div className="bg-ivory text-charcoal min-h-screen pb-20 selection:bg-charcoal selection:text-white">
-      
+
       {/* Premium Hero Section */}
       <section className="relative w-full h-[55vh] md:h-[65vh] overflow-hidden flex items-center justify-center">
         <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2000" 
-            alt="Klik Travel Journal Hero" 
+          <img
+            src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2000"
+            alt="Klik Travel Journal Hero"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-[#0F2C59]/65 mix-blend-multiply" />
           <div className="absolute inset-0 bg-gradient-to-t from-ivory via-transparent to-black/30" />
         </div>
-        
+
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto flex flex-col items-center pt-20">
-          <motion.span 
+          <motion.span
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.8 }}
@@ -155,7 +167,7 @@ export function JournalClient() {
           >
             {locale === "id" ? "09 — CATATAN PERJALANAN" : "09 — FIELD JOURNAL"}
           </motion.span>
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8 }}
@@ -163,24 +175,24 @@ export function JournalClient() {
           >
             {locale === "id" ? "Jurnal Kita" : "The Journal"}
           </motion.h1>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
             className="font-sans text-white/90 text-sm md:text-lg max-w-2xl font-light leading-relaxed"
           >
-            {locale === "id" 
-              ? "Kumpulan cerita kurasi, panduan destinasi mendalam, dan kisah dari para ahli perjalanan kami di seluruh penjuru kepulauan." 
+            {locale === "id"
+              ? "Kumpulan cerita kurasi, panduan destinasi mendalam, dan kisah dari para ahli perjalanan kami di seluruh penjuru kepulauan."
               : "A curated collection of travel narratives, destination insights, and field notes from our travel architects across the globe."}
           </motion.p>
         </div>
       </section>
 
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 pt-16">
-        
+
         {/* Featured Spotlight Article (Only shows when "All" is active) */}
         {activeCategory === "ALL" && spotlightArticle && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
@@ -188,9 +200,9 @@ export function JournalClient() {
           >
             <div className="lg:col-span-7">
               <div className="relative aspect-[16/10] md:aspect-[21/12] w-full rounded-3xl overflow-hidden shadow-xl bg-charcoal/10 group">
-                <img 
-                  src={spotlightArticle.image} 
-                  alt={locale === "id" ? spotlightArticle.titleID : spotlightArticle.titleEN} 
+                <img
+                  src={spotlightArticle.image}
+                  alt={locale === "id" ? spotlightArticle.titleID : spotlightArticle.titleEN}
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1.2s] ease-[cubic-bezier(0.16,1,0.3,1)]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
@@ -212,8 +224,8 @@ export function JournalClient() {
                 {locale === "id" ? spotlightArticle.excerptID : spotlightArticle.excerptEN}
               </p>
               <div className="flex items-center gap-6">
-                <Link 
-                  href={`/journal/${spotlightArticle.slug}`} 
+                <Link
+                  href={`/journal/${spotlightArticle.slug}`}
                   className="font-mono text-[10px] tracking-[0.25em] uppercase text-charcoal font-semibold hover:text-[#0284C7] transition-colors flex items-center gap-2 group/btn"
                 >
                   {locale === "id" ? "BACA JURNAL" : "READ ARTICLE"}
@@ -231,11 +243,10 @@ export function JournalClient() {
             <button
               key={cat.key}
               onClick={() => handleCategoryChange(cat.key)}
-              className={`px-6 py-2.5 rounded-full font-sans text-xs tracking-wider uppercase transition-all duration-300 whitespace-nowrap cursor-pointer ${
-                activeCategory === cat.key
+              className={`px-6 py-2.5 rounded-full font-sans text-xs tracking-wider uppercase transition-all duration-300 whitespace-nowrap cursor-pointer ${activeCategory === cat.key
                   ? "bg-charcoal text-white shadow-md"
                   : "bg-charcoal/5 text-charcoal/70 hover:bg-charcoal/10"
-              }`}
+                }`}
             >
               {locale === "id" ? cat.id : cat.en}
             </button>
@@ -244,44 +255,44 @@ export function JournalClient() {
 
         {/* Article Slider Section */}
         <div className="relative w-full overflow-hidden">
-          
+
           {/* Mobile swipe list */}
           <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory scrollbar-none gap-6 pb-6 -mx-6 px-6">
             {gridArticles.map((article) => (
-              <div 
+              <div
                 key={article.slug}
                 className="group flex flex-col justify-between border border-charcoal/10 p-5 rounded-2xl bg-white/40 backdrop-blur-sm shadow-sm shrink-0 w-[85vw] sm:w-[60vw] snap-center"
               >
                 <div className="w-full">
                   <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-charcoal/10 mb-6">
-                    <img 
-                      src={article.image} 
-                      alt={locale === "id" ? article.titleID : article.titleEN} 
+                    <img
+                      src={article.image}
+                      alt={locale === "id" ? article.titleID : article.titleEN}
                       className="absolute inset-0 w-full h-full object-cover"
                     />
                     <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full font-mono text-[8px] tracking-widest text-[#0284C7] font-bold shadow-sm uppercase">
                       {locale === "id" ? article.categoryID : article.categoryEN}
                     </div>
                   </div>
-                  
+
                   <span className="font-mono text-[9px] tracking-widest text-charcoal/50 uppercase block mb-2">
                     {locale === "id" ? article.dateID : article.dateEN} • {locale === "id" ? article.readTimeID : article.readTimeEN}
                   </span>
-                  
+
                   <h3 className="font-serif text-xl text-charcoal mb-3 leading-snug">
                     <Link href={`/journal/${article.slug}`}>
                       {locale === "id" ? article.titleID : article.titleEN}
                     </Link>
                   </h3>
-                  
+
                   <p className="font-sans text-xs text-charcoal/70 leading-relaxed mb-6 font-light line-clamp-3">
                     {locale === "id" ? article.excerptID : article.excerptEN}
                   </p>
                 </div>
 
                 <div className="border-t border-charcoal/10 pt-4 flex items-center justify-between">
-                  <Link 
-                    href={`/journal/${article.slug}`} 
+                  <Link
+                    href={`/journal/${article.slug}`}
                     className="font-mono text-[9px] tracking-[0.2em] uppercase text-charcoal font-semibold hover:text-[#0284C7] transition-colors flex items-center gap-1 group/item"
                   >
                     {locale === "id" ? "BACA SELENGKAPNYA" : "READ STORY"}
@@ -306,34 +317,34 @@ export function JournalClient() {
                 >
                   <div className="w-full">
                     <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-charcoal/10 mb-6">
-                      <img 
-                        src={article.image} 
-                        alt={locale === "id" ? article.titleID : article.titleEN} 
+                      <img
+                        src={article.image}
+                        alt={locale === "id" ? article.titleID : article.titleEN}
                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1s]"
                       />
                       <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full font-mono text-[8px] tracking-widest text-[#0284C7] font-bold shadow-sm uppercase">
                         {locale === "id" ? article.categoryID : article.categoryEN}
                       </div>
                     </div>
-                    
+
                     <span className="font-mono text-[9px] tracking-widest text-charcoal/50 uppercase block mb-2">
                       {locale === "id" ? article.dateID : article.dateEN} • {locale === "id" ? article.readTimeID : article.readTimeEN}
                     </span>
-                    
+
                     <h3 className="font-serif text-xl text-charcoal mb-3 leading-snug group-hover:text-[#0284C7] transition-colors">
                       <Link href={`/journal/${article.slug}`}>
                         {locale === "id" ? article.titleID : article.titleEN}
                       </Link>
                     </h3>
-                    
+
                     <p className="font-sans text-xs text-charcoal/70 leading-relaxed mb-6 font-light line-clamp-3">
                       {locale === "id" ? article.excerptID : article.excerptEN}
                     </p>
                   </div>
 
                   <div className="border-t border-charcoal/10 pt-4 flex items-center justify-between">
-                    <Link 
-                      href={`/journal/${article.slug}`} 
+                    <Link
+                      href={`/journal/${article.slug}`}
                       className="font-mono text-[9px] tracking-[0.2em] uppercase text-charcoal font-semibold hover:text-[#0284C7] transition-colors flex items-center gap-1 group/item"
                     >
                       {locale === "id" ? "BACA SELENGKAPNYA" : "READ STORY"}
@@ -351,11 +362,10 @@ export function JournalClient() {
               <button
                 onClick={handlePrev}
                 disabled={slideIndex === 0}
-                className={`w-10 h-10 rounded-full border border-charcoal/20 flex items-center justify-center transition-all ${
-                  slideIndex === 0 
-                    ? "opacity-40 cursor-not-allowed" 
+                className={`w-10 h-10 rounded-full border border-charcoal/20 flex items-center justify-center transition-all ${slideIndex === 0
+                    ? "opacity-40 cursor-not-allowed"
                     : "hover:bg-charcoal hover:text-white hover:border-charcoal cursor-pointer"
-                }`}
+                  }`}
                 aria-label="Previous articles"
               >
                 <ChevronLeft size={18} />
@@ -363,11 +373,10 @@ export function JournalClient() {
               <button
                 onClick={handleNext}
                 disabled={slideIndex === maxSlides}
-                className={`w-10 h-10 rounded-full border border-charcoal/20 flex items-center justify-center transition-all ${
-                  slideIndex === maxSlides 
-                    ? "opacity-40 cursor-not-allowed" 
+                className={`w-10 h-10 rounded-full border border-charcoal/20 flex items-center justify-center transition-all ${slideIndex === maxSlides
+                    ? "opacity-40 cursor-not-allowed"
                     : "hover:bg-charcoal hover:text-white hover:border-charcoal cursor-pointer"
-                }`}
+                  }`}
                 aria-label="Next articles"
               >
                 <ChevronRight size={18} />
@@ -395,15 +404,39 @@ export function JournalClient() {
                 {locale === "id" ? "Galeri Ekspedisi" : "Moments Captured"}
               </h2>
             </div>
-            <p className="font-sans text-xs md:text-sm text-charcoal/70 max-w-md font-light leading-relaxed">
-              {locale === "id" 
-                ? "Kumpulan momen dan pemandangan autentik dari berbagai ekspedisi yang kami lalui bersama para pengelana." 
-                : "A visual index of pristine landscapes and authentic moments documented across our curated journeys."}
-            </p>
+            
+            <div className="flex items-center gap-8">
+              <p className="font-sans text-xs md:text-sm text-charcoal/70 max-w-xs font-light leading-relaxed hidden lg:block">
+                {locale === "id"
+                  ? "Kumpulan momen dan pemandangan autentik dari berbagai ekspedisi yang kami lalui bersama para pengelana."
+                  : "A visual index of pristine landscapes and authentic moments documented across our curated journeys."}
+              </p>
+
+              {/* Creative Navigation Buttons */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => scrollGallery("left")}
+                  className="w-12 h-12 rounded-full border border-charcoal/10 flex items-center justify-center bg-white/50 backdrop-blur-md text-charcoal hover:bg-[#0284C7] hover:text-white hover:border-[#0284C7] transition-all duration-300 shadow-sm hover:shadow group cursor-pointer"
+                  aria-label="Scroll gallery left"
+                >
+                  <ChevronLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />
+                </button>
+                <button
+                  onClick={() => scrollGallery("right")}
+                  className="w-12 h-12 rounded-full border border-charcoal/10 flex items-center justify-center bg-white/50 backdrop-blur-md text-charcoal hover:bg-[#0284C7] hover:text-white hover:border-[#0284C7] transition-all duration-300 shadow-sm hover:shadow group cursor-pointer"
+                  aria-label="Scroll gallery right"
+                >
+                  <ChevronRight size={20} className="group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Asymmetric Gallery Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Horizontal Gallery Track */}
+          <div
+            ref={galleryScrollRef}
+            className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-6 -mx-6 px-6 md:mx-0 md:px-0 scroll-smooth"
+          >
             {galleryItems.map((item, index) => (
               <motion.div
                 key={item.id}
@@ -412,15 +445,15 @@ export function JournalClient() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 onClick={() => openLightbox(index)}
-                className="group relative aspect-[4/3] rounded-2xl overflow-hidden cursor-pointer bg-charcoal/10 shadow-sm"
+                className="group relative aspect-[4/3] w-[80vw] sm:w-[50vw] md:w-[35vw] lg:w-[25vw] shrink-0 rounded-2xl overflow-hidden cursor-pointer bg-charcoal/10 shadow-sm snap-center"
               >
-                <img 
-                  src={item.image} 
+                <img
+                  src={item.image}
                   alt={locale === "id" ? item.locationID : item.locationEN}
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" 
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-6 text-white" />
-                
+
                 {/* Hover Details */}
                 <div className="absolute inset-0 p-6 flex flex-col justify-between text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
                   <div className="flex justify-between items-center">
@@ -509,7 +542,7 @@ export function JournalClient() {
         </AnimatePresence>
 
         {/* Interactive Luxury CTA Section */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -525,8 +558,8 @@ export function JournalClient() {
               {locale === "id" ? "EKSPEDISI SELANJUTNYA" : "NEXT EXPEDITION"}
             </span>
             <h3 className="font-serif text-3xl md:text-5xl leading-tight mb-6 uppercase">
-              {locale === "id" 
-                ? "Mari Wujudkan Liburan Impian Anda" 
+              {locale === "id"
+                ? "Mari Wujudkan Liburan Impian Anda"
                 : "Let Us Architect Your Next Adventure"}
             </h3>
             <p className="font-sans text-sm text-white/80 leading-relaxed mb-8 font-light max-w-lg">
@@ -535,14 +568,14 @@ export function JournalClient() {
                 : "Explore spectacular terrains in Indonesia or across the world with our fixed schedules or co-create a tailored private journey."}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
-              <Link 
-                href="/destinations" 
+              <Link
+                href="/destinations"
                 className="bg-white text-[#0F2C59] hover:bg-[#F4F4F0] text-center font-sans text-xs uppercase tracking-[0.2em] font-semibold py-4 px-8 rounded-full transition-colors shadow-lg"
               >
                 {locale === "id" ? "CARI OPEN TRIP" : "EXPLORE OPEN TRIPS"}
               </Link>
-              <Link 
-                href="/private-trip" 
+              <Link
+                href="/private-trip"
                 className="border border-white/30 hover:border-white hover:bg-white/5 text-center font-sans text-xs uppercase tracking-[0.2em] font-semibold py-4 px-8 rounded-full transition-all"
               >
                 {locale === "id" ? "RANCANG PRIVATE TRIP" : "REQUEST PRIVATE TRIP"}
