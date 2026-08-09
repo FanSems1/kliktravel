@@ -1,0 +1,390 @@
+"use client";
+
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { localizedJourneys } from "@/data/journeys";
+import { ChevronDown, ArrowRight, Check, X } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
+
+interface JourneyDetailClientProps {
+  slug: string;
+}
+
+export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
+  const { t, locale } = useLanguage();
+  const journey = localizedJourneys[locale].find((j) => j.slug === slug);
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [activeDay, setActiveDay] = useState<number | null>(0);
+
+  if (!journey) return null;
+
+  return (
+    <div className="relative">
+      
+      {/* 1. HERO CINEMATIC */}
+      <section className="relative w-full h-screen overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-tr ${journey.imageGradient}`} />
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 image-texture opacity-30 mix-blend-overlay" />
+        
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 mt-16">
+          <motion.h1 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+            className="font-serif text-5xl md:text-8xl text-white font-normal tracking-wider mb-6"
+          >
+            {journey.title.toUpperCase()}
+          </motion.h1>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.8 }}
+            className="font-mono text-[10px] md:text-xs tracking-[0.4em] text-white/80 uppercase space-y-2 flex flex-col"
+          >
+            <span>{journey.destination}</span>
+            <span>{journey.dates}</span>
+          </motion.div>
+        </div>
+
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 1.5 }}
+          className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center text-white/60"
+        >
+          <span className="font-mono text-[8px] tracking-[0.3em] uppercase mb-4">{t("detail_discover_journey")}</span>
+          <motion.div 
+            animate={{ y: [0, 8, 0] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 5v14M19 12l-7 7-7-7"/>
+            </svg>
+          </motion.div>
+        </motion.div>
+      </section>
+
+      <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 relative py-24 md:py-36">
+        
+        {/* Main Content Column */}
+        <div className="col-span-1 lg:col-span-8 space-y-32">
+          
+          {/* 2. INTRODUCTION */}
+          <section>
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 1 }}
+            >
+              <h2 className="font-serif text-4xl md:text-6xl text-foreground font-normal leading-tight mb-8">
+                {journey.introHeading}
+              </h2>
+              <p className="font-sans text-lg md:text-xl text-foreground/70 font-light leading-relaxed max-w-2xl">
+                {journey.introDescription}
+              </p>
+            </motion.div>
+          </section>
+
+          {/* 3. DESTINATION STORY (CHAPTERS) */}
+          {journey.chapters.length > 0 && (
+            <section className="space-y-24">
+              {journey.chapters.map((chapter) => (
+                <div key={chapter.id} className={`flex flex-col ${chapter.layout === "right" ? "md:flex-row-reverse" : chapter.layout === "left" ? "md:flex-row" : ""} gap-8 md:gap-16 items-center`}>
+                  <div className={`w-full ${chapter.layout === "full" ? "aspect-[21/9]" : "md:w-1/2 aspect-[4/5]"} rounded-3xl overflow-hidden bg-charcoal/10 relative shadow-xl`}>
+                    <div className={`absolute inset-0 bg-gradient-to-tr ${journey.imageGradient} opacity-20`} />
+                    <div className="absolute inset-0 image-texture opacity-30 mix-blend-overlay" />
+                    <div className="absolute bottom-4 left-4 font-mono text-[9px] tracking-widest uppercase text-charcoal/40">Image Placeholder</div>
+                  </div>
+                  <div className={`w-full ${chapter.layout === "full" ? "mt-8" : "md:w-1/2"}`}>
+                    <span className="font-mono text-[10px] tracking-[0.3em] text-earth-dark block mb-4">{chapter.id}</span>
+                    <h3 className="font-serif text-3xl text-foreground mb-4">{chapter.title}</h3>
+                    <p className="font-sans text-sm md:text-base text-foreground/70 font-light leading-relaxed">{chapter.text}</p>
+                  </div>
+                </div>
+              ))}
+            </section>
+          )}
+
+          {/* 4. ITINERARY (ACCORDION/TIMELINE) */}
+          {journey.itinerary.length > 0 && (
+            <section>
+              <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-charcoal/50 block mb-12 border-b border-charcoal/10 pb-4">
+                {t("detail_the_itinerary")}
+              </span>
+              <div className="space-y-2">
+                {journey.itinerary.map((item, index) => {
+                  const isOpen = activeDay === index;
+                  return (
+                    <div key={index} className="border-b border-charcoal/10 last:border-0 pb-2">
+                      <button 
+                        onClick={() => setActiveDay(isOpen ? null : index)}
+                        className="w-full py-6 flex items-center justify-between text-left group"
+                      >
+                        <div className="flex items-center space-x-6 md:space-x-12">
+                          <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-earth-dark w-16">
+                            {item.day}
+                          </span>
+                          <span className="font-serif text-xl md:text-2xl text-foreground group-hover:text-earth-dark transition-colors">
+                            {item.title}
+                          </span>
+                        </div>
+                        <ChevronDown className={`text-charcoal/40 transition-transform duration-500 ${isOpen ? "rotate-180" : ""}`} />
+                      </button>
+                      <AnimatePresence>
+                        {isOpen && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pl-22 md:pl-28 pb-8 pr-4">
+                              <p className="font-sans text-sm md:text-base text-foreground/70 leading-relaxed font-light">
+                                {item.description}
+                              </p>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* 5. EXPERIENCE HIGHLIGHTS */}
+          {journey.highlights.length > 0 && (
+            <section>
+              <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-charcoal/50 block mb-12 border-b border-charcoal/10 pb-4">
+                {t("detail_highlights")}
+              </span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {journey.highlights.map((highlight, idx) => (
+                  <div key={idx} className="flex items-start space-x-4">
+                    <div className="w-1.5 h-1.5 rounded-full bg-earth-dark mt-2 shrink-0" />
+                    <p className="font-serif text-lg text-foreground">{highlight}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* 6. ACCOMMODATION */}
+          {journey.accommodations.length > 0 && (
+            <section>
+              <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-charcoal/50 block mb-12 border-b border-charcoal/10 pb-4">
+                {t("detail_curated_stays")}
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                {journey.accommodations.map((hotel, idx) => (
+                  <div key={idx} className="group">
+                    <div className="w-full aspect-[4/3] rounded-2xl bg-charcoal/5 mb-4 relative overflow-hidden border border-charcoal/10">
+                      <div className="absolute inset-0 image-texture opacity-20" />
+                    </div>
+                    <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-earth-dark block mb-1">
+                      {hotel.city}
+                    </span>
+                    <h4 className="font-serif text-lg text-foreground mb-1">{hotel.name}</h4>
+                    <span className="font-sans text-xs text-charcoal/60 uppercase tracking-widest">{hotel.roomType}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* 7. FLIGHTS */}
+          {journey.flights && (
+            <section>
+              <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-charcoal/50 block mb-12 border-b border-charcoal/10 pb-4">
+                {t("detail_flight_route")}
+              </span>
+              <div className="bg-white rounded-3xl p-8 md:p-12 border border-charcoal/10 shadow-sm">
+                <span className="font-sans text-xs uppercase tracking-widest text-earth-dark font-semibold block mb-8">
+                  {journey.flights.airline}
+                </span>
+                <div className="flex flex-col md:flex-row items-center md:space-x-4 space-y-4 md:space-y-0 text-center md:text-left">
+                  {journey.flights.route.map((node, idx) => (
+                    <React.Fragment key={idx}>
+                      <span className="font-serif text-xl text-foreground">{node}</span>
+                      {idx < journey.flights.route.length - 1 && (
+                        <ArrowRight className="text-charcoal/30 hidden md:block" size={20} />
+                      )}
+                      {idx < journey.flights.route.length - 1 && (
+                        <ArrowRight className="text-charcoal/30 block md:hidden rotate-90" size={20} />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* 8. INCLUSIONS */}
+          {(journey.inclusions.length > 0 || journey.exclusions.length > 0) && (
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-16">
+              <div>
+                <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-charcoal/50 block mb-8 border-b border-charcoal/10 pb-4">
+                  {t("detail_included")}
+                </span>
+                <ul className="space-y-4">
+                  {journey.inclusions.map((item, idx) => (
+                    <li key={idx} className="flex items-start space-x-3 text-sm text-foreground/75 font-light">
+                      <Check size={16} className="text-earth-dark mt-0.5 shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-charcoal/50 block mb-8 border-b border-charcoal/10 pb-4">
+                  {t("detail_not_included")}
+                </span>
+                <ul className="space-y-4">
+                  {journey.exclusions.map((item, idx) => (
+                    <li key={idx} className="flex items-start space-x-3 text-sm text-foreground/75 font-light">
+                      <X size={16} className="text-charcoal/30 mt-0.5 shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+          )}
+
+          {/* 9. FAQ */}
+          {journey.faqs.length > 0 && (
+            <section>
+              <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-charcoal/50 block mb-12 border-b border-charcoal/10 pb-4">
+                {t("detail_faqs")}
+              </span>
+              <div className="space-y-2">
+                {journey.faqs.map((faq, index) => {
+                  const isOpen = activeFaq === index;
+                  return (
+                    <div key={index} className="bg-white rounded-2xl border border-charcoal/10 overflow-hidden">
+                      <button 
+                        onClick={() => setActiveFaq(isOpen ? null : index)}
+                        className="w-full p-6 flex items-center justify-between text-left"
+                      >
+                        <span className="font-serif text-lg text-foreground pr-8">
+                          {faq.q}
+                        </span>
+                        <ChevronDown className={`text-earth-dark shrink-0 transition-transform duration-500 ${isOpen ? "rotate-180" : ""}`} />
+                      </button>
+                      <AnimatePresence>
+                        {isOpen && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <div className="px-6 pb-6 pt-2 text-sm text-foreground/70 font-light leading-relaxed">
+                              {faq.a}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+        </div>
+
+        {/* Floating Sidebar (Overview & Booking) */}
+        <div className="col-span-1 lg:col-span-4 relative">
+          <div className="sticky top-32 flex flex-col space-y-12">
+            
+            {/* FLOATING INFORMATION OVERVIEW */}
+            <div>
+              <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-charcoal/50 block mb-6 border-b border-charcoal/10 pb-4">
+                {t("detail_overview")}
+              </span>
+              <ul className="space-y-6">
+                <li className="flex flex-col">
+                  <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-charcoal/40 mb-1">{t("detail_duration")}</span>
+                  <span className="font-serif text-2xl text-foreground">{journey.durationLabel}</span>
+                </li>
+                <li className="flex flex-col">
+                  <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-charcoal/40 mb-1">{t("detail_destinations_count")}</span>
+                  <span className="font-serif text-2xl text-foreground">
+                    {journey.countriesCount < 2 
+                      ? (locale === "id" ? "1 Negara" : "1 Country") 
+                      : `${journey.countriesCount} ${locale === "id" ? "Negara" : "Countries"}`}
+                  </span>
+                </li>
+                <li className="flex flex-col">
+                  <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-charcoal/40 mb-1">{t("detail_travel_period")}</span>
+                  <span className="font-serif text-2xl text-foreground">{journey.dates}</span>
+                </li>
+                <li className="flex flex-col">
+                  <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-charcoal/40 mb-1">{t("detail_starting_price")}</span>
+                  <span className="font-serif text-2xl text-foreground">{journey.price}</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* STICKY BOOKING PANEL */}
+            <div className="bg-charcoal text-white rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+              <div className="absolute inset-0 image-texture opacity-20 mix-blend-overlay" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <span className="font-mono text-[9px] tracking-[0.3em] uppercase text-white/60 mb-2">
+                  {t("detail_reserve_journey")}
+                </span>
+                <span className="font-serif text-4xl mb-8">
+                  {journey.price}
+                </span>
+                <Link 
+                  href="/inquire"
+                  className="w-full bg-earth-dark text-white hover:bg-white hover:text-charcoal font-sans text-xs uppercase tracking-[0.25em] py-4 rounded-full transition-colors duration-300 mb-4 font-semibold shadow-lg"
+                >
+                  {t("detail_request_booking")}
+                </Link>
+                <button className="text-white/60 hover:text-white font-sans text-[10px] uppercase tracking-[0.2em] transition-colors underline underline-offset-4">
+                  {t("detail_ask_expert")}
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      {/* 10. FINAL CTA */}
+      <section className="relative w-full aspect-[21/9] min-h-[500px] overflow-hidden mt-12">
+        <div className={`absolute inset-0 bg-gradient-to-tr ${journey.imageGradient}`} />
+        <div className="absolute inset-0 bg-charcoal/40" />
+        <div className="absolute inset-0 image-texture opacity-30 mix-blend-overlay" />
+        
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
+          <h2 className="font-serif text-5xl md:text-7xl text-white font-normal tracking-wide mb-12">
+            {t("detail_ready_to_go")}
+          </h2>
+          <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
+            <Link 
+              href="/inquire"
+              className="bg-white text-charcoal hover:bg-earth-dark hover:text-white font-sans text-xs uppercase tracking-[0.25em] py-4 px-10 rounded-full transition-colors duration-300 font-semibold shadow-2xl"
+            >
+              {t("detail_reserve_button")}
+            </Link>
+            <Link 
+              href="/journeys"
+              className="bg-transparent border border-white/30 text-white hover:bg-white/10 font-sans text-xs uppercase tracking-[0.25em] py-4 px-10 rounded-full transition-colors duration-300"
+            >
+              {t("detail_explore_more")}
+            </Link>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  );
+}

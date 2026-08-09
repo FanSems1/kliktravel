@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Large media files (>100MB)
+public/aneh.mov
+
+# Scratch / temporary scripts
+check_heroes.js
+check_urls.js
+scratch_find.js
