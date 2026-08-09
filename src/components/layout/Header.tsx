@@ -33,7 +33,7 @@ export function Header() {
   const isLightPage = 
     (pathname === "/journal" ? isScrolled : false) ||
     pathname?.startsWith("/journal/") ||
-    pathname === "/journeys" ||
+    (pathname === "/journeys" ? isScrolled : false) ||
     pathname?.startsWith("/journeys/") ||
     pathname === "/destinations" ||
     pathname === "/private-trip";
