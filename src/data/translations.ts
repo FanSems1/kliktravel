@@ -179,7 +179,18 @@ export const translations = {
     private_trip_form_submit: "Konsultasi via WhatsApp",
     private_trip_form_head: "Formulir Konsultasi",
     private_trip_testimonial_tag: "Testimonial",
-    private_trip_testimonial_title: "Pengalaman Tak Terlupakan"
+    private_trip_testimonial_title: "Pengalaman Tak Terlupakan",
+
+    // Detail / Itinerary Page
+    detail_booking_form: "Formulir Pemesanan",
+    itinerary_highlights: "Highlights Perjalanan",
+    detail_itinerary: "Rencana Perjalanan (Itinerary)",
+    detail_accommodation: "Akomodasi & Fasilitas",
+    detail_inclusions: "Harga Termasuk (Inclusions)",
+    detail_exclusions: "Harga Tidak Termasuk (Exclusions)",
+    detail_other_tours: "Paket Destinasi Populer Lainnya",
+    detail_booking_whatsapp: "Pemesanan via WhatsApp",
+    detail_select_date: "Pilih Tanggal & Peserta"
   },
   en: {
     // Navigation
@@ -361,6 +372,17 @@ export const translations = {
     private_trip_form_submit: "Consult via WhatsApp",
     private_trip_form_head: "Consultation Form",
     private_trip_testimonial_tag: "Testimonials",
-    private_trip_testimonial_title: "Unforgettable Moments"
+    private_trip_testimonial_title: "Unforgettable Moments",
+
+    // Detail / Itinerary Page
+    detail_booking_form: "Booking Form",
+    itinerary_highlights: "Journey Highlights",
+    detail_itinerary: "Itinerary Plan",
+    detail_accommodation: "Accommodation & Amenities",
+    detail_inclusions: "Inclusions",
+    detail_exclusions: "Exclusions",
+    detail_other_tours: "Other Popular Destinations",
+    detail_booking_whatsapp: "Book via WhatsApp",
+    detail_select_date: "Select Dates & Pax"
   }
 };

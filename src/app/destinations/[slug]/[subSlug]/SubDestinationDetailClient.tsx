@@ -1,12 +1,12 @@
 "use client";
-
+ 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, DollarSign, Hotel, Check, X, Phone, MapPin } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
-import { indonesianRegions } from "@/data/destinations";
-import { tourPackages, TourPackageDetail } from "@/data/tours";
+import { localizedRegions } from "@/data/destinations";
+import { localizedTourPackages, TourPackageDetail } from "@/data/tours";
 
 const subDestinationImages: Record<string, string> = {
   bali: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=1200",
@@ -42,73 +42,101 @@ interface SubDestinationDetailClientProps {
 }
 
 export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDetailClientProps) {
-  const { locale } = useLanguage();
-  const region = indonesianRegions.find((r) => r.slug === slug);
+  const { t, locale } = useLanguage();
+  const region = localizedRegions[locale].find((r) => r.slug === slug);
   const subDestination = region?.subDestinations.find((s) => s.slug === subSlug);
   const [activeDay, setActiveDay] = useState(1);
 
   if (!region || !subDestination) return null;
 
   // Fetch package details or generate default fallback
-  const tourDetail: TourPackageDetail = tourPackages[subSlug] || {
+  const tourDetail: TourPackageDetail = localizedTourPackages[locale][subSlug] || {
     slug: subSlug,
     name: subDestination.name,
-    tagline: `Rasakan Pengalaman Liburan Terbaik di ${subDestination.name}`,
-    duration: "4 Hari 3 Malam",
-    price: "Mulai Rp 6.900.000 / pax",
-    hotelRating: "4★ Premium Hotel",
+    tagline: locale === "id" 
+      ? `Rasakan Pengalaman Liburan Terbaik di ${subDestination.name}`
+      : `Experience the Ultimate Holiday in ${subDestination.name}`,
+    duration: locale === "id" ? "4 Hari 3 Malam" : "4 Days 3 Nights",
+    price: locale === "id" ? "Mulai Rp 6.900.000 / pax" : "From USD 490 / pax",
+    hotelRating: locale === "id" ? "4★ Hotel Premium" : "4★ Premium Hotel",
     featuredImage: subDestinationImages[subSlug] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200",
-    highlights: ["Eksplorasi Kota", "Wisata Kuliner Lokal", "Destinasi Ikonik", "Belanja Oleh-oleh"],
+    highlights: locale === "id" 
+      ? ["Eksplorasi Kota", "Wisata Kuliner Lokal", "Destinasi Ikonik", "Belanja Oleh-oleh"]
+      : ["City Exploration", "Local Culinary Tour", "Iconic Destinations", "Souvenir Shopping"],
     itinerary: [
       {
         day: 1,
-        title: `Kedatangan di ${subDestination.name} & Check-in`,
-        activities: ["Penjemputan", "Check-in Hotel", "Makan Malam Selamat Datang"],
-        description: `Tiba di ${subDestination.name}, Anda akan disambut hangat oleh tim lokal dan ditransfer langsung menuju hotel pilihan. Nikmati waktu luang untuk bersantai atau berjalan-jalan di sekitar hotel sebelum menikmati makan malam pembuka khas daerah.`,
-        hotel: "Pilihan Hotel Bintang 4 / Setara",
+        title: locale === "id" ? `Kedatangan di ${subDestination.name} & Check-in` : `Arrival in ${subDestination.name} & Check-in`,
+        activities: locale === "id" ? ["Penjemputan", "Check-in Hotel", "Makan Malam Selamat Datang"] : ["Airport Pick-up", "Hotel Check-in", "Welcome Dinner"],
+        description: locale === "id" 
+          ? `Tiba di ${subDestination.name}, Anda akan disambut hangat oleh tim lokal dan ditransfer langsung menuju hotel pilihan. Nikmati waktu luang untuk bersantai atau berjalan-jalan di sekitar hotel sebelum menikmati makan malam pembuka khas daerah.`
+          : `Upon arrival in ${subDestination.name}, you will be warmly greeted by our local team and transferred directly to your selected hotel. Enjoy free time to relax or stroll around before a delicious local welcome dinner.`,
+        hotel: locale === "id" ? "Pilihan Hotel Bintang 4 / Setara" : "Selected 4★ Hotel / Equivalent",
         image: "https://images.unsplash.com/photo-1540553016722-983e48a2cd10?q=80&w=800"
       },
       {
         day: 2,
-        title: "City Tour & Eksplorasi Tempat Ikonik",
-        activities: [`Kunjungan Landmark ${subDestination.name}`, "Makan Siang Khas", "Galeri Budaya"],
-        description: `Eksplorasi penuh seharian mengunjungi tempat wisata terpopuler dan ikon budaya di ${subDestination.name}. Dipandu oleh pemandu lokal profesional, Anda akan diajak menyelami keindahan dan cerita bersejarah dari kota ini.`,
-        hotel: "Pilihan Hotel Bintang 4 / Setara",
+        title: locale === "id" ? "City Tour & Eksplorasi Tempat Ikonik" : "City Tour & Iconic Exploration",
+        activities: locale === "id" ? [`Kunjungan Landmark ${subDestination.name}`, "Makan Siang Khas", "Galeri Budaya"] : [`${subDestination.name} Landmark Tour`, "Local Lunch", "Cultural Gallery"],
+        description: locale === "id" 
+          ? `Eksplorasi penuh seharian mengunjungi tempat wisata terpopuler dan ikon budaya di ${subDestination.name}. Dipandu oleh pemandu lokal profesional, Anda akan diajak menyelami keindahan dan cerita bersejarah dari kota ini.`
+          : `A full day of exploring the most popular attractions and cultural icons of ${subDestination.name}. Guided by a professional local guide, you will dive into the beauty and historical stories of this city.`,
+        hotel: locale === "id" ? "Pilihan Hotel Bintang 4 / Setara" : "Selected 4★ Hotel / Equivalent",
         image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=800"
       },
       {
         day: 3,
-        title: "Wisata Alam & Kuliner Nusantara/Lokal",
-        activities: ["Petualangan Alam", "Makan Siang Pemandangan Indah", "Cicipi Kopi & Kuliner Legendaris"],
-        description: `Menikmati keindahan alam sekeliling ${subDestination.name}. Dari pegunungan yang asri hingga pesisir pantai yang menawan. Dilanjutkan dengan makan siang sambil menikmati pemandangan alam, serta mencicipi kuliner khas daerah yang legendaris.`,
-        hotel: "Pilihan Hotel Bintang 4 / Setara",
+        title: locale === "id" ? "Wisata Alam & Kuliner Nusantara/Lokal" : "Nature Tour & Local Culinary",
+        activities: locale === "id" ? ["Petualangan Alam", "Makan Siang Pemandangan Indah", "Cicipi Kopi & Kuliner Legendaris"] : ["Nature Adventure", "Scenic Lunch", "Local Coffee & Culinary Tasting"],
+        description: locale === "id" 
+          ? `Menikmati keindahan alam sekeliling ${subDestination.name}. Dari pegunungan yang asri hingga pesisir pantai yang menawan. Dilanjutkan dengan makan siang sambil menikmati pemandangan alam, serta mencicipi kuliner khas daerah yang legendaris.`
+          : `Enjoy the natural beauty surrounding ${subDestination.name}. From scenic mountains to beautiful coastlines. Followed by lunch overlooking nature, and tasting legendary local culinary specialties.`,
+        hotel: locale === "id" ? "Pilihan Hotel Bintang 4 / Setara" : "Selected 4★ Hotel / Equivalent",
         image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=800"
       },
       {
         day: 4,
-        title: "Belanja Oleh-oleh & Keberangkatan Pulang",
-        activities: ["Berburu Suvenir", "Check-out Hotel", "Transfer ke Bandara/Stasiun"],
-        description: `Setelah makan pagi dan check-out hotel, Anda akan diantar berbelanja kerajinan tangan, baju, atau jajanan khas ${subDestination.name} untuk sanak saudara di rumah. Setelah selesai, Anda akan ditransfer kembali ke Bandara atau Stasiun untuk penerbangan pulang.`,
-        hotel: "Check-out",
+        title: locale === "id" ? "Belanja Oleh-oleh & Keberangkatan Pulang" : "Souvenir Shopping & Departure",
+        activities: locale === "id" ? ["Berburu Suvenir", "Check-out Hotel", "Transfer ke Bandara/Stasiun"] : ["Souvenir Hunting", "Hotel Check-out", "Airport Transfer"],
+        description: locale === "id" 
+          ? `Setelah makan pagi dan check-out hotel, Anda akan diantar berbelanja kerajinan tangan, baju, atau jajanan khas ${subDestination.name} untuk sanak saudara di rumah. Setelah selesai, Anda akan ditransfer kembali ke Bandara atau Stasiun untuk penerbangan pulang.`
+          : `After breakfast and hotel check-out, you will be taken to shop for local handicrafts or snacks for your loved ones back home. Afterwards, transfer back to the Airport or Station for your departure.`,
+        hotel: locale === "id" ? "Check-out" : "Check-out",
         image: "https://images.unsplash.com/photo-1473163928189-364b2c4e1135?q=80&w=800"
       }
     ],
-    inclusions: [
-      "Akomodasi hotel bintang 4 pilihan",
-      "Transportasi nyaman selama tour",
-      "Tiket masuk tempat wisata sesuai program",
-      "Makan pagi, siang, dan malam sesuai jadwal",
-      "Pemandu wisata bersertifikat"
-    ],
-    exclusions: [
-      "Tiket penerbangan atau transportasi menuju kota tujuan",
-      "Pengeluaran pribadi (laundry, telepon, belanja)",
-      "Tips driver & guide"
-    ]
+    inclusions: locale === "id" 
+      ? [
+          "Akomodasi hotel bintang 4 pilihan",
+          "Transportasi nyaman selama tour",
+          "Tiket masuk tempat wisata sesuai program",
+          "Makan pagi, siang, dan malam sesuai jadwal",
+          "Pemandu wisata bersertifikat"
+        ]
+      : [
+          "Selected 4-star hotel accommodation",
+          "Comfortable transportation during the tour",
+          "Entrance tickets to all listed attractions",
+          "Breakfast, lunch, and dinner per itinerary",
+          "Certified tour guide"
+        ],
+    exclusions: locale === "id"
+      ? [
+          "Tiket penerbangan atau transportasi menuju kota tujuan",
+          "Pengeluaran pribadi (laundry, telepon, belanja)",
+          "Tips driver & guide"
+        ]
+      : [
+          "Flight tickets or transport to the destination city",
+          "Personal expenses (laundry, telephone, shopping)",
+          "Tips for driver & guide"
+        ]
   };
 
   const whatsappMessage = encodeURIComponent(
-    `Halo Klik Travel ID, saya tertarik dengan paket tour "${tourDetail.name}" (${tourDetail.duration}). Mohon informasi ketersediaan jadwal.`
+    locale === "id"
+      ? `Halo Klik Travel ID, saya tertarik dengan paket tour "${tourDetail.name}" (${tourDetail.duration}). Mohon informasi ketersediaan jadwal.`
+      : `Hello Klik Travel ID, I am interested in the "${tourDetail.name}" tour package (${tourDetail.duration}). Please provide schedule availability details.`
   );
 
   const [featuredTours, setFeaturedTours] = useState<any[]>([]);
@@ -116,7 +144,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
   useEffect(() => {
     // Generate Featured Tours ensuring different countries
     // Filter out the current region completely so we only recommend other countries
-    const otherRegions = indonesianRegions.filter(r => r.slug !== slug);
+    const otherRegions = localizedRegions[locale].filter(r => r.slug !== slug);
     
     // Shuffle the remaining regions
     const shuffledRegions = [...otherRegions].sort(() => 0.5 - Math.random());
@@ -137,7 +165,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
     });
     
     setFeaturedTours(tours);
-  }, [slug]);
+  }, [slug, locale]);
 
   return (
     <div className="bg-[#F8FAFC] text-foreground min-h-screen font-sans selection:bg-[#A89053] selection:text-white pb-20">
@@ -152,7 +180,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
             className="flex items-center gap-2 bg-white/90 backdrop-blur-md text-[#0F2C59] border border-gray-200/80 px-5 py-2.5 rounded-full shadow-lg font-sans text-xs md:text-sm font-bold uppercase tracking-wider hover:bg-white hover:scale-105 transition-all duration-300"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Kembali</span>
+            <span>{locale === "id" ? "Kembali" : "Back"}</span>
           </Link>
         </div>
 
@@ -165,7 +193,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
         
         <div className="absolute inset-0 flex flex-col items-center justify-end text-center p-6 pb-12 md:pb-16 max-w-4xl mx-auto">
           <span className="bg-[#0284C7] text-white text-[10px] md:text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
-            TOUR PACKAGE
+            {locale === "id" ? "PAKET TOUR" : "TOUR PACKAGE"}
           </span>
           <h1 className="font-serif text-4xl md:text-6xl text-white font-normal tracking-wide mb-3">
             {tourDetail.name.toUpperCase()}
@@ -184,7 +212,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               <Calendar className="w-6 h-6" />
             </div>
             <div>
-              <span className="block font-sans text-[10px] uppercase text-gray-400 tracking-wider font-semibold">DURASI</span>
+              <span className="block font-sans text-[10px] uppercase text-gray-400 tracking-wider font-semibold">{locale === "id" ? "DURASI" : "DURATION"}</span>
               <span className="block font-sans font-bold text-sm md:text-base text-[#0F2C59]">{tourDetail.duration}</span>
             </div>
           </div>
@@ -194,7 +222,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               <Hotel className="w-6 h-6" />
             </div>
             <div>
-              <span className="block font-sans text-[10px] uppercase text-gray-400 tracking-wider font-semibold">AKOMODASI</span>
+              <span className="block font-sans text-[10px] uppercase text-gray-400 tracking-wider font-semibold">{locale === "id" ? "AKOMODASI" : "ACCOMMODATION"}</span>
               <span className="block font-sans font-bold text-sm md:text-base text-[#0F2C59]">{tourDetail.hotelRating}</span>
             </div>
           </div>
@@ -204,7 +232,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               <DollarSign className="w-6 h-6" />
             </div>
             <div>
-              <span className="block font-sans text-[10px] uppercase text-gray-400 tracking-wider font-semibold">HARGA</span>
+              <span className="block font-sans text-[10px] uppercase text-gray-400 tracking-wider font-semibold">{locale === "id" ? "HARGA" : "PRICE"}</span>
               <span className="block font-sans font-bold text-sm md:text-base text-[#0F2C59]">{tourDetail.price}</span>
             </div>
           </div>
@@ -217,7 +245,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               className="w-full flex items-center justify-center gap-2 bg-[#0F2C59] hover:bg-[#0284C7] text-white py-4 px-6 rounded-xl font-sans font-bold text-sm tracking-wider uppercase transition-all duration-300 shadow-md hover:scale-[1.02]"
             >
               <Phone className="w-4 h-4 fill-white" />
-              <span>CHECK AVAILABILITY</span>
+              <span>{locale === "id" ? "Cek Ketersediaan" : "Check Availability"}</span>
             </a>
           </div>
         </div>
@@ -231,7 +259,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
           
           {/* Highlights Card */}
           <div className="bg-white border border-gray-200/80 rounded-2xl p-6 md:p-8 shadow-sm">
-            <h2 className="font-sans font-bold text-xl md:text-2xl text-[#0F2C59] mb-6">Highlights Perjalanan</h2>
+            <h2 className="font-sans font-bold text-xl md:text-2xl text-[#0F2C59] mb-6">{t("itinerary_highlights")}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {tourDetail.highlights.map((hl, idx) => (
                 <div key={idx} className="flex items-start gap-3">
@@ -246,7 +274,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
           {/* Daily Itinerary */}
           <div>
-            <h2 className="font-sans font-bold text-xl md:text-2xl text-[#0F2C59] mb-8">Itinerary Hari-demi-Hari</h2>
+            <h2 className="font-sans font-bold text-xl md:text-2xl text-[#0F2C59] mb-8">{t("detail_itinerary")}</h2>
             
             {/* Timeline Wrapper */}
             <div className="flex flex-col gap-12 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-200">
@@ -277,7 +305,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-sm text-white px-3 py-1 rounded-full font-sans text-xs font-bold uppercase tracking-wider">
-                        Hari 0{day.day}
+                        {locale === "id" ? `Hari 0${day.day}` : `Day 0${day.day}`}
                       </div>
                     </div>
 
@@ -302,7 +330,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                       <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl">
                         <Hotel className="w-5 h-5 text-gray-400" />
                         <div>
-                          <span className="block font-sans text-[9px] uppercase tracking-wider text-gray-400 font-semibold">Hotel / Bermalam</span>
+                          <span className="block font-sans text-[9px] uppercase tracking-wider text-gray-400 font-semibold">{locale === "id" ? "Hotel / Bermalam" : "Hotel / Overnight"}</span>
                           <span className="block font-sans text-xs md:text-sm font-bold text-[#0F2C59]">{day.hotel}</span>
                         </div>
                       </div>
@@ -324,9 +352,11 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
           {/* WhatsApp CTA Card */}
           <div className="bg-[#0F2C59] text-white rounded-2xl p-6 md:p-8 shadow-lg text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-[#0284C7]/20 to-transparent pointer-events-none" />
-            <h3 className="font-serif text-2xl font-normal tracking-wide mb-4 relative z-10">Tanya / Konsultasikan</h3>
+            <h3 className="font-serif text-2xl font-normal tracking-wide mb-4 relative z-10">{locale === "id" ? "Tanya / Konsultasikan" : "Ask / Consult"}</h3>
             <p className="font-sans text-white/80 text-xs md:text-sm leading-relaxed mb-6 font-light relative z-10">
-              Butuh penyesuaian jadwal tour atau request hotel bintang 5? Hubungi konsultan perjalanan Klik Travel ID sekarang juga.
+              {locale === "id"
+                ? "Butuh penyesuaian jadwal tour atau request hotel bintang 5? Hubungi konsultan perjalanan Klik Travel ID sekarang juga."
+                : "Need tour adjustments or a 5-star hotel request? Contact the travel consultants of Klik Travel ID now."}
             </p>
             <a 
               href={`https://wa.me/628123456789?text=${whatsappMessage}`}
@@ -334,13 +364,13 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-[#0284C7] hover:bg-[#38BDF8] text-white py-3.5 px-6 rounded-xl font-sans font-bold text-xs md:text-sm tracking-wider uppercase transition-all duration-300 relative z-10 shadow-md hover:scale-[1.02]"
             >
-              <span>Hubungi Kami</span>
+              <span>{locale === "id" ? "Hubungi Kami" : "Contact Us"}</span>
             </a>
           </div>
 
           {/* Inclusions Card */}
           <div className="bg-white border border-gray-200/80 rounded-2xl p-6 md:p-8 shadow-sm">
-            <h3 className="font-sans font-bold text-lg text-[#0F2C59] mb-5">Harga Termasuk (Inclusions)</h3>
+            <h3 className="font-sans font-bold text-lg text-[#0F2C59] mb-5">{t("detail_inclusions")}</h3>
             <div className="flex flex-col gap-4">
               {tourDetail.inclusions.map((inc, idx) => (
                 <div key={idx} className="flex gap-3">
@@ -355,7 +385,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
           {/* Exclusions Card */}
           <div className="bg-white border border-gray-200/80 rounded-2xl p-6 md:p-8 shadow-sm">
-            <h3 className="font-sans font-bold text-lg text-[#0F2C59] mb-5">Harga Tidak Termasuk (Exclusions)</h3>
+            <h3 className="font-sans font-bold text-lg text-[#0F2C59] mb-5">{t("detail_exclusions")}</h3>
             <div className="flex flex-col gap-4">
               {tourDetail.exclusions.map((exc, idx) => (
                 <div key={idx} className="flex gap-3">
@@ -377,10 +407,10 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
         <section className="max-w-7xl mx-auto px-6 mt-32 mb-12">
           <div className="text-center mb-16">
             <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-[#0284C7] font-bold block mb-4">
-              Eksplorasi Lebih Lanjut
+              {locale === "id" ? "Eksplorasi Lebih Lanjut" : "Explore Further"}
             </span>
             <h2 className="font-serif text-4xl md:text-5xl text-[#0F2C59] font-normal tracking-wide">
-              Destinasi Unggulan Lainnya
+              {t("detail_other_tours")}
             </h2>
           </div>
           
@@ -401,7 +431,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                   
                   {/* Badge */}
                   <div className="absolute top-5 left-5 bg-white/90 backdrop-blur-sm text-[#0F2C59] text-[10px] font-sans font-bold uppercase tracking-widest px-4 py-2 rounded-full">
-                    Paket Tour
+                    {locale === "id" ? "Paket Tour" : "Tour Package"}
                   </div>
 
                   <div className="absolute bottom-6 left-6 right-6">
@@ -416,7 +446,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                 </div>
                 
                 <div className="flex items-center text-[#0284C7] font-sans text-xs uppercase font-bold tracking-widest group-hover:tracking-[0.2em] transition-all duration-300">
-                  <span>Lihat Detail</span>
+                  <span>{locale === "id" ? "Lihat Detail" : "View Details"}</span>
                   <motion.span 
                     className="ml-2"
                     initial={{ x: 0 }}

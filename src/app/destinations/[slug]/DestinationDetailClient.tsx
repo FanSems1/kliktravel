@@ -170,18 +170,18 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                       
                       {/* Badge (Klik Travel Sky Blue) */}
                       <div className="absolute bottom-0 left-0 bg-[#0284C7] text-white text-[10px] md:text-xs font-sans font-bold uppercase tracking-wider px-4 md:px-5 py-2 md:py-2.5">
-                        TOUR PACKAGE
+                        {locale === "id" ? "PAKET TOUR" : "TOUR PACKAGE"}
                       </div>
                     </div>
                     
                     {/* Card Text */}
                     <h3 className="font-sans font-bold text-lg md:text-xl text-[#0F2C59] leading-snug mb-3 group-hover:text-[#0284C7] transition-colors pr-4">
-                      Paket Tour {sub.name}
+                      {locale === "id" ? `Paket Tour ${sub.name}` : `${sub.name} Tour Package`}
                     </h3>
                     
                     <div className="flex items-center gap-2 text-[#0F2C59]/80 font-sans text-xs md:text-sm">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#0284C7]" />
-                      <span>Tersedia untuk {region.name}</span>
+                      <span>{locale === "id" ? `Tersedia untuk ${region.name}` : `Available for ${region.name}`}</span>
                     </div>
                   </Link>
                 );
@@ -194,7 +194,7 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                 href="/destinations"
                 className="inline-block bg-transparent text-[#0F2C59] font-sans text-xs md:text-sm font-bold uppercase tracking-widest py-4 md:py-5 px-8 md:px-12 rounded-full border border-[#0F2C59] hover:bg-[#0F2C59]/5 transition-colors duration-300"
               >
-                CHECK AVAILABILITY
+                {locale === "id" ? "LIHAT SEMUA DESTINASI" : "CHECK ALL DESTINATIONS"}
               </Link>
             </div>
             
@@ -209,17 +209,23 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
           
           <div className="max-w-4xl mx-auto text-center relative z-10 flex flex-col items-center">
             <span className="text-[#38BDF8] font-sans text-xs md:text-sm font-bold uppercase tracking-[0.3em] mb-4 block">
-              Mulai Petualangan Anda
+              {locale === "id" ? "Mulai Petualangan Anda" : "Start Your Adventure"}
             </span>
             <h2 className="font-serif text-3xl md:text-5xl lg:text-6xl font-normal tracking-wide mb-6">
-              Rencanakan Liburan ke {region.name}
+              {locale === "id" ? `Rencanakan Liburan ke ${region.name}` : `Plan a Holiday to ${region.name}`}
             </h2>
             <p className="font-sans text-white/80 text-sm md:text-base max-w-2xl mx-auto mb-10 font-light leading-relaxed">
-              Dapatkan paket tour eksklusif, rekomendasi akomodasi terbaik, dan itinerary yang disesuaikan khusus untuk Anda. Konsultasikan impian liburan Anda bersama Klik Travel ID.
+              {locale === "id" 
+                ? `Dapatkan paket tour eksklusif, rekomendasi akomodasi terbaik, dan itinerary yang disesuaikan khusus untuk Anda. Konsultasikan impian liburan Anda bersama Klik Travel ID.`
+                : `Get exclusive tour packages, top accommodation recommendations, and customized itineraries tailored just for you. Consult your dream vacation with Klik Travel ID.`}
             </p>
             
             <a 
-              href={`https://wa.me/628123456789?text=${encodeURIComponent(`Halo Klik Travel ID, saya tertarik untuk merencanakan liburan ke ${region.name}. Mohon informasi paket tour dan ketersediaannya.`)}`}
+              href={`https://wa.me/628123456789?text=${encodeURIComponent(
+                locale === "id"
+                  ? `Halo Klik Travel ID, saya tertarik untuk merencanakan liburan ke ${region.name}. Mohon informasi paket tour dan ketersediaannya.`
+                  : `Hello Klik Travel ID, I am interested in planning a vacation to ${region.name}. Please provide details on tour packages and availability.`
+              )}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-3 bg-[#25D366] hover:bg-[#128C7E] text-white py-4 px-8 md:px-10 rounded-full font-sans font-bold text-sm tracking-wider uppercase transition-all duration-300 shadow-[0_8px_30px_rgba(37,211,102,0.3)] hover:shadow-[0_8px_30px_rgba(18,140,126,0.4)] hover:-translate-y-1"
@@ -227,7 +233,7 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
                 <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/>
               </svg>
-              <span>Booking via WhatsApp</span>
+              <span>{locale === "id" ? "Pesan via WhatsApp" : "Book via WhatsApp"}</span>
             </a>
           </div>
         </div>
