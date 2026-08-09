@@ -497,7 +497,7 @@ export function FeaturedJourneys() {
               </motion.div>
 
               {/* Secondary Stories (Right on Desktop / Items 2&3 on Mobile) */}
-              <div className="md:col-span-5 flex md:flex-col gap-6 md:gap-8 justify-start">
+              <div className="md:col-span-5 flex md:flex-col justify-between md:aspect-[80/77]">
                 {secondaryTours.map((tour) => (
                   <motion.div 
                     key={tour.id} 
