@@ -9,7 +9,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-ivory: #F4FAFF; /* Very soft, airy sky-white tint */
-  --color-charcoal: #0284C7; /* Vibrant sky/ocean blue for accent surfaces */
+  --color-charcoal: #0F2C59; /* Deep navy/charcoal text color for rich contrast */
   --color-earth: #38BDF8; /* Bright soft sky blue (accent/highlight) */
   --color-earth-dark: #0284C7; /* Darker sky blue */
   --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;

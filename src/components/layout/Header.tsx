@@ -31,7 +31,7 @@ export function Header() {
 
   // Check if current page is light-themed and needs a dark navbar
   const isLightPage = 
-    pathname === "/journal" || 
+    (pathname === "/journal" ? isScrolled : false) ||
     pathname?.startsWith("/journal/") ||
     pathname === "/journeys" ||
     pathname?.startsWith("/journeys/") ||
