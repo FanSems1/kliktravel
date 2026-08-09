@@ -36,7 +36,7 @@ export function Header() {
     (pathname === "/journeys" ? isScrolled : false) ||
     pathname?.startsWith("/journeys/") ||
     pathname === "/destinations" ||
-    pathname === "/private-trip";
+    (pathname === "/private-trip" ? isScrolled : false);
 
   const showDarkHeader = isScrolled || isLightPage;
 
