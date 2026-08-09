@@ -1,6 +1,7 @@
 export const translations = {
   id: {
     // Navigation
+    nav_home: "Beranda",
     nav_journeys: "Perjalanan",
     nav_destinations: "Open Trip",
     nav_experiences: "Private Trip",
@@ -194,6 +195,7 @@ export const translations = {
   },
   en: {
     // Navigation
+    nav_home: "Home",
     nav_journeys: "Journeys",
     nav_destinations: "Open Trip",
     nav_experiences: "Private Trip",

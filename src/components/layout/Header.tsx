@@ -82,6 +82,18 @@ export function Header() {
           {/* Desktop Nav Links (Full width single row, transparent-to-solid) */}
           <nav className="hidden md:flex items-center space-x-10">
             <Link 
+              href="/"
+              className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${
+                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white/80 hover:text-white"
+              }`}
+            >
+              {t("nav_home")}
+              <span className={`absolute bottom-0 left-0 w-full h-[1px] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left ${
+                showDarkHeader ? "bg-[#0284C7]" : "bg-white"
+              }`} />
+            </Link>
+
+            <Link 
               href="/journeys"
               className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${
                 showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white/80 hover:text-white"
@@ -291,6 +303,14 @@ export function Header() {
             <div className="absolute inset-0 image-texture opacity-10 pointer-events-none" />
 
             <div className="flex flex-col space-y-6 text-left max-w-md mx-auto w-full z-10">
+              <Link 
+                href="/"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="font-serif text-4xl tracking-wide text-foreground hover:text-[#0284C7] transition-colors block py-2"
+              >
+                {t("nav_home")}
+              </Link>
+
               <Link 
                 href="/journeys"
                 onClick={() => setIsMobileMenuOpen(false)}
