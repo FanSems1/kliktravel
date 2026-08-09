@@ -29,6 +29,21 @@ export function Header() {
   const [isDestinationsHovered, setIsDestinationsHovered] = useState(false);
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
 
+  const handleHomeClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (pathname === "/") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleMobileHomeClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    setIsMobileMenuOpen(false);
+    if (pathname === "/") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   // Check if current page is light-themed and needs a dark navbar
   const isLightPage = 
     (pathname === "/journal" ? isScrolled : false) ||
@@ -71,7 +86,7 @@ export function Header() {
         <div className="w-full max-w-[1600px] mx-auto px-6 md:px-12 lg:px-16 flex justify-between items-center relative">
           
           {/* Logo */}
-          <Link href="/" className="flex items-center justify-center hover:opacity-90 transition-opacity duration-300">
+          <Link href="/" onClick={handleHomeClick} className="flex items-center justify-center hover:opacity-90 transition-opacity duration-300">
             <img 
               src="/kliktravelid.png" 
               alt="Klik Travel ID" 
@@ -83,6 +98,7 @@ export function Header() {
           <nav className="hidden md:flex items-center space-x-10">
             <Link 
               href="/"
+              onClick={handleHomeClick}
               className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${
                 showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white/80 hover:text-white"
               }`}
@@ -305,7 +321,7 @@ export function Header() {
             <div className="flex flex-col space-y-6 text-left max-w-md mx-auto w-full z-10">
               <Link 
                 href="/"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={handleMobileHomeClick}
                 className="font-serif text-4xl tracking-wide text-foreground hover:text-[#0284C7] transition-colors block py-2"
               >
                 {t("nav_home")}
