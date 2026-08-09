@@ -452,15 +452,54 @@ export function FeaturedJourneys() {
             whileInView="show"
             viewport={{ once: true, margin: "-50px" }}
           >
-            {/* Desktop Magazine Split (lg) / Mobile Swipe Carousel */}
-            <div className="md:grid md:grid-cols-12 md:gap-12 md:items-stretch flex overflow-x-auto snap-x snap-mandatory scrollbar-none pb-8 -mx-6 px-6 md:mx-0 md:px-0 md:pb-0 md:overflow-visible gap-6">
+            {/* Mobile Carousel (All Cards Identical) */}
+            <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory scrollbar-none pb-8 -mx-6 px-6 gap-6">
+              {currentTours.map((tour) => (
+                <motion.div
+                  key={tour.id}
+                  variants={cardVariants}
+                  className="group cursor-pointer flex flex-col shrink-0 w-[85vw] sm:w-[60vw] snap-center"
+                >
+                  <div className="relative w-full aspect-[4/3] overflow-hidden rounded-xl mb-6 bg-charcoal/10 shadow-lg">
+                    <img src={tour.image} alt={locale === "id" ? tour.titleID : tour.titleEN} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-500" />
+                    
+                    {/* Floating Top Badge */}
+                    <div className="absolute top-5 left-5 z-20 font-mono text-[9px] tracking-widest uppercase text-white bg-black/40 backdrop-blur-md px-3 py-1.5 rounded border border-white/10">
+                      {countryLabels[activeCountry][locale]} // {locale === "id" ? tour.daysID : tour.daysEN}
+                    </div>
+                  </div>
+                  
+                  <div className="flex-grow flex flex-col justify-center pr-4">
+                    <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-charcoal/80 mb-3 uppercase tracking-wider">
+                      <span>{locale === "id" ? tour.datesID : tour.datesEN}</span>
+                      <span>•</span>
+                      <span className="text-[#A89053] font-bold text-sm">{locale === "id" ? tour.price : tour.price.replace("JT", "M")}</span>
+                    </div>
+                    
+                    <h3 className="font-serif text-2xl text-[#0F2C59] mb-3 leading-snug group-hover:text-[#A89053] transition-colors duration-300">
+                      {locale === "id" ? tour.titleID : tour.titleEN}
+                    </h3>
+                    <p className="font-sans text-sm text-foreground/70 leading-relaxed mb-6 line-clamp-2">
+                      {locale === "id" ? tour.subtitleID : tour.subtitleEN}
+                    </p>
+                    <div className="flex items-center text-[10px] font-mono uppercase tracking-widest text-[#0284C7] font-semibold mt-auto group-hover:text-[#0F2C59] transition-colors">
+                      {t("featured_explore_details")} <ArrowRight size={14} className="ml-2 group-hover:translate-x-1.5 transition-transform" />
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Desktop Magazine Split Grid */}
+            <div className="hidden md:grid md:grid-cols-12 md:gap-12 md:items-stretch">
               
-              {/* Main Story (Left on Desktop / Item 1 on Mobile) */}
+              {/* Main Story (Left) */}
               <motion.div 
                 variants={cardVariants}
-                className="md:col-span-7 group cursor-pointer flex flex-col h-full shrink-0 w-[85vw] sm:w-[60vw] md:w-auto snap-center"
+                className="md:col-span-7 group cursor-pointer flex flex-col h-full md:w-auto"
               >
-                <div className="relative w-full aspect-[4/3] md:aspect-[16/11] overflow-hidden rounded-xl mb-6 md:mb-8 bg-charcoal/10 shadow-lg">
+                <div className="relative w-full aspect-[16/11] overflow-hidden rounded-xl mb-6 md:mb-8 bg-charcoal/10 shadow-lg">
                   <img src={mainTour.image} alt={locale === "id" ? mainTour.titleID : mainTour.titleEN} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-500" />
                   
@@ -496,13 +535,13 @@ export function FeaturedJourneys() {
                 </div>
               </motion.div>
 
-              {/* Secondary Stories (Right on Desktop / Items 2&3 on Mobile) */}
+              {/* Secondary Stories (Right) */}
               <div className="md:col-span-5 flex md:flex-col justify-between md:aspect-[80/77]">
                 {secondaryTours.map((tour) => (
                   <motion.div 
                     key={tour.id} 
                     variants={cardVariants}
-                    className="group cursor-pointer flex flex-col md:flex-row gap-5 md:gap-6 md:items-center shrink-0 w-[85vw] sm:w-[60vw] md:w-auto snap-center"
+                    className="group cursor-pointer flex flex-col md:flex-row gap-5 md:gap-6 md:items-center w-full"
                   >
                     
                     <div className="relative w-full md:w-5/12 aspect-[4/3] md:aspect-square overflow-hidden rounded-xl bg-charcoal/10 shrink-0 shadow-md">
