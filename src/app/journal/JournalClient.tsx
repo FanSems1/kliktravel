@@ -79,6 +79,7 @@ export function JournalClient() {
   const { locale, t } = useLanguage();
   const [activeCategory, setActiveCategory] = useState("ALL");
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [slideIndex, setSlideIndex] = useState(0);
 
   // Determine localized categories
   const categories = [
@@ -102,6 +103,21 @@ export function JournalClient() {
   const spotlightArticle = journalArticles.find((a) => a.featured) || journalArticles[0];
   const gridArticles = filteredArticles.filter((a) => a.slug !== spotlightArticle.slug || activeCategory !== "ALL");
 
+  const handleCategoryChange = (key: string) => {
+    setActiveCategory(key);
+    setSlideIndex(0);
+  };
+
+  const maxSlides = Math.max(0, gridArticles.length - 3);
+
+  const handlePrev = () => {
+    setSlideIndex((prev) => Math.max(0, prev - 1));
+  };
+
+  const handleNext = () => {
+    setSlideIndex((prev) => Math.min(maxSlides, prev + 1));
+  };
+
   const openLightbox = (index: number) => setSelectedImageIndex(index);
   const closeLightbox = () => setSelectedImageIndex(null);
   
@@ -116,24 +132,52 @@ export function JournalClient() {
   };
 
   return (
-    <div className="bg-ivory text-charcoal min-h-screen pt-28 pb-20 selection:bg-charcoal selection:text-white">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16">
+    <div className="bg-ivory text-charcoal min-h-screen pb-20 selection:bg-charcoal selection:text-white">
+      
+      {/* Premium Hero Section */}
+      <section className="relative w-full h-[55vh] md:h-[65vh] overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2000" 
+            alt="Klik Travel Journal Hero" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-[#0F2C59]/65 mix-blend-multiply" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ivory via-transparent to-black/30" />
+        </div>
         
-        {/* Editorial Page Header */}
-        <div className="border-b border-charcoal/10 pb-12 mb-16">
-          <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-charcoal/60 font-semibold mb-4 block">
-            {locale === "id" ? "09 — JURNAL PERJALANAN" : "09 — TRAVEL JOURNAL"}
-          </span>
-          <Heading variant="display" className="text-charcoal uppercase leading-none mb-6">
-            {locale === "id" ? "Catatan Perjalanan" : "The Journal"}
-          </Heading>
-          <p className="font-sans text-sm md:text-base text-charcoal/70 max-w-xl leading-relaxed font-light">
+        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto flex flex-col items-center pt-20">
+          <motion.span 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+            className="font-mono text-xs md:text-sm tracking-[0.4em] uppercase text-sky-300 font-semibold mb-6 block"
+          >
+            {locale === "id" ? "09 — CATATAN PERJALANAN" : "09 — FIELD JOURNAL"}
+          </motion.span>
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.8 }}
+            className="font-serif text-5xl md:text-7xl text-white font-normal tracking-wide mb-6 leading-tight uppercase"
+          >
+            {locale === "id" ? "Jurnal Kita" : "The Journal"}
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.8 }}
+            className="font-sans text-white/90 text-sm md:text-lg max-w-2xl font-light leading-relaxed"
+          >
             {locale === "id" 
               ? "Kumpulan cerita kurasi, panduan destinasi mendalam, dan kisah dari para ahli perjalanan kami di seluruh penjuru kepulauan." 
               : "A curated collection of travel narratives, destination insights, and field notes from our travel architects across the globe."}
-          </p>
+          </motion.p>
         </div>
+      </section>
 
+      <div className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 pt-16">
+        
         {/* Featured Spotlight Article (Only shows when "All" is active) */}
         {activeCategory === "ALL" && spotlightArticle && (
           <motion.div 
@@ -186,7 +230,7 @@ export function JournalClient() {
           {categories.map((cat) => (
             <button
               key={cat.key}
-              onClick={() => setActiveCategory(cat.key)}
+              onClick={() => handleCategoryChange(cat.key)}
               className={`px-6 py-2.5 rounded-full font-sans text-xs tracking-wider uppercase transition-all duration-300 whitespace-nowrap cursor-pointer ${
                 activeCategory === cat.key
                   ? "bg-charcoal text-white shadow-md"
@@ -198,25 +242,22 @@ export function JournalClient() {
           ))}
         </div>
 
-        {/* Article Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 items-stretch">
-          <AnimatePresence mode="popLayout">
-            {gridArticles.map((article, index) => (
-              <motion.div
-                layout
+        {/* Article Slider Section */}
+        <div className="relative w-full overflow-hidden">
+          
+          {/* Mobile swipe list */}
+          <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory scrollbar-none gap-6 pb-6 -mx-6 px-6">
+            {gridArticles.map((article) => (
+              <div 
                 key={article.slug}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="group flex flex-col justify-between border border-charcoal/10 p-5 rounded-2xl bg-white/40 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow"
+                className="group flex flex-col justify-between border border-charcoal/10 p-5 rounded-2xl bg-white/40 backdrop-blur-sm shadow-sm shrink-0 w-[85vw] sm:w-[60vw] snap-center"
               >
                 <div className="w-full">
                   <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-charcoal/10 mb-6">
                     <img 
                       src={article.image} 
                       alt={locale === "id" ? article.titleID : article.titleEN} 
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1s]"
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                     <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full font-mono text-[8px] tracking-widest text-[#0284C7] font-bold shadow-sm uppercase">
                       {locale === "id" ? article.categoryID : article.categoryEN}
@@ -227,7 +268,7 @@ export function JournalClient() {
                     {locale === "id" ? article.dateID : article.dateEN} • {locale === "id" ? article.readTimeID : article.readTimeEN}
                   </span>
                   
-                  <h3 className="font-serif text-xl md:text-2xl text-charcoal mb-3 leading-snug group-hover:text-[#0284C7] transition-colors">
+                  <h3 className="font-serif text-xl text-charcoal mb-3 leading-snug">
                     <Link href={`/journal/${article.slug}`}>
                       {locale === "id" ? article.titleID : article.titleEN}
                     </Link>
@@ -247,9 +288,93 @@ export function JournalClient() {
                     <ArrowRight size={10} className="group-hover/item:translate-x-1 transition-transform" />
                   </Link>
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </AnimatePresence>
+          </div>
+
+          {/* Desktop Animated Slider (Exactly 3 per view) */}
+          <div className="hidden md:block overflow-hidden relative pb-4">
+            <motion.div
+              className="flex gap-8"
+              animate={{ x: `calc(-${slideIndex} * (100% + 32px) / 3)` }}
+              transition={{ type: "spring", stiffness: 220, damping: 28 }}
+            >
+              {gridArticles.map((article) => (
+                <div
+                  key={article.slug}
+                  className="group flex flex-col justify-between border border-charcoal/10 p-6 rounded-2xl bg-white/40 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow shrink-0 w-[calc((100%-64px)/3)]"
+                >
+                  <div className="w-full">
+                    <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-charcoal/10 mb-6">
+                      <img 
+                        src={article.image} 
+                        alt={locale === "id" ? article.titleID : article.titleEN} 
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1s]"
+                      />
+                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full font-mono text-[8px] tracking-widest text-[#0284C7] font-bold shadow-sm uppercase">
+                        {locale === "id" ? article.categoryID : article.categoryEN}
+                      </div>
+                    </div>
+                    
+                    <span className="font-mono text-[9px] tracking-widest text-charcoal/50 uppercase block mb-2">
+                      {locale === "id" ? article.dateID : article.dateEN} • {locale === "id" ? article.readTimeID : article.readTimeEN}
+                    </span>
+                    
+                    <h3 className="font-serif text-xl text-charcoal mb-3 leading-snug group-hover:text-[#0284C7] transition-colors">
+                      <Link href={`/journal/${article.slug}`}>
+                        {locale === "id" ? article.titleID : article.titleEN}
+                      </Link>
+                    </h3>
+                    
+                    <p className="font-sans text-xs text-charcoal/70 leading-relaxed mb-6 font-light line-clamp-3">
+                      {locale === "id" ? article.excerptID : article.excerptEN}
+                    </p>
+                  </div>
+
+                  <div className="border-t border-charcoal/10 pt-4 flex items-center justify-between">
+                    <Link 
+                      href={`/journal/${article.slug}`} 
+                      className="font-mono text-[9px] tracking-[0.2em] uppercase text-charcoal font-semibold hover:text-[#0284C7] transition-colors flex items-center gap-1 group/item"
+                    >
+                      {locale === "id" ? "BACA SELENGKAPNYA" : "READ STORY"}
+                      <ArrowRight size={10} className="group-hover/item:translate-x-1 transition-transform" />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+
+          {/* Slider Controls */}
+          {maxSlides > 0 && (
+            <div className="hidden md:flex justify-end items-center gap-4 mt-8">
+              <button
+                onClick={handlePrev}
+                disabled={slideIndex === 0}
+                className={`w-10 h-10 rounded-full border border-charcoal/20 flex items-center justify-center transition-all ${
+                  slideIndex === 0 
+                    ? "opacity-40 cursor-not-allowed" 
+                    : "hover:bg-charcoal hover:text-white hover:border-charcoal cursor-pointer"
+                }`}
+                aria-label="Previous articles"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                onClick={handleNext}
+                disabled={slideIndex === maxSlides}
+                className={`w-10 h-10 rounded-full border border-charcoal/20 flex items-center justify-center transition-all ${
+                  slideIndex === maxSlides 
+                    ? "opacity-40 cursor-not-allowed" 
+                    : "hover:bg-charcoal hover:text-white hover:border-charcoal cursor-pointer"
+                }`}
+                aria-label="Next articles"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          )}
+
         </div>
 
         {/* Dynamic Travel Photo Gallery Section */}
