@@ -13,9 +13,9 @@ const regionHeroImages: Record<string, string> = {
   vietnam: "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=2000",
   korea: "https://images.unsplash.com/photo-1517154421773-0529f29ea451?q=80&w=2000",
   japan: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2000",
-  china: "https://images.unsplash.com/photo-1508804185872-d7bad1006fc5?q=80&w=2000",
-  india: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=2000",
-  others: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2000",
+  china: "https://images.unsplash.com/photo-1547989453-11e67ffb3885?q=80&w=2000",
+  india: "https://images.unsplash.com/photo-1564507592333-c60657eea523?q=80&w=2000",
+  others: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=2000",
 };
 
 const subDestinationImages: Record<string, string> = {
@@ -35,9 +35,9 @@ const subDestinationImages: Record<string, string> = {
   tokyo: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=800",
   kyoto: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=800",
   osaka: "https://images.unsplash.com/photo-1590559899731-a382839e5549?q=80&w=800",
-  beijing: "https://images.unsplash.com/photo-1508804185872-d7bad1006fc5?q=80&w=800",
-  shanghai: "https://images.unsplash.com/photo-1548248823-1d615f334a15?q=80&w=800",
-  chengdu: "https://images.unsplash.com/photo-1584347719602-555e56d817de?q=80&w=800",
+  beijing: "https://images.unsplash.com/photo-1543872084-c7bd3822856f?q=80&w=800",
+  shanghai: "https://images.unsplash.com/photo-1474181487882-5abf3f016c2d?q=80&w=800",
+  chengdu: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?q=80&w=800",
   delhi: "https://images.unsplash.com/photo-1587474260584-136574528ed5?q=80&w=800",
   mumbai: "https://images.unsplash.com/photo-1570168007204-dfb528c6858f?q=80&w=800",
   jaipur: "https://images.unsplash.com/photo-1599661559875-1dc9a9b24479?q=80&w=800",

@@ -14,9 +14,9 @@ const regionImages: Record<string, string> = {
   vietnam: "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=800",
   korea: "https://images.unsplash.com/photo-1517154421773-0529f29ea451?q=80&w=800",
   japan: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=800",
-  china: "https://images.unsplash.com/photo-1508804185872-d7bad1006fc5?q=80&w=800",
-  india: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=800",
-  others: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=800",
+  china: "https://images.unsplash.com/photo-1547989453-11e67ffb3885?q=80&w=800",
+  india: "https://images.unsplash.com/photo-1564507592333-c60657eea523?q=80&w=800",
+  others: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=800",
 };
 
 const defaultFeaturedImage = "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=800"; // Komodo Sailing

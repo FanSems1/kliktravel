@@ -27,14 +27,19 @@ export function DestinationsClient() {
     vietnam: "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=2000",
     korea: "https://images.unsplash.com/photo-1517154421773-0529f29ea451?q=80&w=2000",
     japan: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2000",
-    china: "https://images.unsplash.com/photo-1508804185872-d7bad1006fc5?q=80&w=2000",
-    india: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=2000",
-    others: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2000",
+    china: "https://images.unsplash.com/photo-1547989453-11e67ffb3885?q=80&w=2000",
+    india: "https://images.unsplash.com/photo-1564507592333-c60657eea523?q=80&w=2000",
+    others: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=2000",
   };
 
   return (
-    <div className="bg-ivory text-foreground min-h-screen font-sans selection:bg-[#A89053] selection:text-white">
-      <main className="pt-32 pb-32">
+    <div className="bg-ivory text-foreground min-h-screen font-sans selection:bg-[#A89053] selection:text-white relative overflow-hidden">
+      {/* Decorative atmospheric background blurs */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-sky-200/20 rounded-full blur-3xl pointer-events-none z-0" />
+      <div className="absolute top-[40%] right-1/4 w-[600px] h-[600px] bg-amber-100/30 rounded-full blur-3xl pointer-events-none z-0" />
+      <div className="absolute bottom-10 left-10 w-[400px] h-[400px] bg-sky-100/30 rounded-full blur-3xl pointer-events-none z-0" />
+
+      <main className="pt-32 pb-32 relative z-10">
         {/* Intro Banner */}
         <section className="max-w-7xl mx-auto px-6 md:px-12 text-center mb-24 md:mb-36">
           <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-charcoal/60 font-semibold block mb-4">
@@ -197,22 +202,29 @@ export function DestinationsClient() {
             <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-charcoal/50 block text-center mb-12">
               {t("destinations_uncharted")}
             </span>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {remainingRegions.map((region) => (
                 <Link
                   key={region.slug}
                   href={`/destinations/${region.slug}`}
-                  className="group block p-8 rounded-2xl bg-white border border-charcoal/10 shadow-sm hover:shadow-md transition-all duration-300"
+                  className="group block cursor-pointer"
                 >
-                  <span className="font-serif text-2xl text-foreground group-hover:text-[#A89053] transition-colors block mb-2">
-                    {region.name}
-                  </span>
-                  <p className="font-sans text-xs text-foreground/60 leading-relaxed font-light mb-4">
-                    {region.subtitle}
-                  </p>
-                  <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-[#A89053] font-semibold">
-                    DISCOVER →
-                  </span>
+                  <div className="w-full aspect-[16/9] rounded-3xl overflow-hidden relative shadow-xl transition-transform duration-700 group-hover:scale-[1.02] border border-charcoal/10">
+                    <img src={regionHeroImages[region.slug] || regionHeroImages.others} alt={region.name} className="absolute inset-0 w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/45 group-hover:bg-black/35 transition-colors duration-500" />
+                    <div className="absolute inset-0 image-texture opacity-40 mix-blend-overlay" />
+                    <div className="absolute bottom-8 left-8 right-8">
+                      <span className="font-serif text-3xl text-white font-normal block mb-2">
+                        {region.name}
+                      </span>
+                      <p className="font-sans text-xs text-white/80 leading-relaxed font-light mb-4 line-clamp-2">
+                        {region.subtitle}
+                      </p>
+                      <span className="inline-block font-mono text-[9px] tracking-[0.2em] uppercase text-[#A89053] font-semibold group-hover:translate-x-1 transition-transform">
+                        DISCOVER →
+                      </span>
+                    </div>
+                  </div>
                 </Link>
               ))}
             </div>

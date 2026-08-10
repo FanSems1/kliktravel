@@ -16,7 +16,7 @@ const subDestinationImages: Record<string, string> = {
   bangkok: "https://images.unsplash.com/photo-1508009603885-50cf7c579365?q=80&w=1200",
   phuket: "https://images.unsplash.com/photo-1581023773539-755d78a8bc84?q=80&w=1200",
   "chiang-mai": "https://images.unsplash.com/photo-1590243455953-62588147dff5?q=80&w=1200",
-  hanoi: "https://images.unsplash.com/photo-1555938171-8b27329910d5?q=80&w=1200",
+  hanoi: "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=1200",
   "ho-chi-minh": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?q=80&w=1200",
   "da-nang": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?q=80&w=1200",
   seoul: "https://images.unsplash.com/photo-1538678235213-982eb4b7261a?q=80&w=1200",
@@ -25,9 +25,9 @@ const subDestinationImages: Record<string, string> = {
   tokyo: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1200",
   kyoto: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=1200",
   osaka: "https://images.unsplash.com/photo-1590559899731-a382839e5549?q=80&w=1200",
-  beijing: "https://images.unsplash.com/photo-1508804185872-d7bad1006fc5?q=80&w=1200",
-  shanghai: "https://images.unsplash.com/photo-1548248823-1d615f334a15?q=80&w=1200",
-  chengdu: "https://images.unsplash.com/photo-1584347719602-555e56d817de?q=80&w=1200",
+  beijing: "https://images.unsplash.com/photo-1543872084-c7bd3822856f?q=80&w=1200",
+  shanghai: "https://images.unsplash.com/photo-1474181487882-5abf3f016c2d?q=80&w=1200",
+  chengdu: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?q=80&w=1200",
   delhi: "https://images.unsplash.com/photo-1587474260584-136574528ed5?q=80&w=1200",
   mumbai: "https://images.unsplash.com/photo-1570168007204-dfb528c6858f?q=80&w=1200",
   jaipur: "https://images.unsplash.com/photo-1599661559875-1dc9a9b24479?q=80&w=1200",
@@ -171,7 +171,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
     <div className="bg-[#F8FAFC] text-foreground min-h-screen font-sans selection:bg-[#A89053] selection:text-white pb-20">
       
       {/* Hero Banner */}
-      <section className="relative w-full h-[55vh] md:h-[65vh] overflow-hidden">
+      <section className="relative w-full min-h-[480px] md:h-[65vh] md:min-h-0 overflow-hidden flex flex-col justify-between">
         
         {/* Back Button Overlay */}
         <div className="absolute top-24 md:top-32 left-6 md:left-12 lg:left-16 z-50">
@@ -187,11 +187,11 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
         <img 
           src={tourDetail.featuredImage} 
           alt={tourDetail.name} 
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover z-0"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/50 to-transparent z-10" />
         
-        <div className="absolute inset-0 flex flex-col items-center justify-end text-center p-6 pb-12 md:pb-16 max-w-4xl mx-auto">
+        <div className="absolute inset-x-0 bottom-0 top-0 flex flex-col items-center justify-end text-center p-6 pb-12 md:pb-16 pt-36 max-w-4xl mx-auto z-20">
           <span className="bg-[#0284C7] text-white text-[10px] md:text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
             {locale === "id" ? "PAKET TOUR" : "TOUR PACKAGE"}
           </span>
@@ -206,8 +206,8 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
       {/* Overview Bar */}
       <section className="max-w-6xl mx-auto px-6 -mt-8 relative z-30">
-        <div className="bg-white border border-gray-200/80 shadow-xl rounded-2xl p-6 md:p-8 grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
-          <div className="flex items-center gap-4">
+        <div className="bg-white border border-gray-200/80 shadow-xl rounded-2xl p-6 md:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 items-center">
+          <div className="col-span-1 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-sky-50 flex items-center justify-center text-[#0284C7] shrink-0">
               <Calendar className="w-6 h-6" />
             </div>
@@ -217,7 +217,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="col-span-1 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-sky-50 flex items-center justify-center text-[#0284C7] shrink-0">
               <Hotel className="w-6 h-6" />
             </div>
@@ -227,7 +227,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="col-span-2 md:col-span-1 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-sky-50 flex items-center justify-center text-[#0284C7] shrink-0">
               <DollarSign className="w-6 h-6" />
             </div>
@@ -237,7 +237,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
             </div>
           </div>
 
-          <div>
+          <div className="col-span-2 md:col-span-1">
             <a 
               href={`https://wa.me/628123456789?text=${whatsappMessage}`}
               target="_blank"
@@ -279,11 +279,11 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
             {/* Timeline Wrapper */}
             <div className="flex flex-col gap-12 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-200">
               {tourDetail.itinerary.map((day, idx) => (
-                <div key={idx} className="flex gap-6 md:gap-8 relative">
+                <div key={idx} className="flex gap-4 md:gap-8 relative">
                   
                   {/* Timeline Node */}
-                  <div className="relative z-10">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-sans font-bold text-xs transition-all duration-300 shadow-md ${
+                  <div className="relative z-10 shrink-0">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-sans font-bold text-xs transition-all duration-300 shadow-md shrink-0 ${
                       activeDay === day.day 
                       ? "bg-[#0284C7] text-white ring-4 ring-sky-100" 
                       : "bg-white text-gray-400 border border-gray-200"
@@ -309,7 +309,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                       </div>
                     </div>
 
-                    <div className="p-6 md:p-8">
+                    <div className="p-4 sm:p-6 md:p-8">
                       <h3 className="font-sans font-bold text-lg md:text-xl text-[#0F2C59] mb-4">
                         {day.title}
                       </h3>
