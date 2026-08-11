@@ -166,19 +166,6 @@ export default function AdminDestinationsPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                Card Gradient Style (Tailwind classes)
-              </label>
-              <input 
-                type="text" 
-                value={gradientField}
-                onChange={(e) => setGradientField(e.target.value)}
-                placeholder="e.g. from-[#E0F2FE] to-[#7DD3FC]"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
-              />
-            </div>
-
             {/* Sub Destinations List Manager */}
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
               <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-2 font-bold">
