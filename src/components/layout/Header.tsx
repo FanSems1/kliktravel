@@ -24,6 +24,9 @@ const defaultFeaturedImage = "https://images.unsplash.com/photo-1518548419970-58
 export function Header() {
   const { t, locale, setLocale } = useLanguage();
   const pathname = usePathname();
+
+  if (pathname?.startsWith("/admin")) return null;
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDestinationsHovered, setIsDestinationsHovered] = useState(false);

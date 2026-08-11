@@ -3,9 +3,14 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 
 export function ContactWidget() {
+  const pathname = usePathname();
+
+  if (pathname?.startsWith("/admin")) return null;
+
   return (
     <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 flex flex-col items-center pointer-events-none">
       <Link href="/contact" className="pointer-events-auto group flex flex-col items-center hover:scale-105 transition-transform duration-300">
