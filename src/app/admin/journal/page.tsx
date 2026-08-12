@@ -1,27 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
-import { Plus, Trash2, Edit3, Save, X, BookOpen, Star, FileText, Upload } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Plus, Trash2, Edit3, Save, X, BookOpen, Star, FileText, Upload, Sparkles, Loader2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { journalArticles, JournalArticle } from "@/data/journal";
+import { translateText } from "@/utils/translator";
 
 export default function AdminJournalPage() {
   const { locale } = useLanguage();
-  const [articles, setArticles] = useState<JournalArticle[]>(journalArticles);
-
-  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>, callback: (base64: string) => void) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === "string") {
-        callback(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
+  const [articles, setArticles] = useState<JournalArticle[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editSlug, setEditSlug] = useState<string | null>(null);
+
+  // Form active language tab switcher
+  const [formLang, setFormLang] = useState<"id" | "en">("id");
+  const [isTranslating, setIsTranslating] = useState(false);
 
   // Form states matching JournalArticle structure
   const [slugField, setSlugField] = useState("");
@@ -44,8 +37,98 @@ export default function AdminJournalPage() {
   const [readTimeIDField, setReadTimeIDField] = useState("5 mnt membaca");
   const [readTimeENField, setReadTimeENField] = useState("5 min read");
   const [featuredField, setFeaturedField] = useState(false);
-  const [galleryList, setGalleryList] = useState<string[]>([]);
-  const [newGalleryUrl, setNewGalleryUrl] = useState("");
+
+  // Load initial list from localStorage if present
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("klik_admin_journal_articles");
+      if (saved) {
+        setArticles(JSON.parse(saved));
+      } else {
+        setArticles(journalArticles);
+      }
+    } catch {
+      setArticles(journalArticles);
+    }
+  }, []);
+
+  const saveArticlesStorage = (newList: JournalArticle[]) => {
+    setArticles(newList);
+    try {
+      localStorage.setItem("klik_admin_journal_articles", JSON.stringify(newList));
+    } catch (err) {
+      console.error("Failed to save journal articles to localStorage", err);
+    }
+  };
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>, callback: (base64: string) => void) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === "string") {
+        callback(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Unified auto-translate handler for all active fields
+  const handleAutoTranslate = async () => {
+    setIsTranslating(true);
+    if (formLang === "id") {
+      if (titleIDField.trim()) {
+        const translated = await translateText(titleIDField, "id", "en");
+        setTitleENField(translated);
+      }
+      if (excerptIDField.trim()) {
+        const translated = await translateText(excerptIDField, "id", "en");
+        setExcerptENField(translated);
+      }
+      if (contentIDField.trim()) {
+        const translated = await translateText(contentIDField, "id", "en");
+        setContentENField(translated);
+      }
+      if (categoryIDField.trim()) {
+        const translated = await translateText(categoryIDField, "id", "en");
+        setCategoryENField(translated);
+      }
+      if (dateIDField.trim()) {
+        const translated = await translateText(dateIDField, "id", "en");
+        setDateENField(translated);
+      }
+      if (readTimeIDField.trim()) {
+        const translated = await translateText(readTimeIDField, "id", "en");
+        setReadTimeENField(translated);
+      }
+    } else {
+      if (titleENField.trim()) {
+        const translated = await translateText(titleENField, "en", "id");
+        setTitleIDField(translated);
+      }
+      if (excerptENField.trim()) {
+        const translated = await translateText(excerptENField, "en", "id");
+        setExcerptIDField(translated);
+      }
+      if (contentENField.trim()) {
+        const translated = await translateText(contentENField, "en", "id");
+        setContentIDField(translated);
+      }
+      if (categoryENField.trim()) {
+        const translated = await translateText(categoryENField, "en", "id");
+        setCategoryIDField(translated);
+      }
+      if (dateENField.trim()) {
+        const translated = await translateText(dateENField, "en", "id");
+        setDateIDField(translated);
+      }
+      if (readTimeENField.trim()) {
+        const translated = await translateText(readTimeENField, "en", "id");
+        setReadTimeIDField(translated);
+      }
+    }
+    setIsTranslating(false);
+  };
 
   const resetForm = () => {
     setSlugField("");
@@ -59,11 +142,13 @@ export default function AdminJournalPage() {
     setContentIDField("");
     setContentENField("");
     setDateIDField("");
+    setDateENField("");
+    setReadTimeIDField("5 mnt membaca");
     setReadTimeENField("5 min read");
     setFeaturedField(false);
-    setGalleryList([]);
     setIsEditing(false);
     setEditSlug(null);
+    setFormLang("id");
   };
 
   const handleEdit = (art: JournalArticle) => {
@@ -84,12 +169,13 @@ export default function AdminJournalPage() {
     setReadTimeIDField(art.readTimeID);
     setReadTimeENField(art.readTimeEN);
     setFeaturedField(!!art.featured);
-    setGalleryList([art.image]);
+    setFormLang("id");
   };
 
   const handleDelete = (slug: string) => {
     if (confirm("Delete this article?")) {
-      setArticles(articles.filter(a => a.slug !== slug));
+      const updated = articles.filter(a => a.slug !== slug);
+      saveArticlesStorage(updated);
     }
   };
 
@@ -103,11 +189,11 @@ export default function AdminJournalPage() {
       categoryID: categoryIDField,
       categoryEN: categoryENField,
       titleID: titleIDField,
-      titleEN: titleENField,
+      titleEN: titleENField || titleIDField,
       excerptID: excerptIDField,
-      excerptEN: excerptENField,
+      excerptEN: excerptENField || excerptIDField,
       contentID: contentIDField,
-      contentEN: contentENField,
+      contentEN: contentENField || contentIDField,
       dateID: dateIDField || "10 Agu 2026",
       dateEN: dateENField || "Aug 10, 2026",
       readTimeID: readTimeIDField,
@@ -115,11 +201,13 @@ export default function AdminJournalPage() {
       featured: featuredField
     };
 
+    let updatedList: JournalArticle[];
     if (editSlug) {
-      setArticles(articles.map(a => a.slug === editSlug ? newArticle : a));
+      updatedList = articles.map(a => a.slug === editSlug ? newArticle : a);
     } else {
-      setArticles([...articles, newArticle]);
+      updatedList = [...articles, newArticle];
     }
+    saveArticlesStorage(updatedList);
     resetForm();
   };
 
@@ -135,8 +223,8 @@ export default function AdminJournalPage() {
         </h1>
         <p className="text-xs text-slate-500 font-sans mt-0.5">
           {locale === "id" 
-            ? "Tulis, edit, dan kelola artikel cerita perjalanan dalam dwi-bahasa."
-            : "Write, edit, and publish bilingual travel stories and guides."}
+            ? "Tulis, edit, dan kelola artikel cerita perjalanan dalam dwi-bahasa (ID / EN)."
+            : "Write, edit, and publish bilingual travel stories and guides (ID / EN)."}
         </p>
       </div>
 
@@ -185,166 +273,211 @@ export default function AdminJournalPage() {
               </div>
             </div>
 
-            {/* Categories */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                  Category (Indonesian)
-                </label>
-                <input 
-                  type="text" 
-                  value={categoryIDField}
-                  onChange={(e) => setCategoryIDField(e.target.value)}
-                  placeholder="e.g. Cerita Perjalanan"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                  Category (English)
-                </label>
-                <input 
-                  type="text" 
-                  value={categoryENField}
-                  onChange={(e) => setCategoryENField(e.target.value)}
-                  placeholder="e.g. Travel Stories"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
-                />
-              </div>
-            </div>
-
-            {/* Title ID & EN */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                  Title (Indonesian)
-                </label>
-                <input 
-                  type="text" 
-                  required
-                  value={titleIDField}
-                  onChange={(e) => setTitleIDField(e.target.value)}
-                  placeholder="Judul dalam Bahasa Indonesia"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                  Title (English)
-                </label>
-                <input 
-                  type="text" 
-                  required
-                  value={titleENField}
-                  onChange={(e) => setTitleENField(e.target.value)}
-                  placeholder="Title in English"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
-                />
+            {/* Language Tab Switcher */}
+            <div className="flex border-b border-slate-200 pb-1.5 gap-4 items-center">
+              <button
+                type="button"
+                onClick={() => setFormLang("id")}
+                className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
+                  formLang === "id" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                🇮🇩 Indonesia
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormLang("en")}
+                className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
+                  formLang === "en" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                🇬🇧 English
+              </button>
+              
+              <div className="ml-auto">
+                <button
+                  type="button"
+                  onClick={handleAutoTranslate}
+                  disabled={isTranslating || (formLang === "id" ? !titleIDField.trim() : !titleENField.trim())}
+                  className="inline-flex items-center gap-1 text-[9px] font-mono uppercase bg-[#A89053] text-white px-2 py-0.5 rounded hover:bg-[#0F2C59] transition-colors disabled:opacity-50 cursor-pointer font-bold"
+                >
+                  {isTranslating ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
+                  <span>{formLang === "id" ? "Translate to EN" : "Translate to ID"}</span>
+                </button>
               </div>
             </div>
 
-            {/* Excerpt ID & EN */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                  Excerpt (Indonesian)
-                </label>
-                <textarea 
-                  rows={2}
-                  value={excerptIDField}
-                  onChange={(e) => setExcerptIDField(e.target.value)}
-                  placeholder="Ringkasan pendek..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                  Excerpt (English)
-                </label>
-                <textarea 
-                  rows={2}
-                  value={excerptENField}
-                  onChange={(e) => setExcerptENField(e.target.value)}
-                  placeholder="Short summary..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
-                />
-              </div>
-            </div>
+            {/* Tabbed Multilingual Fields */}
+            {formLang === "id" ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                      Category (ID)
+                    </label>
+                    <input 
+                      type="text" 
+                      value={categoryIDField}
+                      onChange={(e) => setCategoryIDField(e.target.value)}
+                      placeholder="e.g. Cerita Perjalanan"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                      Title (ID)
+                    </label>
+                    <input 
+                      type="text" 
+                      required
+                      value={titleIDField}
+                      onChange={(e) => {
+                        setTitleIDField(e.target.value);
+                        if (!slugField) setSlugField(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"));
+                      }}
+                      placeholder="Judul dalam Bahasa Indonesia"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
+                    />
+                  </div>
+                </div>
 
-            {/* Content ID & EN */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                  Content (Indonesian)
-                </label>
-                <textarea 
-                  rows={5}
-                  value={contentIDField}
-                  onChange={(e) => setContentIDField(e.target.value)}
-                  placeholder="Konten lengkap artikel..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 focus:outline-none focus:border-[#A89053] text-slate-800"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                  Content (English)
-                </label>
-                <textarea 
-                  rows={5}
-                  value={contentENField}
-                  onChange={(e) => setContentENField(e.target.value)}
-                  placeholder="Full article content in English..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 focus:outline-none focus:border-[#A89053] text-slate-800"
-                />
-              </div>
-            </div>
-
-            {/* Date & Read time */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                  Date (ID & EN)
-                </label>
-                <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    value={dateIDField}
-                    onChange={(e) => setDateIDField(e.target.value)}
-                    placeholder="e.g. 10 Agu 2026"
-                    className="w-1/2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
-                  />
-                  <input 
-                    type="text" 
-                    value={dateENField}
-                    onChange={(e) => setDateENField(e.target.value)}
-                    placeholder="e.g. Aug 10, 2026"
-                    className="w-1/2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
+                <div>
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                    Excerpt / Summary (ID)
+                  </label>
+                  <textarea 
+                    rows={2}
+                    value={excerptIDField}
+                    onChange={(e) => setExcerptIDField(e.target.value)}
+                    placeholder="Ringkasan pendek..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                  Read Time (ID & EN)
-                </label>
-                <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    value={readTimeIDField}
-                    onChange={(e) => setReadTimeIDField(e.target.value)}
-                    placeholder="5 mnt membaca"
-                    className="w-1/2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
-                  />
-                  <input 
-                    type="text" 
-                    value={readTimeENField}
-                    onChange={(e) => setReadTimeENField(e.target.value)}
-                    placeholder="5 min read"
-                    className="w-1/2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
+                <div>
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                    Full Content (ID)
+                  </label>
+                  <textarea 
+                    rows={5}
+                    value={contentIDField}
+                    onChange={(e) => setContentIDField(e.target.value)}
+                    placeholder="Konten lengkap artikel..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 focus:outline-none focus:border-[#A89053] text-slate-800"
                   />
                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                      Date (ID)
+                    </label>
+                    <input 
+                      type="text" 
+                      value={dateIDField}
+                      onChange={(e) => setDateIDField(e.target.value)}
+                      placeholder="e.g. 10 Agu 2026"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                      Read Time (ID)
+                    </label>
+                    <input 
+                      type="text" 
+                      value={readTimeIDField}
+                      onChange={(e) => setReadTimeIDField(e.target.value)}
+                      placeholder="5 mnt membaca"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                      Category (EN)
+                    </label>
+                    <input 
+                      type="text" 
+                      value={categoryENField}
+                      onChange={(e) => setCategoryENField(e.target.value)}
+                      placeholder="e.g. Travel Stories"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                      Title (EN)
+                    </label>
+                    <input 
+                      type="text" 
+                      required
+                      value={titleENField}
+                      onChange={(e) => setTitleENField(e.target.value)}
+                      placeholder="Title in English"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                    Excerpt / Summary (EN)
+                  </label>
+                  <textarea 
+                    rows={2}
+                    value={excerptENField}
+                    onChange={(e) => setExcerptENField(e.target.value)}
+                    placeholder="Short summary..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                    Full Content (EN)
+                  </label>
+                  <textarea 
+                    rows={5}
+                    value={contentENField}
+                    onChange={(e) => setContentENField(e.target.value)}
+                    placeholder="Full article content in English..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 focus:outline-none focus:border-[#A89053] text-slate-800"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                      Date (EN)
+                    </label>
+                    <input 
+                      type="text" 
+                      value={dateENField}
+                      onChange={(e) => setDateENField(e.target.value)}
+                      placeholder="e.g. Aug 10, 2026"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                      Read Time (EN)
+                    </label>
+                    <input 
+                      type="text" 
+                      value={readTimeENField}
+                      onChange={(e) => setReadTimeENField(e.target.value)}
+                      placeholder="5 min read"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Featured */}
             <div className="flex items-center gap-2 py-1">
@@ -366,13 +499,13 @@ export default function AdminJournalPage() {
               <button 
                 type="button" 
                 onClick={resetForm}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[10px]"
+                className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[10px] cursor-pointer"
               >
                 Reset
               </button>
               <button 
                 type="submit"
-                className="px-4 py-2.5 rounded-xl bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 font-bold uppercase tracking-wider text-[10px]"
+                className="px-4 py-2.5 rounded-xl bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 font-bold uppercase tracking-wider text-[10px] cursor-pointer"
               >
                 {isEditing ? "Update Article" : "Publish Article"}
               </button>
@@ -421,14 +554,14 @@ export default function AdminJournalPage() {
                   <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
                     <button 
                       onClick={() => handleEdit(art)}
-                      className="p-2 rounded-xl bg-white hover:bg-amber-50 hover:text-amber-600 border border-slate-200 transition-colors text-slate-600"
+                      className="p-2 rounded-xl bg-white hover:bg-amber-50 hover:text-amber-600 border border-slate-200 transition-colors text-slate-600 cursor-pointer"
                       aria-label="Edit"
                     >
                       <Edit3 size={14} />
                     </button>
                     <button 
                       onClick={() => handleDelete(art.slug)}
-                      className="p-2 rounded-xl bg-white hover:bg-red-50 hover:text-red-600 border border-slate-200 transition-colors text-slate-600"
+                      className="p-2 rounded-xl bg-white hover:bg-red-50 hover:text-red-600 border border-slate-200 transition-colors text-slate-600 cursor-pointer"
                       aria-label="Delete"
                     >
                       <Trash2 size={14} />

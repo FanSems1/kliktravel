@@ -1,35 +1,94 @@
 "use client";
 
-import React, { useState } from "react";
-import { Plus, Trash2, Edit3, Save, X, MapPin, Globe } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Plus, Trash2, Edit3, Save, X, MapPin, Globe, Sparkles, Loader2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { localizedRegions, RegionDestination } from "@/data/destinations";
+import { translateText } from "@/utils/translator";
 
 export default function AdminDestinationsPage() {
   const { locale } = useLanguage();
-  const [regions, setRegions] = useState<RegionDestination[]>(localizedRegions[locale] || []);
+  const [regions, setRegions] = useState<RegionDestination[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
 
-  // Form states matching RegionDestination structure
+  // Form active language tab
+  const [formLang, setFormLang] = useState<"id" | "en">("id");
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  // Form states matching RegionDestination structure with dual language support
   const [idField, setIdField] = useState("");
-  const [nameField, setNameField] = useState("");
+  const [nameIDField, setNameIDField] = useState("");
+  const [nameENField, setNameENField] = useState("");
   const [slugField, setSlugField] = useState("");
-  const [subtitleField, setSubtitleField] = useState("");
+  const [subtitleIDField, setSubtitleIDField] = useState("");
+  const [subtitleENField, setSubtitleENField] = useState("");
   const [gradientField, setGradientField] = useState("from-[#E0F2FE] to-[#7DD3FC]");
-  const [subDestinationsList, setSubDestinationsList] = useState<{ name: string; slug: string }[]>([]);
+  const [subDestinationsList, setSubDestinationsList] = useState<{ name: string; nameEN?: string; slug: string }[]>([]);
   const [newSubName, setNewSubName] = useState("");
+
+  // Load initial list from localStorage if present
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("klik_admin_destinations");
+      if (saved) {
+        setRegions(JSON.parse(saved));
+      } else {
+        setRegions(localizedRegions[locale] || []);
+      }
+    } catch {
+      setRegions(localizedRegions[locale] || []);
+    }
+  }, [locale]);
+
+  // Persist regions list to localStorage on changes
+  const saveRegionsToStorage = (newList: RegionDestination[]) => {
+    setRegions(newList);
+    try {
+      localStorage.setItem("klik_admin_destinations", JSON.stringify(newList));
+    } catch (err) {
+      console.error("Failed to save destinations to localStorage", err);
+    }
+  };
 
   const resetForm = () => {
     setIdField("");
-    setNameField("");
+    setNameIDField("");
+    setNameENField("");
     setSlugField("");
-    setSubtitleField("");
+    setSubtitleIDField("");
+    setSubtitleENField("");
     setGradientField("from-[#E0F2FE] to-[#7DD3FC]");
     setSubDestinationsList([]);
     setNewSubName("");
     setIsEditing(false);
     setEditId(null);
+    setFormLang("id");
+  };
+
+  // Auto-translate handler for the active tab fields
+  const handleAutoTranslate = async () => {
+    setIsTranslating(true);
+    if (formLang === "id") {
+      if (nameIDField.trim()) {
+        const translatedName = await translateText(nameIDField, "id", "en");
+        setNameENField(translatedName);
+      }
+      if (subtitleIDField.trim()) {
+        const translatedSub = await translateText(subtitleIDField, "id", "en");
+        setSubtitleENField(translatedSub);
+      }
+    } else {
+      if (nameENField.trim()) {
+        const translatedName = await translateText(nameENField, "en", "id");
+        setNameIDField(translatedName);
+      }
+      if (subtitleENField.trim()) {
+        const translatedSub = await translateText(subtitleENField, "en", "id");
+        setSubtitleIDField(translatedSub);
+      }
+    }
+    setIsTranslating(false);
   };
 
   const handleAddSubDest = () => {
@@ -47,37 +106,44 @@ export default function AdminDestinationsPage() {
     setIsEditing(true);
     setEditId(region.id);
     setIdField(region.id);
-    setNameField(region.name);
+    setNameIDField(region.name);
+    setNameENField(region.nameEN || region.name);
     setSlugField(region.slug);
-    setSubtitleField(region.subtitle);
+    setSubtitleIDField(region.subtitle);
+    setSubtitleENField(region.subtitleEN || region.subtitle);
     setGradientField(region.featuredImageGradient);
     setSubDestinationsList(region.subDestinations || []);
   };
 
   const handleDelete = (id: string) => {
     if (confirm(locale === "id" ? "Hapus destinasi ini?" : "Delete this destination?")) {
-      setRegions(regions.filter(r => r.id !== id));
+      const updated = regions.filter(r => r.id !== id);
+      saveRegionsToStorage(updated);
     }
   };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nameField.trim() || !idField.trim()) return;
+    if (!nameIDField.trim() || !idField.trim()) return;
 
     const newRegion: RegionDestination = {
       id: idField,
-      name: nameField,
-      slug: slugField || nameField.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-      subtitle: subtitleField,
+      name: nameIDField,
+      nameEN: nameENField || nameIDField,
+      slug: slugField || nameIDField.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      subtitle: subtitleIDField,
+      subtitleEN: subtitleENField || subtitleIDField,
       featuredImageGradient: gradientField,
       subDestinations: subDestinationsList
     };
 
+    let updatedList: RegionDestination[];
     if (editId) {
-      setRegions(regions.map(r => r.id === editId ? newRegion : r));
+      updatedList = regions.map(r => r.id === editId ? newRegion : r);
     } else {
-      setRegions([...regions, newRegion]);
+      updatedList = [...regions, newRegion];
     }
+    saveRegionsToStorage(updatedList);
     resetForm();
   };
 
@@ -94,8 +160,8 @@ export default function AdminDestinationsPage() {
           </h1>
           <p className="text-xs text-slate-500 font-sans mt-0.5">
             {locale === "id" 
-              ? "Kelola nama wilayah utama beserta daftar sub-destinasinya."
-              : "Manage main regional destinations and their lists of sub-destinations."}
+              ? "Kelola nama wilayah utama dan sub-destinasi dengan tab dwi-bahasa (ID / EN)."
+              : "Manage main regions & sub-destinations with bilingual tabs (ID / EN)."}
           </p>
         </div>
       </div>
@@ -109,7 +175,7 @@ export default function AdminDestinationsPage() {
               : (locale === "id" ? "Tambah Wilayah Baru" : "Add New Region")}
           </h2>
 
-          <form onSubmit={handleSave} className="space-y-4 font-sans text-xs">
+          <form onSubmit={handleSave} className="space-y-5 font-sans text-xs">
             <div>
               <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
                 Region ID / Code
@@ -125,43 +191,113 @@ export default function AdminDestinationsPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                  Region Name
-                </label>
-                <input 
-                  type="text" 
-                  required
-                  value={nameField}
-                  onChange={(e) => setNameField(e.target.value)}
-                  placeholder="e.g. Indonesia"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                  Slug (URL)
-                </label>
-                <input 
-                  type="text" 
-                  value={slugField}
-                  onChange={(e) => setSlugField(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}
-                  placeholder="e.g. indonesia"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
-                />
+            {/* Language Tab Switcher */}
+            <div className="flex border-b border-slate-200 pb-1.5 gap-4 items-center">
+              <button
+                type="button"
+                onClick={() => setFormLang("id")}
+                className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
+                  formLang === "id" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                🇮🇩 Indonesia
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormLang("en")}
+                className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
+                  formLang === "en" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                🇬🇧 English
+              </button>
+              
+              <div className="ml-auto">
+                <button
+                  type="button"
+                  onClick={handleAutoTranslate}
+                  disabled={isTranslating || (formLang === "id" ? !nameIDField.trim() : !nameENField.trim())}
+                  className="inline-flex items-center gap-1 text-[9px] font-mono uppercase bg-[#A89053] text-white px-2 py-0.5 rounded hover:bg-[#0F2C59] transition-colors disabled:opacity-50 cursor-pointer font-bold"
+                >
+                  {isTranslating ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
+                  <span>{formLang === "id" ? "Translate to EN" : "Translate to ID"}</span>
+                </button>
               </div>
             </div>
 
+            {/* Tabbed Content Fields */}
+            {formLang === "id" ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                    Region Name (ID)
+                  </label>
+                  <input 
+                    type="text" 
+                    required
+                    value={nameIDField}
+                    onChange={(e) => {
+                      setNameIDField(e.target.value);
+                      if (!slugField) setSlugField(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"));
+                    }}
+                    placeholder="e.g. Indonesia"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                    Subtitle / Description (ID)
+                  </label>
+                  <textarea 
+                    rows={3}
+                    value={subtitleIDField}
+                    onChange={(e) => setSubtitleIDField(e.target.value)}
+                    placeholder="Deskripsi singkat dalam Bahasa Indonesia..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                    Region Name (EN)
+                  </label>
+                  <input 
+                    type="text" 
+                    required
+                    value={nameENField}
+                    onChange={(e) => setNameENField(e.target.value)}
+                    placeholder="e.g. Indonesia"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                    Subtitle / Description (EN)
+                  </label>
+                  <textarea 
+                    rows={3}
+                    value={subtitleENField}
+                    onChange={(e) => setSubtitleENField(e.target.value)}
+                    placeholder="Brief description in English..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
+                  />
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                Subtitle / Description
+                Slug (URL)
               </label>
-              <textarea 
-                rows={3}
-                value={subtitleField}
-                onChange={(e) => setSubtitleField(e.target.value)}
-                placeholder="Brief description for public display card..."
+              <input 
+                type="text" 
+                value={slugField}
+                onChange={(e) => setSlugField(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}
+                placeholder="e.g. indonesia"
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
               />
             </div>
@@ -183,7 +319,7 @@ export default function AdminDestinationsPage() {
                 <button 
                   type="button" 
                   onClick={handleAddSubDest}
-                  className="px-3 rounded-xl bg-slate-200 hover:bg-[#A89053] hover:text-white transition-colors"
+                  className="px-3 rounded-xl bg-slate-200 hover:bg-[#A89053] hover:text-white transition-colors cursor-pointer"
                 >
                   <Plus size={16} />
                 </button>
@@ -199,7 +335,7 @@ export default function AdminDestinationsPage() {
                     <button 
                       type="button" 
                       onClick={() => handleRemoveSubDest(i)}
-                      className="text-slate-400 hover:text-red-500"
+                      className="text-slate-400 hover:text-red-500 cursor-pointer"
                     >
                       <X size={12} />
                     </button>
@@ -215,13 +351,13 @@ export default function AdminDestinationsPage() {
               <button 
                 type="button" 
                 onClick={resetForm}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[10px]"
+                className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[10px] cursor-pointer"
               >
                 Reset
               </button>
               <button 
                 type="submit"
-                className="px-4 py-2.5 rounded-xl bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 font-bold uppercase tracking-wider text-[10px]"
+                className="px-4 py-2.5 rounded-xl bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 font-bold uppercase tracking-wider text-[10px] cursor-pointer"
               >
                 {isEditing ? "Update" : "Save"}
               </button>
@@ -243,11 +379,13 @@ export default function AdminDestinationsPage() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className={`w-3.5 h-3.5 rounded bg-gradient-to-r ${region.featuredImageGradient} border border-slate-200`} />
-                      <h3 className="font-serif font-bold text-slate-800 text-sm leading-none">{region.name}</h3>
+                      <h3 className="font-serif font-bold text-slate-800 text-sm leading-none">
+                        {locale === "id" ? region.name : (region.nameEN || region.name)}
+                      </h3>
                       <span className="text-[10px] font-mono text-slate-400">/{region.slug}</span>
                     </div>
                     <p className="text-xs text-slate-500 font-sans font-light leading-relaxed max-w-lg">
-                      {region.subtitle}
+                      {locale === "id" ? region.subtitle : (region.subtitleEN || region.subtitle)}
                     </p>
                     <div className="flex flex-wrap gap-1.5 pt-1.5">
                       {region.subDestinations.map((sub, idx) => (
@@ -262,14 +400,14 @@ export default function AdminDestinationsPage() {
                   <div className="flex items-center gap-1 shrink-0">
                     <button 
                       onClick={() => handleEdit(region)}
-                      className="p-2 rounded-lg bg-slate-50 hover:bg-amber-50 hover:text-amber-600 border border-slate-200 transition-colors text-slate-600"
+                      className="p-2 rounded-lg bg-slate-50 hover:bg-amber-50 hover:text-amber-600 border border-slate-200 transition-colors text-slate-600 cursor-pointer"
                       aria-label="Edit"
                     >
                       <Edit3 size={14} />
                     </button>
                     <button 
                       onClick={() => handleDelete(region.id)}
-                      className="p-2 rounded-lg bg-slate-50 hover:bg-red-50 hover:text-red-600 border border-slate-200 transition-colors text-slate-600"
+                      className="p-2 rounded-lg bg-slate-50 hover:bg-red-50 hover:text-red-600 border border-slate-200 transition-colors text-slate-600 cursor-pointer"
                       aria-label="Delete"
                     >
                       <Trash2 size={14} />

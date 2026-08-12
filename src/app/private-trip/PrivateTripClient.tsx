@@ -65,9 +65,13 @@ export function PrivateTripClient() {
   const { t, locale } = useLanguage();
   
   const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
     destination: "",
-    pax: "",
     date: "",
+    adults: 2,
+    children: 0,
+    budget: "",
     notes: ""
   });
 
@@ -75,12 +79,52 @@ export function PrivateTripClient() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleIncrement = (type: "adults" | "children") => {
+    setFormData(prev => ({ ...prev, [type]: prev[type] + 1 }));
+  };
+
+  const handleDecrement = (type: "adults" | "children") => {
+    setFormData(prev => ({ 
+      ...prev, 
+      [type]: Math.max(type === "adults" ? 1 : 0, prev[type] - 1) 
+    }));
+  };
+
   const handleWhatsappSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const isIndo = locale === "id";
+    
+    // Format guests string
+    const guestsStr = `${formData.adults} Adults, ${formData.children} Children`;
+    const formattedBudget = formData.budget.startsWith("IDR") || formData.budget.startsWith("Rp")
+      ? formData.budget
+      : `IDR ${formData.budget}`;
+
     const text = isIndo 
-      ? `Halo Klik Travel ID, saya ingin merancang Private Trip.\n\n*Destinasi:* ${formData.destination}\n*Jumlah Peserta:* ${formData.pax}\n*Tanggal Keberangkatan:* ${formData.date}\n*Catatan Tambahan:* ${formData.notes}\n\nMohon informasi lebih lanjut.`
-      : `Hello Klik Travel ID, I'd like to plan a Private Trip.\n\n*Destination:* ${formData.destination}\n*Guests:* ${formData.pax}\n*Departure Date:* ${formData.date}\n*Special Request:* ${formData.notes}\n\nLooking forward to more details.`;
+      ? `Halo Klik Travel ID, saya ingin merancang Private Trip.\n\n*Nama:* ${formData.name}\n*No. WA:* ${formData.phone}\n*Destinasi:* ${formData.destination}\n*Tanggal:* ${formData.date}\n*Jumlah Peserta:* ${guestsStr}\n*Budget:* ${formattedBudget}\n*Catatan Tambahan:* ${formData.notes}\n\nMohon informasi lebih lanjut.`
+      : `Hello Klik Travel ID, I'd like to plan a Private Trip.\n\n*Name:* ${formData.name}\n*Phone/WA:* ${formData.phone}\n*Destination:* ${formData.destination}\n*Dates:* ${formData.date}\n*Guests:* ${guestsStr}\n*Budget:* ${formattedBudget}\n*Special Requests:* ${formData.notes}\n\nLooking forward to more details.`;
+    
+    // Save to localStorage under "klik_private_trip_inquiries" for Admin view
+    try {
+      const saved = localStorage.getItem("klik_private_trip_inquiries");
+      const currentList = saved ? JSON.parse(saved) : [];
+      const newId = `PT-${103 + currentList.length}`;
+      const newInquiry = {
+        id: newId,
+        name: formData.name,
+        phone: formData.phone,
+        destination: formData.destination,
+        dates: formData.date,
+        guests: guestsStr,
+        budget: formattedBudget,
+        notes: formData.notes,
+        status: "new"
+      };
+      localStorage.setItem("klik_private_trip_inquiries", JSON.stringify([newInquiry, ...currentList]));
+    } catch (err) {
+      console.error("Failed to save inquiry to localStorage", err);
+    }
+
     window.open(`https://wa.me/628123456789?text=${encodeURIComponent(text)}`, "_blank");
   };
 
@@ -254,6 +298,33 @@ export function PrivateTripClient() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
+                  <label className="block font-sans text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t("private_trip_form_label_name")}</label>
+                  <input 
+                    type="text" 
+                    name="name"
+                    required
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder={t("private_trip_form_placeholder_name")} 
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm text-[#0F2C59] focus:outline-none focus:ring-2 focus:ring-[#0284C7]/50 focus:border-[#0284C7] transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block font-sans text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t("private_trip_form_label_phone")}</label>
+                  <input 
+                    type="text" 
+                    name="phone"
+                    required
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder={t("private_trip_form_placeholder_phone")} 
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm text-[#0F2C59] focus:outline-none focus:ring-2 focus:ring-[#0284C7]/50 focus:border-[#0284C7] transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
                   <label className="block font-sans text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t("private_trip_form_label_destination")}</label>
                   <input 
                     type="text" 
@@ -279,17 +350,66 @@ export function PrivateTripClient() {
                 </div>
               </div>
 
-              <div>
-                <label className="block font-sans text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t("private_trip_form_label_pax")}</label>
-                <input 
-                  type="text" 
-                  name="pax"
-                  required
-                  value={formData.pax}
-                  onChange={handleInputChange}
-                  placeholder={t("private_trip_form_placeholder_pax")} 
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm text-[#0F2C59] focus:outline-none focus:ring-2 focus:ring-[#0284C7]/50 focus:border-[#0284C7] transition-all"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block font-sans text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    {locale === "id" ? "Jumlah Peserta" : "Number of Guests"}
+                  </label>
+                  <div className="flex gap-4 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 h-[46px] items-center">
+                    <div className="flex-1 flex items-center justify-between">
+                      <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{t("private_trip_form_label_adults")}</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleDecrement("adults")}
+                          className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center text-[#0F2C59] hover:bg-sky-50 font-bold text-xs cursor-pointer transition-colors"
+                        >
+                          -
+                        </button>
+                        <span className="text-xs font-bold text-[#0F2C59] w-3 text-center">{formData.adults}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleIncrement("adults")}
+                          className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center text-[#0F2C59] hover:bg-sky-50 font-bold text-xs cursor-pointer transition-colors"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex-1 flex items-center justify-between border-l border-gray-200 pl-4">
+                      <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{t("private_trip_form_label_children")}</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleDecrement("children")}
+                          className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center text-[#0F2C59] hover:bg-sky-50 font-bold text-xs cursor-pointer transition-colors"
+                        >
+                          -
+                        </button>
+                        <span className="text-xs font-bold text-[#0F2C59] w-3 text-center">{formData.children}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleIncrement("children")}
+                          className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center text-[#0F2C59] hover:bg-sky-50 font-bold text-xs cursor-pointer transition-colors"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label className="block font-sans text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t("private_trip_form_label_budget")}</label>
+                  <input 
+                    type="text" 
+                    name="budget"
+                    required
+                    value={formData.budget}
+                    onChange={handleInputChange}
+                    placeholder={t("private_trip_form_placeholder_budget")} 
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm text-[#0F2C59] focus:outline-none focus:ring-2 focus:ring-[#0284C7]/50 focus:border-[#0284C7] transition-all"
+                  />
+                </div>
               </div>
 
               <div>

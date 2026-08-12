@@ -1,8 +1,10 @@
 export interface RegionDestination {
   id: string;
   name: string;
+  nameEN?: string;
   slug: string;
   subtitle: string;
+  subtitleEN?: string;
   featuredImageGradient: string;
   subDestinations: {
     name: string;

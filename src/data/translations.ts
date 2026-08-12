@@ -32,7 +32,7 @@ export const translations = {
     hero_btn_start: "Lihat Paket Wisata",
 
     // Ethos / Experience Section
-    ethos_tag: "07 — ETOS KAMI",
+    ethos_tag: "ETOS KAMI",
     ethos_heading_1: "KAMI TIDAK HANYA MEMASARKAN TUR.",
     ethos_heading_2: "KAMI MERANCANG PENGALAMAN SEPERTI SEBUAH KARYA SENI.",
     ethos_desc_1: "Kami percaya perjalanan terbaik tidak bisa diukur dari berapa banyak tempat yang visited, melainkan seberapa dalam Anda menyatu dengan tempat tersebut.",
@@ -107,7 +107,7 @@ export const translations = {
     dream_custom_banner_btn: "RANCANG PRIVATE TRIP →",
 
     // FeaturedJourneys
-    featured_tag: "01 — PERJALANAN PILIHAN",
+    featured_tag: "PERJALANAN PILIHAN",
     featured_title: "Pilihan Perjalanan Terkurasi",
     featured_tab_all: "Semua",
     featured_tab_open: "Open Trip",
@@ -115,39 +115,39 @@ export const translations = {
     featured_explore_details: "Detail Perjalanan",
 
     // ServicesSection
-    services_tag: "02 — LAYANAN KAMI",
+    services_tag: "LAYANAN KAMI",
     services_title: "Layanan Wisata Premium",
     services_desc: "Dari pelayaran phinisi mewah hingga perjalanan budaya terkurasi, kami menawarkan perjalanan premium yang dirancang khusus untuk kenyamanan Anda.",
     services_learn_more: "Pelajari Selengkapnya →",
 
     // WhyChooseUsSection
-    why_tag: "03 — KEUNGGULAN KAMI",
+    why_tag: "KEUNGGULAN KAMI",
     why_title: "Mengapa Memilih Klik Travel ID?",
     why_desc: "Kami menggabungkan kenyamanan kelas atas, pemandu lokal ahli, dan rencana perjalanan yang dirancang secara detail untuk menciptakan petualangan yang tak terlupakan.",
 
     // VisionMissionSection
-    vision_tag: "04 — VISI & MISI",
+    vision_tag: "VISI & MISI",
     vision_title: "Arah & Komitmen Kami",
     vision_tab_vision: "Visi Kami",
     vision_tab_mission: "Misi Kami",
     vision_tab_mission_tag: "Misi",
 
     // PhilosophySection
-    philosophy_tag: "05 — FILOSOFI KAMI",
+    philosophy_tag: "FILOSOFI KAMI",
     philosophy_title: "Seni Perjalanan yang Lambat",
     philosophy_subtitle: "Menghubungkan Anda secara mendalam dengan destinasi pilihan.",
     philosophy_desc: "Kami percaya perjalanan sejati tidak diukur dari jumlah destinasi, melainkan dari kedalaman hubungan yang Anda jalin dengan budaya setempat.",
 
     // AboutUsSection
-    about_tag: "06 — TENTANG KAMI",
+    about_tag: "TENTANG KAMI",
     about_title: "Mengenal Klik Travel",
 
     // UpcomingDepartures
-    departures_tag: "08 — JADWAL KEBERANGKATAN",
+    departures_tag: "JADWAL KEBERANGKATAN",
     departures_title: "Jadwal Keberangkatan Terdekat",
 
     // FinalCTA
-    cta_tag: "08 — RESERVASI",
+    cta_tag: "RESERVASI",
     cta_title: "Siap Menjelajah Dunia?",
     cta_desc: "Diskusikan rencana perjalanan impian Anda bersama konsultan perjalanan ahli kami sekarang.",
     cta_btn: "Konsultasikan Perjalanan →",
@@ -169,14 +169,20 @@ export const translations = {
     private_trip_inspiration_title: "Favorit Pelanggan Kami",
     private_trip_form_title: "Ceritakan Perjalanan Impian Anda.",
     private_trip_form_desc: "Tim Travel Expert kami siap membantu Anda menyusun itinerary eksklusif, mengatur akomodasi bintang 5, hingga memastikan setiap detail perjalanan berjalan sempurna tanpa cela.",
+    private_trip_form_label_name: "Nama Lengkap",
+    private_trip_form_placeholder_name: "Contoh: Bambang Soetjipto",
+    private_trip_form_label_phone: "Nomor Telepon / WhatsApp",
+    private_trip_form_placeholder_phone: "Contoh: +62 812 3456 7890",
     private_trip_form_label_destination: "Destinasi Tujuan",
     private_trip_form_placeholder_destination: "Contoh: Jepang, Eropa...",
-    private_trip_form_label_time: "Estimasi Waktu",
-    private_trip_form_placeholder_time: "Contoh: Akhir Tahun 2026",
-    private_trip_form_label_pax: "Jumlah Peserta (Pax)",
-    private_trip_form_placeholder_pax: "Contoh: 2 Dewasa, 1 Anak",
+    private_trip_form_label_time: "Estimasi Waktu / Tanggal",
+    private_trip_form_placeholder_time: "Contoh: 15 — 20 Okt 2026",
+    private_trip_form_label_adults: "Dewasa",
+    private_trip_form_label_children: "Anak-anak",
+    private_trip_form_label_budget: "Estimasi Budget (IDR)",
+    private_trip_form_placeholder_budget: "Contoh: 150.000.000",
     private_trip_form_label_notes: "Catatan / Kebutuhan Khusus",
-    private_trip_form_placeholder_notes: "Ceritakan ekspektasi Anda (contoh: saya ingin hotel bintang 5 dengan private pool...)",
+    private_trip_form_placeholder_notes: "Ceritakan ekspektasi Anda (contoh: Membutuhkan chef pribadi untuk seafood & dinner di pantai sepi...)",
     private_trip_form_submit: "Konsultasi via WhatsApp",
     private_trip_form_head: "Formulir Konsultasi",
     private_trip_testimonial_tag: "Testimonial",
@@ -226,7 +232,7 @@ export const translations = {
     hero_btn_start: "View Travel Packages",
 
     // Ethos / Experience Section
-    ethos_tag: "07 — OUR ETHOS",
+    ethos_tag: "OUR ETHOS",
     ethos_heading_1: "WE DO NOT MERELY BOOK TOURS.",
     ethos_heading_2: "WE CRAFT EXPERIENCES LIKE FINE ART.",
     ethos_desc_1: "We believe the best journeys are not measured by how many places you visit, but by how deeply you connect with them.",
@@ -301,7 +307,7 @@ export const translations = {
     dream_custom_banner_btn: "PLAN PRIVATE TRIP →",
 
     // FeaturedJourneys
-    featured_tag: "01 — FEATURED JOURNEYS",
+    featured_tag: "FEATURED JOURNEYS",
     featured_title: "Curated Travel Picks",
     featured_tab_all: "All",
     featured_tab_open: "Open Trip",
@@ -309,39 +315,39 @@ export const translations = {
     featured_explore_details: "Explore Details",
 
     // ServicesSection
-    services_tag: "02 — OUR SERVICES",
+    services_tag: "OUR SERVICES",
     services_title: "Premium Travel Services",
     services_desc: "From luxurious wooden phinisi cruises to customized heritage railway journeys, we design high-end travel experiences tailored around your comfort.",
     services_learn_more: "Learn More →",
 
     // WhyChooseUsSection
-    why_tag: "03 — OUR STRENGTHS",
+    why_tag: "OUR STRENGTHS",
     why_title: "Why Travel with Klik Travel ID?",
     why_desc: "We merge upscale accommodations, expert local guides, and carefully details-engineered itineraries to create lifelong memories.",
 
     // VisionMissionSection
-    vision_tag: "04 — VISION & MISSION",
+    vision_tag: "VISION & MISSION",
     vision_title: "Our Direction & Commitment",
     vision_tab_vision: "Our Vision",
     vision_tab_mission: "Our Mission",
     vision_tab_mission_tag: "Mission",
 
     // PhilosophySection
-    philosophy_tag: "05 — OUR PHILOSOPHY",
+    philosophy_tag: "OUR PHILOSOPHY",
     philosophy_title: "The Art of Slow Travel",
     philosophy_subtitle: "Connecting you deeply with curated local destinations.",
     philosophy_desc: "We believe travel isn't about ticking off checklists, but establishing meaningful and lasting relationships with places and their native culture.",
 
     // AboutUsSection
-    about_tag: "06 — ABOUT US",
+    about_tag: "ABOUT US",
     about_title: "Discover Klik Travel",
 
     // UpcomingDepartures
-    departures_tag: "08 — UPCOMING DEPARTURES",
+    departures_tag: "UPCOMING DEPARTURES",
     departures_title: "Scheduled Journeys",
 
     // FinalCTA
-    cta_tag: "08 — RESERVATION",
+    cta_tag: "RESERVATION",
     cta_title: "Ready to Explore the World?",
     cta_desc: "Speak directly with our expert destination architects to plan your luxury getaway today.",
     cta_btn: "Consult Your Journey →",
@@ -363,14 +369,20 @@ export const translations = {
     private_trip_inspiration_title: "Guest Favorites",
     private_trip_form_title: "Tell Us About Your Dream Journey.",
     private_trip_form_desc: "Our Travel Expert team is ready to curate your bespoke itinerary, arrange 5-star stays, and ensure every detail of your trip flows effortlessly.",
+    private_trip_form_label_name: "Full Name",
+    private_trip_form_placeholder_name: "e.g., Bambang Soetjipto",
+    private_trip_form_label_phone: "Phone / WhatsApp Number",
+    private_trip_form_placeholder_phone: "e.g., +62 812 3456 7890",
     private_trip_form_label_destination: "Target Destination",
     private_trip_form_placeholder_destination: "e.g., Japan, Europe...",
-    private_trip_form_label_time: "Estimated Travel Period",
-    private_trip_form_placeholder_time: "e.g., Late 2026",
-    private_trip_form_label_pax: "Number of Guests (Pax)",
-    private_trip_form_placeholder_pax: "e.g., 2 Adults, 1 Child",
+    private_trip_form_label_time: "Estimated Travel Period / Dates",
+    private_trip_form_placeholder_time: "e.g., 15 — 20 Oct 2026",
+    private_trip_form_label_adults: "Adults",
+    private_trip_form_label_children: "Children",
+    private_trip_form_label_budget: "Estimated Budget (IDR)",
+    private_trip_form_placeholder_budget: "e.g., 150,000,000",
     private_trip_form_label_notes: "Notes / Special Requests",
-    private_trip_form_placeholder_notes: "Share your expectations (e.g., I'd love a 5-star villa with a private pool...)",
+    private_trip_form_placeholder_notes: "Share your expectations (e.g., Private chef needed for seafood & dinner on secluded beach...)",
     private_trip_form_submit: "Consult via WhatsApp",
     private_trip_form_head: "Consultation Form",
     private_trip_testimonial_tag: "Testimonials",

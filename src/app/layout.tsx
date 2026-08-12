@@ -20,6 +20,11 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Premium Travel & Tours",
   description: "An international luxury travel editorial experience.",
+  icons: {
+    icon: "/kliktravelid.png",
+    shortcut: "/kliktravelid.png",
+    apple: "/kliktravelid.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

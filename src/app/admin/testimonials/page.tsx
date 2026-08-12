@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
-import { Star, Trash2, Plus, MessageSquare, ShieldCheck, ThumbsUp } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Star, Trash2, Plus, MessageSquare, ShieldCheck, ThumbsUp, Sparkles, Loader2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { translateText } from "@/utils/translator";
 
 interface Testimonial {
   id: string;
@@ -15,31 +16,36 @@ interface Testimonial {
   approved: boolean;
 }
 
+const DEFAULT_TESTIMONIALS: Testimonial[] = [
+  {
+    id: "TEST-01",
+    name: "Rian Dewantara",
+    role: "Travel Enthusiast",
+    rating: 5,
+    reviewID: "Pelayanan KlikTravel sangat luar biasa! Itinerary terencana dengan sangat rapi dan hotel bintang 4 di Shinjuku sangat strategis.",
+    reviewEN: "KlikTravel's service was outstanding! The itinerary was beautifully planned and the 4★ Shinjuku hotel was extremely strategic.",
+    trip: "Tokyo Explorer Open Trip",
+    approved: true
+  },
+  {
+    id: "TEST-02",
+    name: "Amelia Putri",
+    role: "Corporate Executive",
+    rating: 5,
+    reviewID: "Perjalanan private ke Labuan Bajo sangat berkesan. Seluruh kru ramah dan makanan di phinisi bintang lima!",
+    reviewEN: "Our private trip to Labuan Bajo was unforgettable. All crew members were warm and the phinisi food was five-star!",
+    trip: "Labuan Bajo Private Phinisi",
+    approved: true
+  }
+];
+
 export default function AdminTestimonialsPage() {
   const { locale } = useLanguage();
-
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([
-    {
-      id: "TEST-01",
-      name: "Rian Dewantara",
-      role: "Travel Enthusiast",
-      rating: 5,
-      reviewID: "Pelayanan KlikTravel sangat luar biasa! Itinerary terencana dengan sangat rapi dan hotel bintang 4 di Shinjuku sangat strategis.",
-      reviewEN: "KlikTravel's service was outstanding! The itinerary was beautifully planned and the 4★ Shinjuku hotel was extremely strategic.",
-      trip: "Tokyo Explorer Open Trip",
-      approved: true
-    },
-    {
-      id: "TEST-02",
-      name: "Amelia Putri",
-      role: "Corporate Executive",
-      rating: 5,
-      reviewID: "Perjalanan private ke Labuan Bajo sangat berkesan. Seluruh kru ramah dan makanan di phinisi bintang lima!",
-      reviewEN: "Our private trip to Labuan Bajo was unforgettable. All crew members were warm and the phinisi food was five-star!",
-      trip: "Labuan Bajo Private Phinisi",
-      approved: true
-    }
-  ]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  
+  // Form active language tab switcher
+  const [formLang, setFormLang] = useState<"id" | "en">("id");
+  const [isTranslating, setIsTranslating] = useState(false);
 
   const [nameField, setNameField] = useState("");
   const [roleField, setRoleField] = useState("");
@@ -47,6 +53,45 @@ export default function AdminTestimonialsPage() {
   const [reviewIDField, setReviewIDField] = useState("");
   const [reviewENField, setReviewENField] = useState("");
   const [tripField, setTripField] = useState("");
+
+  // Load from localStorage or defaults
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("klik_admin_testimonials");
+      if (saved) {
+        setTestimonials(JSON.parse(saved));
+      } else {
+        setTestimonials(DEFAULT_TESTIMONIALS);
+      }
+    } catch {
+      setTestimonials(DEFAULT_TESTIMONIALS);
+    }
+  }, []);
+
+  const saveTestimonialsStorage = (newList: Testimonial[]) => {
+    setTestimonials(newList);
+    try {
+      localStorage.setItem("klik_admin_testimonials", JSON.stringify(newList));
+    } catch (err) {
+      console.error("Failed to save testimonials to localStorage", err);
+    }
+  };
+
+  const handleAutoTranslate = async () => {
+    setIsTranslating(true);
+    if (formLang === "id") {
+      if (reviewIDField.trim()) {
+        const translated = await translateText(reviewIDField, "id", "en");
+        setReviewENField(translated);
+      }
+    } else {
+      if (reviewENField.trim()) {
+        const translated = await translateText(reviewENField, "en", "id");
+        setReviewIDField(translated);
+      }
+    }
+    setIsTranslating(false);
+  };
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,23 +108,28 @@ export default function AdminTestimonialsPage() {
       approved: true
     };
 
-    setTestimonials([...testimonials, newTestimonial]);
+    const updated = [...testimonials, newTestimonial];
+    saveTestimonialsStorage(updated);
+
     setNameField("");
     setRoleField("");
     setRatingField(5);
     setReviewIDField("");
     setReviewENField("");
     setTripField("");
+    setFormLang("id");
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Delete this review?")) {
-      setTestimonials(testimonials.filter(t => t.id !== id));
+    if (confirm(locale === "id" ? "Hapus ulasan ini?" : "Delete this review?")) {
+      const updated = testimonials.filter(t => t.id !== id);
+      saveTestimonialsStorage(updated);
     }
   };
 
   const toggleApproval = (id: string) => {
-    setTestimonials(testimonials.map(t => t.id === id ? { ...t, approved: !t.approved } : t));
+    const updated = testimonials.map(t => t.id === id ? { ...t, approved: !t.approved } : t);
+    saveTestimonialsStorage(updated);
   };
 
   return (
@@ -94,8 +144,8 @@ export default function AdminTestimonialsPage() {
         </h1>
         <p className="text-xs text-slate-500 font-sans mt-0.5">
           {locale === "id" 
-            ? "Kelola ulasan, bintang rating, dan testimoni yang ditampilkan di homepage."
-            : "Moderate reviews, star ratings, and testimonials shown on the homepage."}
+            ? "Kelola ulasan, rating, dan testimoni dwi-bahasa yang ditampilkan di homepage."
+            : "Moderate bilingual reviews, star ratings, and testimonials shown on the homepage."}
         </p>
       </div>
 
@@ -164,36 +214,74 @@ export default function AdminTestimonialsPage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                Review (Indonesian)
-              </label>
-              <textarea 
-                rows={3}
-                required
-                value={reviewIDField}
-                onChange={(e) => setReviewIDField(e.target.value)}
-                placeholder="Tulis ulasan customer dalam Bahasa Indonesia..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:border-[#A89053]"
-              />
+            {/* Language Tab Switcher */}
+            <div className="flex border-b border-slate-200 pb-1.5 gap-4 items-center">
+              <button
+                type="button"
+                onClick={() => setFormLang("id")}
+                className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
+                  formLang === "id" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                🇮🇩 Indonesia
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormLang("en")}
+                className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
+                  formLang === "en" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                🇬🇧 English
+              </button>
+              
+              <div className="ml-auto">
+                <button
+                  type="button"
+                  onClick={handleAutoTranslate}
+                  disabled={isTranslating || (formLang === "id" ? !reviewIDField.trim() : !reviewENField.trim())}
+                  className="inline-flex items-center gap-1 text-[9px] font-mono uppercase bg-[#A89053] text-white px-2 py-0.5 rounded hover:bg-[#0F2C59] transition-colors disabled:opacity-50 cursor-pointer font-bold"
+                >
+                  {isTranslating ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
+                  <span>{formLang === "id" ? "Translate to EN" : "Translate to ID"}</span>
+                </button>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                Review (English)
-              </label>
-              <textarea 
-                rows={3}
-                value={reviewENField}
-                onChange={(e) => setReviewENField(e.target.value)}
-                placeholder="Review in English..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:border-[#A89053]"
-              />
-            </div>
+            {/* Tabbed Multilingual Fields */}
+            {formLang === "id" ? (
+              <div>
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                  Review (ID)
+                </label>
+                <textarea 
+                  rows={3}
+                  required
+                  value={reviewIDField}
+                  onChange={(e) => setReviewIDField(e.target.value)}
+                  placeholder="Tulis ulasan customer dalam Bahasa Indonesia..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:border-[#A89053]"
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                  Review (EN)
+                </label>
+                <textarea 
+                  rows={3}
+                  required
+                  value={reviewENField}
+                  onChange={(e) => setReviewENField(e.target.value)}
+                  placeholder="Review in English..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:border-[#A89053]"
+                />
+              </div>
+            )}
 
             <button 
               type="submit"
-              className="w-full py-3.5 bg-[#0F2C59] hover:bg-[#0F2C59]/90 text-white font-bold uppercase tracking-wider rounded-xl shadow-md transition-colors"
+              className="w-full py-3.5 bg-[#0F2C59] hover:bg-[#0F2C59]/90 text-white font-bold uppercase tracking-wider rounded-xl shadow-md transition-colors cursor-pointer"
             >
               Add Review
             </button>
@@ -235,7 +323,7 @@ export default function AdminTestimonialsPage() {
                   <div className="flex items-center gap-1.5 shrink-0">
                     <button 
                       onClick={() => toggleApproval(test.id)}
-                      className={`p-2 rounded-lg border transition-colors ${
+                      className={`p-2 rounded-lg border transition-colors cursor-pointer ${
                         test.approved 
                           ? "bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-100" 
                           : "bg-slate-50 border-slate-200 text-slate-400 hover:bg-slate-100"
@@ -246,7 +334,7 @@ export default function AdminTestimonialsPage() {
                     </button>
                     <button 
                       onClick={() => handleDelete(test.id)}
-                      className="p-2 rounded-lg bg-slate-50 hover:bg-red-50 hover:text-red-600 border border-slate-200 transition-colors text-slate-400"
+                      className="p-2 rounded-lg bg-slate-50 hover:bg-red-50 hover:text-red-600 border border-slate-200 transition-colors text-slate-400 cursor-pointer"
                     >
                       <Trash2 size={14} />
                     </button>

@@ -73,7 +73,7 @@ export function DestinationGrid() {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-24 gap-6">
           <div>
             <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/50 block mb-4">
-              06 — EXPLORE
+              EXPLORE
             </span>
             <Heading variant="display" className="text-white text-5xl md:text-6xl">
               Where will you go?

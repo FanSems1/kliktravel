@@ -14,7 +14,7 @@ export function JournalPreview() {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div>
             <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-charcoal font-semibold block mb-4">
-              09 — JOURNAL
+              JOURNAL
             </span>
             <Heading variant="editorial" className="text-foreground text-3xl md:text-4xl">
               Travel Stories

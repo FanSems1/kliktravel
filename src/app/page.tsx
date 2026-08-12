@@ -7,6 +7,7 @@ import { WhyChooseUsSection } from "@/components/sections/WhyChooseUsSection";
 import { ServicesSection } from "@/components/sections/ServicesSection";
 import { FeaturedJourneys } from "@/components/sections/FeaturedJourneys";
 import { ExperienceSection } from "@/components/sections/ExperienceSection";
+import { TestimonialsSection } from "@/components/sections/TestimonialsSection";
 import { JournalPreview } from "@/components/sections/JournalPreview";
 import { FinalCTA } from "@/components/sections/FinalCTA";
 import { WaveTransition } from "@/components/ui/WaveTransition";
@@ -98,6 +99,9 @@ export default function Home() {
 
       {/* 07 - Experience / Momen Kebersamaan Customer */}
       <ExperienceSection />
+
+      {/* Testimonials Section */}
+      <TestimonialsSection />
 
       {/* 08 - Visi & Misi */}
       <VisionMissionSection />
