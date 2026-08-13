@@ -20,7 +20,8 @@ import {
   LogOut, 
   ChevronLeft, 
   ChevronRight,
-  User
+  User,
+  Image as ImageIcon
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { getStoredToken, removeStoredToken, apiFetch } from "@/lib/api";
@@ -125,6 +126,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       icon: BookOpen,
     },
     {
+      name: "Galeri Foto",
+      nameEN: "Photo Gallery",
+      href: "/admin/gallery",
+      icon: ImageIcon,
+    },
+    {
       name: "Testimoni",
       nameEN: "Testimonials",
       href: "/admin/testimonials",
@@ -149,7 +156,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Brand/Logo Area */}
         <div className="h-20 flex items-center justify-between px-6 border-b border-white/5">
           {!isSidebarCollapsed ? (
-            <Link href="/admin" className="flex items-center gap-2">
+            <Link href="/admin" className="flex items-center gap-3">
+              <img 
+                src="/kliktravelid.png" 
+                alt="KlikTravel.ID Logo" 
+                className="h-8 w-8 object-contain rounded-lg shrink-0" 
+              />
               <span className="font-serif text-lg tracking-wider font-bold text-white uppercase">
                 KlikTravel<span className="text-[#A89053]">.ID</span>
               </span>
@@ -158,8 +170,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </span>
             </Link>
           ) : (
-            <Link href="/admin" className="mx-auto bg-earth/80 text-[10px] font-mono font-bold uppercase p-1.5 rounded text-white border border-white/15">
-              KT
+            <Link href="/admin" className="mx-auto flex items-center justify-center">
+              <img 
+                src="/kliktravelid.png" 
+                alt="KlikTravel.ID Logo" 
+                className="h-9 w-9 object-contain rounded-lg" 
+              />
             </Link>
           )}
         </div>
@@ -233,9 +249,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               className="fixed top-0 bottom-0 left-0 w-72 bg-[#0F2C59] z-50 flex flex-col p-6 text-white md:hidden shadow-2xl"
             >
               <div className="flex items-center justify-between mb-8">
-                <span className="font-serif text-lg tracking-wider font-bold text-white uppercase">
-                  KlikTravel<span className="text-[#A89053]">.ID</span>
-                </span>
+                <div className="flex items-center gap-3">
+                  <img 
+                    src="/kliktravelid.png" 
+                    alt="KlikTravel.ID Logo" 
+                    className="h-8 w-8 object-contain rounded-lg shrink-0" 
+                  />
+                  <span className="font-serif text-lg tracking-wider font-bold text-white uppercase">
+                    KlikTravel<span className="text-[#A89053]">.ID</span>
+                  </span>
+                </div>
                 <button 
                   onClick={() => setIsMobileOpen(false)}
                   className="p-1 rounded-full bg-white/10 hover:bg-white/20 text-white"

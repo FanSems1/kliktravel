@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Heading } from "@/components/ui/Heading";
 import { WaveTransition } from "@/components/ui/WaveTransition";
@@ -8,10 +8,62 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
+const DEFAULT_MOMENTS = [
+  {
+    titleID: "KECERIAAN DI RAJA AMPAT, INDONESIA",
+    titleEN: "JOYFUL MOMENTS IN RAJA AMPAT, INDONESIA",
+    image: "https://images.unsplash.com/photo-1501555088652-021faa106b9b?q=80&w=800"
+  },
+  {
+    titleID: "KEBERSAMAAN KELUARGA DI SWISS, EROPA",
+    titleEN: "FAMILY GATHERING IN SWISS ALPS, EUROPE",
+    image: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?q=80&w=800"
+  },
+  {
+    titleID: "PETUALANGAN GRUP DI KYOTO, JEPANG",
+    titleEN: "GROUP ADVENTURES IN KYOTO, JAPAN",
+    image: "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?q=80&w=800"
+  },
+  {
+    titleID: "MOMEN INDAH DI GUNUNG BROMO, INDONESIA",
+    titleEN: "SERENE LANDSCAPES AT MOUNT BROMO, INDONESIA",
+    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800"
+  },
+  {
+    titleID: "EKSPLORASI BUDAYA DI SEOUL, KOREA",
+    titleEN: "CULTURAL IMMERSION IN SEOUL, SOUTH KOREA",
+    image: "https://images.unsplash.com/photo-1528164344705-47542687000d?q=80&w=800"
+  }
+];
+
 export function FinalCTA() {
   const { t, locale } = useLanguage();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
+  const [moments, setMoments] = useState(DEFAULT_MOMENTS);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("klik_admin_gallery_items");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const ourJourneysItems = parsed
+            .filter((x: any) => x.type === "OUR_JOURNEYS")
+            .map((x: any) => ({
+              titleID: x.titleID,
+              titleEN: x.titleEN || x.titleID,
+              image: x.image
+            }));
+          if (ourJourneysItems.length > 0) {
+            setMoments(ourJourneysItems);
+          }
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -24,34 +76,6 @@ export function FinalCTA() {
       scrollContainerRef.current.scrollBy({ left: 400, behavior: 'smooth' });
     }
   };
-
-  const moments = [
-    {
-      titleID: "KECERIAAN DI RAJA AMPAT, INDONESIA",
-      titleEN: "JOYFUL MOMENTS IN RAJA AMPAT, INDONESIA",
-      image: "https://images.unsplash.com/photo-1501555088652-021faa106b9b?q=80&w=800"
-    },
-    {
-      titleID: "KEBERSAMAAN KELUARGA DI SWISS, EROPA",
-      titleEN: "FAMILY GATHERING IN SWISS ALPS, EUROPE",
-      image: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?q=80&w=800"
-    },
-    {
-      titleID: "PETUALANGAN GRUP DI KYOTO, JEPANG",
-      titleEN: "GROUP ADVENTURES IN KYOTO, JAPAN",
-      image: "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?q=80&w=800"
-    },
-    {
-      titleID: "MOMEN INDAH DI GUNUNG BROMO, INDONESIA",
-      titleEN: "SERENE LANDSCAPES AT MOUNT BROMO, INDONESIA",
-      image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800"
-    },
-    {
-      titleID: "EKSPLORASI BUDAYA DI SEOUL, KOREA",
-      titleEN: "CULTURAL IMMERSION IN SEOUL, SOUTH KOREA",
-      image: "https://images.unsplash.com/photo-1528164344705-47542687000d?q=80&w=800"
-    }
-  ];
 
   // Parallax Scroll for Background
   const { scrollYProgress } = useScroll({

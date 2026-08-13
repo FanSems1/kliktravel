@@ -137,7 +137,7 @@ export function PrivateTripClient() {
       console.error("Failed to save inquiry to localStorage", err);
     }
 
-    window.open(`https://wa.me/628123456789?text=${encodeURIComponent(text)}`, "_blank");
+    window.open(`https://wa.me/6281234567890?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   const popularPrivateDestinations = localizedPrivateDestinations[locale];
@@ -249,7 +249,7 @@ export function PrivateTripClient() {
 
           <div className="flex flex-col items-center text-center px-4 pt-6 md:pt-0">
             <div className="w-16 h-16 bg-sky-50 rounded-2xl flex items-center justify-center text-[#0284C7] mb-6">
-              <Users size={32} strokeWidth={1.5} />
+              <ShieldCheck size={32} strokeWidth={1.5} />
             </div>
             <h3 className="font-serif text-xl text-[#0F2C59] mb-3">{t("private_trip_privacy_title")}</h3>
             <p className="text-gray-500 text-sm font-light leading-relaxed">{t("private_trip_privacy_desc")}</p>
@@ -258,35 +258,51 @@ export function PrivateTripClient() {
         </div>
       </section>
 
-      {/* Popular Private Trips Section */}
+      {/* Popular Private Journeys */}
       <section className="max-w-7xl mx-auto px-6 mb-32">
-        <div className="text-center mb-16">
+        <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-[#0284C7] font-bold block mb-4">
             {t("private_trip_inspiration_tag")}
           </span>
-          <h2 className="font-serif text-4xl md:text-5xl text-[#0F2C59] font-normal tracking-wide">
+          <h2 className="font-serif text-4xl md:text-5xl text-[#0F2C59] font-normal tracking-wide mb-6">
             {t("private_trip_inspiration_title")}
           </h2>
+          <p className="font-sans text-gray-500 text-sm md:text-base font-light leading-relaxed">
+            {locale === "id" ? "Pilihan terfavorit pelanggan kami untuk inspirasi perjalanan berharga Anda." : "Our guest favorites to inspire your next extraordinary journey."}
+          </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {popularPrivateDestinations.map((dest, idx) => (
-            <div key={idx} className="group cursor-pointer">
-              <div className="w-full aspect-[4/5] rounded-3xl overflow-hidden relative shadow-lg mb-6">
+          {popularPrivateDestinations.map((item: any, idx: number) => (
+            <div 
+              key={idx}
+              className="group bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 flex flex-col justify-between hover:shadow-2xl transition-all duration-500 hover:-translate-y-1"
+            >
+              <div className="relative aspect-[4/3] overflow-hidden">
                 <img 
-                  src={dest.image} 
-                  alt={dest.name} 
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  src={item.image} 
+                  alt={item.name} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0F2C59]/90 via-[#0F2C59]/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
-                <div className="absolute bottom-8 left-8 right-8">
-                  <h3 className="font-serif text-3xl text-white font-normal mb-3">
-                    {dest.name}
-                  </h3>
-                  <p className="text-white/80 font-sans text-sm font-light leading-relaxed opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500">
-                    {dest.description}
-                  </p>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+                <div className="absolute bottom-6 left-6 right-6 text-white">
+                  <h3 className="font-serif text-2xl font-normal tracking-wide mb-1">{item.name}</h3>
                 </div>
+              </div>
+              <div className="p-6 md:p-8 flex flex-col justify-between flex-1">
+                <p className="font-sans text-gray-500 text-sm font-light leading-relaxed mb-6">
+                  {item.description}
+                </p>
+                <button
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, destination: item.name }));
+                    document.getElementById("booking-form")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="inline-flex items-center justify-between text-[#0284C7] font-sans font-bold text-xs uppercase tracking-widest group-hover:text-[#0F2C59] transition-colors cursor-pointer"
+                >
+                  <span>{locale === "id" ? "Sesuaikan Perjalanan" : "Customize Journey"}</span>
+                  <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>
+                </button>
               </div>
             </div>
           ))}
@@ -294,32 +310,42 @@ export function PrivateTripClient() {
       </section>
 
       {/* Booking Form Section */}
-      <section id="booking-form" className="max-w-6xl mx-auto px-6">
+      <section id="booking-form" className="max-w-7xl mx-auto px-6">
         <div className="bg-[#0F2C59] rounded-[2rem] overflow-hidden shadow-2xl flex flex-col lg:flex-row">
           
-          <div className="lg:w-5/12 p-10 md:p-16 relative flex flex-col justify-center">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#0284C7]/20 to-transparent pointer-events-none" />
+          {/* Left Panel with Transparent Luxury Background Image */}
+          <div className="lg:w-5/12 p-10 md:p-16 relative flex flex-col justify-center overflow-hidden bg-[#0F2C59]">
+            {/* Transparent Luxury Background Image Layer */}
+            <div className="absolute inset-0 z-0 opacity-20 mix-blend-overlay">
+              <img 
+                src="https://images.unsplash.com/photo-1540553016722-983e48a2cd10?q=80&w=1200" 
+                alt="Luxury Background" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#0284C7]/30 via-transparent to-[#0F2C59] pointer-events-none z-0" />
+            
             <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl text-white mb-6 relative z-10 leading-tight">
               {t("private_trip_form_title")}
             </h2>
-            <p className="font-sans text-white/70 text-sm md:text-base font-light mb-10 relative z-10 leading-relaxed">
+            <p className="font-sans text-white/75 text-sm md:text-base font-light mb-10 relative z-10 leading-relaxed">
               {t("private_trip_form_desc")}
             </p>
             <div className="space-y-6 relative z-10">
-              <div className="flex items-center gap-4 text-white/80">
-                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+              <div className="flex items-center gap-4 text-white/85">
+                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0 border border-white/10">
                   <ShieldCheck size={20} className="text-[#0284C7]" />
                 </div>
                 <span className="font-sans text-sm font-light">{locale === "id" ? "100% Jadwal Fleksibel" : "100% Flexible Schedule"}</span>
               </div>
-              <div className="flex items-center gap-4 text-white/80">
-                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+              <div className="flex items-center gap-4 text-white/85">
+                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0 border border-white/10">
                   <Star size={20} className="text-[#0284C7]" />
                 </div>
                 <span className="font-sans text-sm font-light">{locale === "id" ? "Standar Akomodasi Premium" : "Premium Accommodation Standards"}</span>
               </div>
-              <div className="flex items-center gap-4 text-white/80">
-                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+              <div className="flex items-center gap-4 text-white/85">
+                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0 border border-white/10">
                   <CheckCircle2 size={20} className="text-[#0284C7]" />
                 </div>
                 <span className="font-sans text-sm font-light">{locale === "id" ? "Penanganan Khusus & VIP" : "Specialized & VIP Management"}</span>
@@ -327,6 +353,7 @@ export function PrivateTripClient() {
             </div>
           </div>
 
+          {/* Form Content Panel */}
           <div className="lg:w-7/12 bg-white p-8 md:p-16">
             <h3 className="font-sans font-bold text-lg uppercase tracking-widest text-[#0F2C59] mb-8">
               {t("private_trip_form_head")}
@@ -376,7 +403,7 @@ export function PrivateTripClient() {
                 <div>
                   <label className="block font-sans text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t("private_trip_form_label_time")}</label>
                   <input 
-                    type="text" 
+                    type="date" 
                     name="date"
                     required
                     value={formData.date}
@@ -387,7 +414,8 @@ export function PrivateTripClient() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {/* Adults & Children side by side in 2-column grid row */}
+              <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className="block font-sans text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
                     {t("private_trip_form_label_adults")}
@@ -410,6 +438,7 @@ export function PrivateTripClient() {
                     </button>
                   </div>
                 </div>
+                
                 <div>
                   <label className="block font-sans text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
                     {t("private_trip_form_label_children")}
@@ -432,18 +461,20 @@ export function PrivateTripClient() {
                     </button>
                   </div>
                 </div>
-                <div>
-                  <label className="block font-sans text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t("private_trip_form_label_budget")}</label>
-                  <input 
-                    type="text" 
-                    name="budget"
-                    required
-                    value={formData.budget}
-                    onChange={handleInputChange}
-                    placeholder={t("private_trip_form_placeholder_budget")} 
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#0F2C59] focus:outline-none focus:ring-2 focus:ring-[#0284C7]/50 focus:border-[#0284C7] h-[48px] transition-all"
-                  />
-                </div>
+              </div>
+
+              {/* Estimated Budget full width below Adults & Children */}
+              <div>
+                <label className="block font-sans text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t("private_trip_form_label_budget")}</label>
+                <input 
+                  type="text" 
+                  name="budget"
+                  required
+                  value={formData.budget}
+                  onChange={handleInputChange}
+                  placeholder={t("private_trip_form_placeholder_budget")} 
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#0F2C59] focus:outline-none focus:ring-2 focus:ring-[#0284C7]/50 focus:border-[#0284C7] h-[48px] transition-all"
+                />
               </div>
 
               <div>

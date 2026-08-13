@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/context/LanguageContext";
 import { journalArticles, JournalArticle } from "@/data/journal";
@@ -80,6 +80,34 @@ export function JournalClient() {
   const [activeCategory, setActiveCategory] = useState("ALL");
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [slideIndex, setSlideIndex] = useState(0);
+  const [itemsList, setItemsList] = useState<GalleryItem[]>(galleryItems);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("klik_admin_gallery_items");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const vjItems = parsed
+            .filter((x: any) => x.type === "VISUAL_JOURNAL")
+            .map((x: any, idx: number) => ({
+              id: idx + 1,
+              image: x.image,
+              locationID: x.titleID || "Destinasi",
+              locationEN: x.titleEN || x.titleID || "Destination",
+              captionID: x.captionID || "",
+              captionEN: x.captionEN || x.captionID || "",
+              year: x.year || "2026"
+            }));
+          if (vjItems.length > 0) {
+            setItemsList(vjItems);
+          }
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
 
   // Determine localized categories
   const categories = [
@@ -135,12 +163,12 @@ export function JournalClient() {
 
   const prevLightboxImage = () => {
     if (selectedImageIndex === null) return;
-    setSelectedImageIndex((prev) => (prev! === 0 ? galleryItems.length - 1 : prev! - 1));
+    setSelectedImageIndex((prev) => (prev! === 0 ? itemsList.length - 1 : prev! - 1));
   };
 
   const nextLightboxImage = () => {
     if (selectedImageIndex === null) return;
-    setSelectedImageIndex((prev) => (prev! === galleryItems.length - 1 ? 0 : prev! + 1));
+    setSelectedImageIndex((prev) => (prev! === itemsList.length - 1 ? 0 : prev! + 1));
   };
 
   return (
@@ -437,7 +465,7 @@ export function JournalClient() {
             ref={galleryScrollRef}
             className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-6 -mx-6 px-6 md:mx-0 md:px-0 scroll-smooth"
           >
-            {galleryItems.map((item, index) => (
+            {itemsList.map((item, index) => (
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -523,17 +551,17 @@ export function JournalClient() {
               >
                 <div className="relative w-full max-h-[70vh] aspect-[16/10] rounded-2xl overflow-hidden shadow-2xl mb-6 bg-charcoal/20">
                   <img
-                    src={galleryItems[selectedImageIndex].image}
-                    alt={locale === "id" ? galleryItems[selectedImageIndex].locationID : galleryItems[selectedImageIndex].locationEN}
+                    src={itemsList[selectedImageIndex].image}
+                    alt={locale === "id" ? itemsList[selectedImageIndex].locationID : itemsList[selectedImageIndex].locationEN}
                     className="w-full h-full object-contain"
                   />
                 </div>
                 <div className="text-white max-w-xl">
                   <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[#0284C7] font-bold block mb-2">
-                    {galleryItems[selectedImageIndex].year} • {locale === "id" ? galleryItems[selectedImageIndex].locationID : galleryItems[selectedImageIndex].locationEN}
+                    {itemsList[selectedImageIndex].year} • {locale === "id" ? itemsList[selectedImageIndex].locationID : itemsList[selectedImageIndex].locationEN}
                   </span>
                   <p className="font-sans text-sm text-white/80 font-light leading-relaxed">
-                    {locale === "id" ? galleryItems[selectedImageIndex].captionID : galleryItems[selectedImageIndex].captionEN}
+                    {locale === "id" ? itemsList[selectedImageIndex].captionID : itemsList[selectedImageIndex].captionEN}
                   </p>
                 </div>
               </motion.div>

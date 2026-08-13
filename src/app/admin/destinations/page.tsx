@@ -39,7 +39,7 @@ export default function AdminDestinationsPage() {
     slug: string;
     image?: string;
   }[]>([]);
-  
+
   const [newSubNameID, setNewSubNameID] = useState("");
   const [newSubNameEN, setNewSubNameEN] = useState("");
   const [newSubSlug, setNewSubSlug] = useState("");
@@ -188,10 +188,10 @@ export default function AdminDestinationsPage() {
 
   const handleAddSubDest = () => {
     if (!newSubNameID.trim()) return;
-    const computedSlug = newSubSlug.trim() 
-      ? newSubSlug.toLowerCase().replace(/[^a-z0-9]+/g, "-") 
+    const computedSlug = newSubSlug.trim()
+      ? newSubSlug.toLowerCase().replace(/[^a-z0-9]+/g, "-")
       : newSubNameID.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-    
+
     setSubDestinationsList([
       ...subDestinationsList,
       {
@@ -348,8 +348,8 @@ export default function AdminDestinationsPage() {
                 <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
                   Region Key / ID *
                 </label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   required
                   value={idField}
                   disabled={isEditing}
@@ -362,8 +362,8 @@ export default function AdminDestinationsPage() {
                 <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
                   Slug (URL)
                 </label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={slugField}
                   onChange={(e) => setSlugField(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}
                   placeholder="e.g. indonesia"
@@ -378,8 +378,8 @@ export default function AdminDestinationsPage() {
                 Gambar Sampul Wilayah (URL / Upload Lokal)
               </label>
               <div className="flex gap-2 items-center">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={regionImageField}
                   onChange={(e) => setRegionImageField(e.target.value)}
                   placeholder="https://..."
@@ -388,12 +388,12 @@ export default function AdminDestinationsPage() {
                 <label className="inline-flex items-center gap-1 px-3 py-2.5 rounded-xl bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 font-bold uppercase tracking-wider text-[9px] cursor-pointer shrink-0">
                   {isUploadingRegion ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
                   <span>{isUploadingRegion ? "Uploading..." : "Upload"}</span>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    className="hidden" 
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
                     disabled={isUploadingRegion}
-                    onChange={(e) => handleImageFileUpload(e, setRegionImageField, setIsUploadingRegion)} 
+                    onChange={(e) => handleImageFileUpload(e, setRegionImageField, setIsUploadingRegion)}
                   />
                 </label>
               </div>
@@ -405,7 +405,7 @@ export default function AdminDestinationsPage() {
             </div>
 
             {/* Gradient Styling */}
-            <div>
+            {/* <div>
               <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
                 Tailwind Gradient Fallback
               </label>
@@ -416,29 +416,27 @@ export default function AdminDestinationsPage() {
                 placeholder="from-[#E0F2FE] to-[#7DD3FC]"
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
               />
-            </div>
+            </div> */}
 
             {/* Language Tab Switcher */}
             <div className="flex border-b border-slate-200 pb-1.5 gap-4 items-center">
               <button
                 type="button"
                 onClick={() => setFormLang("id")}
-                className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
-                  formLang === "id" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
-                }`}
+                className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${formLang === "id" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
+                  }`}
               >
                 🇮🇩 Indonesia
               </button>
               <button
                 type="button"
                 onClick={() => setFormLang("en")}
-                className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
-                  formLang === "en" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
-                }`}
+                className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${formLang === "en" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
+                  }`}
               >
                 🇬🇧 English
               </button>
-              
+
               <div className="ml-auto">
                 <button
                   type="button"
@@ -459,8 +457,8 @@ export default function AdminDestinationsPage() {
                   <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
                     Nama Wilayah (ID) *
                   </label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     required
                     value={nameIDField}
                     onChange={(e) => setNameIDField(e.target.value)}
@@ -472,7 +470,7 @@ export default function AdminDestinationsPage() {
                   <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
                     Deskripsi Singkat (ID)
                   </label>
-                  <textarea 
+                  <textarea
                     rows={2}
                     value={subtitleIDField}
                     onChange={(e) => setSubtitleIDField(e.target.value)}
@@ -487,8 +485,8 @@ export default function AdminDestinationsPage() {
                   <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
                     Region Name (EN)
                   </label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={nameENField}
                     onChange={(e) => setNameENField(e.target.value)}
                     placeholder="e.g. Indonesia"
@@ -499,7 +497,7 @@ export default function AdminDestinationsPage() {
                   <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
                     Subtitle (EN)
                   </label>
-                  <textarea 
+                  <textarea
                     rows={2}
                     value={subtitleENField}
                     onChange={(e) => setSubtitleENField(e.target.value)}
@@ -532,8 +530,8 @@ export default function AdminDestinationsPage() {
                       {sub.nameEN && sub.nameEN !== sub.name && (
                         <span className="text-[10px] text-slate-400">({sub.nameEN})</span>
                       )}
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => handleRemoveSubDest(idx)}
                         className="hover:text-red-500 transition-colors ml-1"
                       >
@@ -548,15 +546,15 @@ export default function AdminDestinationsPage() {
               <div className="p-3.5 bg-slate-100/60 rounded-xl border border-slate-200 space-y-3">
                 <span className="text-[10px] font-mono uppercase font-bold text-slate-600 block">Tambah Sub-Destinasi</span>
                 <div className="grid grid-cols-2 gap-2">
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={newSubNameID}
                     onChange={(e) => setNewSubNameID(e.target.value)}
                     placeholder="Nama (ID) e.g. Bali"
                     className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
                   />
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={newSubNameEN}
                     onChange={(e) => setNewSubNameEN(e.target.value)}
                     placeholder="Nama (EN) e.g. Bali"
@@ -565,18 +563,18 @@ export default function AdminDestinationsPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={newSubSlug}
                     onChange={(e) => setNewSubSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}
                     placeholder="Slug (e.g. bali)"
                     className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
                   />
-                  
+
                   {/* Sub-destination Cover Upload */}
                   <div className="flex gap-1 items-center">
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={newSubImage}
                       onChange={(e) => setNewSubImage(e.target.value)}
                       placeholder="Gambar Sub (URL)"
@@ -584,12 +582,12 @@ export default function AdminDestinationsPage() {
                     />
                     <label className="p-2 rounded-lg bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 cursor-pointer shrink-0 flex items-center justify-center min-w-[28px]">
                       {isUploadingSub ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
                         disabled={isUploadingSub}
-                        onChange={(e) => handleImageFileUpload(e, setNewSubImage, setIsUploadingSub)} 
+                        onChange={(e) => handleImageFileUpload(e, setNewSubImage, setIsUploadingSub)}
                       />
                     </label>
                   </div>
@@ -646,7 +644,7 @@ export default function AdminDestinationsPage() {
           ) : (
             <div className="space-y-3">
               {regions.map((region) => (
-                <div 
+                <div
                   key={region.id}
                   className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-4"
                 >
