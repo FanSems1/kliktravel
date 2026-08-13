@@ -1,150 +1,306 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, Edit3, Save, X, MapPin, Globe, Sparkles, Loader2 } from "lucide-react";
+import { Plus, Trash2, Edit3, MapPin, Globe, Sparkles, Loader2, Save, X, Image as ImageIcon, Upload } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
-import { localizedRegions, RegionDestination } from "@/data/destinations";
+import { RegionDestination } from "@/data/destinations";
 import { translateText } from "@/utils/translator";
+import { apiFetch, uploadMedia } from "@/lib/api";
+import { Toast } from "@/components/ui/Toast";
 
 export default function AdminDestinationsPage() {
   const { locale } = useLanguage();
   const [regions, setRegions] = useState<RegionDestination[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  // Upload loading states
+  const [isUploadingRegion, setIsUploadingRegion] = useState(false);
+  const [isUploadingSub, setIsUploadingSub] = useState(false);
+
+  // Form states
   const [isEditing, setIsEditing] = useState(false);
-  const [editId, setEditId] = useState<string | null>(null);
-
-  // Form active language tab
-  const [formLang, setFormLang] = useState<"id" | "en">("id");
-  const [isTranslating, setIsTranslating] = useState(false);
-
-  // Form states matching RegionDestination structure with dual language support
+  const [editRegionId, setEditRegionId] = useState<string | null>(null);
   const [idField, setIdField] = useState("");
+  const [slugField, setSlugField] = useState("");
   const [nameIDField, setNameIDField] = useState("");
   const [nameENField, setNameENField] = useState("");
-  const [slugField, setSlugField] = useState("");
   const [subtitleIDField, setSubtitleIDField] = useState("");
   const [subtitleENField, setSubtitleENField] = useState("");
   const [gradientField, setGradientField] = useState("from-[#E0F2FE] to-[#7DD3FC]");
-  const [subDestinationsList, setSubDestinationsList] = useState<{ name: string; nameEN?: string; slug: string }[]>([]);
-  const [newSubName, setNewSubName] = useState("");
+  const [regionImageField, setRegionImageField] = useState("");
 
-  // Load initial list from localStorage if present
-  useEffect(() => {
+  // Sub-destinations state list
+  const [subDestinationsList, setSubDestinationsList] = useState<{
+    name: string;
+    nameEN?: string;
+    slug: string;
+    image?: string;
+  }[]>([]);
+  
+  const [newSubNameID, setNewSubNameID] = useState("");
+  const [newSubNameEN, setNewSubNameEN] = useState("");
+  const [newSubSlug, setNewSubSlug] = useState("");
+  const [newSubImage, setNewSubImage] = useState("");
+
+  // Tab switch for bilingual form
+  const [formLang, setFormLang] = useState<"id" | "en">("id");
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  // Fetch Regions from Backend API
+  const fetchRegions = async () => {
+    setIsLoading(true);
+    setErrorMsg(null);
     try {
-      const saved = localStorage.getItem("klik_admin_destinations");
-      if (saved) {
-        setRegions(JSON.parse(saved));
-      } else {
-        setRegions(localizedRegions[locale] || []);
+      const data = await apiFetch<any[]>("/admin/destinations");
+      const mapped: RegionDestination[] = data.map((r) => {
+        let gradient = r.featuredImageGradient || "from-[#E0F2FE] to-[#7DD3FC]";
+        let image = "";
+        if (gradient.includes("||")) {
+          const parts = gradient.split("||");
+          gradient = parts[0];
+          image = parts[1];
+        }
+
+        const subDestinations = (r.subDestinations || []).map((s: any) => {
+          let subNameEn = s.nameEn || s.nameId;
+          let subImage = "";
+          if (subNameEn.includes("||")) {
+            const parts = subNameEn.split("||");
+            subNameEn = parts[0];
+            subImage = parts[1];
+          }
+          const activeSubName = locale === "en" ? subNameEn : s.nameId;
+          return {
+            name: activeSubName,
+            nameEN: subNameEn,
+            slug: s.slug,
+            image: subImage
+          };
+        });
+
+        const activeName = locale === "en" ? (r.nameEn || r.nameId) : r.nameId;
+        // Clean nameEn for frontend usage
+        let cleanedNameEn = r.nameEn || r.nameId;
+        if (cleanedNameEn.includes("||")) {
+          cleanedNameEn = cleanedNameEn.split("||")[0];
+        }
+
+        return {
+          id: r.key,
+          name: activeName.includes("||") ? activeName.split("||")[0] : activeName,
+          nameEN: cleanedNameEn,
+          slug: r.slug,
+          subtitle: locale === "en" ? (r.subtitleEn || r.subtitleId) : r.subtitleId,
+          subtitleEN: r.subtitleEn || r.subtitleId,
+          featuredImageGradient: gradient,
+          image: image,
+          subDestinations: subDestinations,
+        };
+      });
+
+      setRegions(mapped);
+      // Synchronize cleaned regions with localStorage for storefront fallback
+      if (typeof window !== "undefined") {
+        localStorage.setItem("klik_admin_regions", JSON.stringify(mapped));
       }
-    } catch {
-      setRegions(localizedRegions[locale] || []);
+    } catch (err: any) {
+      console.error("Error loading destinations:", err);
+      setErrorMsg("Gagal memuat data dari server database.");
+      setToast({ message: "Gagal memuat data dari server.", type: "error" });
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchRegions();
   }, [locale]);
 
-  // Persist regions list to localStorage on changes
-  const saveRegionsToStorage = (newList: RegionDestination[]) => {
-    setRegions(newList);
+  const handleImageFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setter: (url: string) => void,
+    loadingSetter?: (loading: boolean) => void
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (loadingSetter) loadingSetter(true);
     try {
-      localStorage.setItem("klik_admin_destinations", JSON.stringify(newList));
+      const uploaded = await uploadMedia(file);
+      setter(uploaded.url);
+      setToast({ message: "Gambar berhasil diunggah!", type: "success" });
+    } catch (err: any) {
+      setToast({ message: err.message || "Gagal mengunggah gambar.", type: "error" });
+    } finally {
+      if (loadingSetter) loadingSetter(false);
+    }
+  };
+
+  const handleAutoTranslate = async () => {
+    setIsTranslating(true);
+    try {
+      if (formLang === "id") {
+        if (nameIDField.trim()) {
+          const translatedName = await translateText(nameIDField, "id", "en");
+          setNameENField(translatedName);
+        }
+        if (subtitleIDField.trim()) {
+          const translatedSub = await translateText(subtitleIDField, "id", "en");
+          setSubtitleENField(translatedSub);
+        }
+      } else {
+        if (nameENField.trim()) {
+          const translatedName = await translateText(nameENField, "en", "id");
+          setNameIDField(translatedName);
+        }
+        if (subtitleENField.trim()) {
+          const translatedSub = await translateText(subtitleENField, "en", "id");
+          setSubtitleIDField(translatedSub);
+        }
+      }
     } catch (err) {
-      console.error("Failed to save destinations to localStorage", err);
+      console.error("Translation error", err);
+    } finally {
+      setIsTranslating(false);
     }
   };
 
   const resetForm = () => {
     setIdField("");
+    setSlugField("");
     setNameIDField("");
     setNameENField("");
-    setSlugField("");
     setSubtitleIDField("");
     setSubtitleENField("");
     setGradientField("from-[#E0F2FE] to-[#7DD3FC]");
+    setRegionImageField("");
     setSubDestinationsList([]);
-    setNewSubName("");
+    setNewSubNameID("");
+    setNewSubNameEN("");
+    setNewSubSlug("");
+    setNewSubImage("");
     setIsEditing(false);
-    setEditId(null);
+    setEditRegionId(null);
     setFormLang("id");
   };
 
-  // Auto-translate handler for the active tab fields
-  const handleAutoTranslate = async () => {
-    setIsTranslating(true);
-    if (formLang === "id") {
-      if (nameIDField.trim()) {
-        const translatedName = await translateText(nameIDField, "id", "en");
-        setNameENField(translatedName);
-      }
-      if (subtitleIDField.trim()) {
-        const translatedSub = await translateText(subtitleIDField, "id", "en");
-        setSubtitleENField(translatedSub);
-      }
-    } else {
-      if (nameENField.trim()) {
-        const translatedName = await translateText(nameENField, "en", "id");
-        setNameIDField(translatedName);
-      }
-      if (subtitleENField.trim()) {
-        const translatedSub = await translateText(subtitleENField, "en", "id");
-        setSubtitleIDField(translatedSub);
-      }
-    }
-    setIsTranslating(false);
-  };
-
   const handleAddSubDest = () => {
-    if (!newSubName.trim()) return;
-    const slug = newSubName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-    setSubDestinationsList([...subDestinationsList, { name: newSubName, slug }]);
-    setNewSubName("");
+    if (!newSubNameID.trim()) return;
+    const computedSlug = newSubSlug.trim() 
+      ? newSubSlug.toLowerCase().replace(/[^a-z0-9]+/g, "-") 
+      : newSubNameID.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    
+    setSubDestinationsList([
+      ...subDestinationsList,
+      {
+        name: newSubNameID.trim(),
+        nameEN: newSubNameEN.trim() || newSubNameID.trim(),
+        slug: computedSlug,
+        image: newSubImage.trim(),
+      },
+    ]);
+    setNewSubNameID("");
+    setNewSubNameEN("");
+    setNewSubSlug("");
+    setNewSubImage("");
   };
 
   const handleRemoveSubDest = (index: number) => {
-    setSubDestinationsList(subDestinationsList.filter((_, i) => i !== index));
+    setSubDestinationsList(subDestinationsList.filter((_, idx) => idx !== index));
   };
 
   const handleEdit = (region: RegionDestination) => {
     setIsEditing(true);
-    setEditId(region.id);
+    setEditRegionId(region.id);
     setIdField(region.id);
+    setSlugField(region.slug);
     setNameIDField(region.name);
     setNameENField(region.nameEN || region.name);
-    setSlugField(region.slug);
     setSubtitleIDField(region.subtitle);
     setSubtitleENField(region.subtitleEN || region.subtitle);
-    setGradientField(region.featuredImageGradient);
-    setSubDestinationsList(region.subDestinations || []);
+    setGradientField(region.featuredImageGradient || "from-[#E0F2FE] to-[#7DD3FC]");
+    setRegionImageField(region.image || "");
+    setSubDestinationsList(
+      region.subDestinations.map((s) => ({
+        name: s.name,
+        nameEN: s.nameEN || s.name,
+        slug: s.slug,
+        image: s.image || ""
+      }))
+    );
+    setFormLang("id");
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm(locale === "id" ? "Hapus destinasi ini?" : "Delete this destination?")) {
-      const updated = regions.filter(r => r.id !== id);
-      saveRegionsToStorage(updated);
+  const handleDelete = async (id: string) => {
+    if (confirm(locale === "id" ? "Hapus wilayah ini dari database server?" : "Delete this region from database server?")) {
+      try {
+        await apiFetch(`/admin/destinations/${id}`, { method: "DELETE" });
+        setToast({ message: "Wilayah berhasil dihapus!", type: "success" });
+        fetchRegions();
+      } catch (err: any) {
+        setToast({ message: err.message || "Gagal menghapus wilayah.", type: "error" });
+      }
     }
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nameIDField.trim() || !idField.trim()) return;
+    if (!idField.trim() || !nameIDField.trim()) return;
 
-    const newRegion: RegionDestination = {
-      id: idField,
-      name: nameIDField,
-      nameEN: nameENField || nameIDField,
-      slug: slugField || nameIDField.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-      subtitle: subtitleIDField,
-      subtitleEN: subtitleENField || subtitleIDField,
-      featuredImageGradient: gradientField,
-      subDestinations: subDestinationsList
+    setIsSaving(true);
+    const key = idField.toLowerCase().trim();
+    const slug = slugField.trim() ? slugField.toLowerCase().trim() : key;
+
+    const gradientValue = regionImageField.trim()
+      ? `${gradientField.trim()}||${regionImageField.trim()}`
+      : gradientField.trim();
+
+    const payload = {
+      key,
+      slug,
+      featuredImageGradient: gradientValue,
+      nameId: nameIDField,
+      nameEn: nameENField || nameIDField,
+      subtitleId: subtitleIDField,
+      subtitleEn: subtitleENField || subtitleIDField,
+      subDestinations: subDestinationsList.map((sub, idx) => {
+        const subNameEn = sub.nameEN || sub.name;
+        const encodedNameEn = sub.image?.trim()
+          ? `${subNameEn.trim()}||${sub.image.trim()}`
+          : subNameEn.trim();
+        return {
+          slug: sub.slug,
+          nameId: sub.name,
+          nameEn: encodedNameEn,
+          sortOrder: idx,
+        };
+      }),
     };
 
-    let updatedList: RegionDestination[];
-    if (editId) {
-      updatedList = regions.map(r => r.id === editId ? newRegion : r);
-    } else {
-      updatedList = [...regions, newRegion];
+    try {
+      if (isEditing && editRegionId) {
+        await apiFetch(`/admin/destinations/${editRegionId}`, {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        });
+        setToast({ message: "Wilayah berhasil diperbarui!", type: "success" });
+      } else {
+        await apiFetch("/admin/destinations", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        setToast({ message: "Wilayah baru berhasil ditambahkan!", type: "success" });
+      }
+
+      resetForm();
+      fetchRegions();
+    } catch (err: any) {
+      setToast({ message: err.message || "Gagal menyimpan wilayah.", type: "error" });
+    } finally {
+      setIsSaving(false);
     }
-    saveRegionsToStorage(updatedList);
-    resetForm();
   };
 
   return (
@@ -153,41 +309,112 @@ export default function AdminDestinationsPage() {
       <div className="flex items-center justify-between">
         <div>
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#A89053] font-bold block mb-1">
-            Content Manager
+            Master Data
           </span>
           <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#0F2C59]">
-            {locale === "id" ? "Destinasi & Wilayah" : "Destinations & Regions"}
+            {locale === "id" ? "Manajemen Wilayah & Destinasi" : "Region & Destination Management"}
           </h1>
           <p className="text-xs text-slate-500 font-sans mt-0.5">
-            {locale === "id" 
-              ? "Kelola nama wilayah utama dan sub-destinasi dengan tab dwi-bahasa (ID / EN)."
-              : "Manage main regions & sub-destinations with bilingual tabs (ID / EN)."}
+            Kelola wilayah negara, sub-destinasi, dan gambar sampul utama.
           </p>
         </div>
       </div>
 
+      {errorMsg && (
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-sans">
+          {errorMsg}
+        </div>
+      )}
+
+      {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Editor Form */}
-        <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm h-fit">
-          <h2 className="text-base font-serif font-bold text-[#0F2C59] mb-4 pb-3 border-b border-slate-100">
-            {isEditing 
-              ? (locale === "id" ? "Edit Wilayah" : "Edit Region")
-              : (locale === "id" ? "Tambah Wilayah Baru" : "Add New Region")}
-          </h2>
+        {/* Form Container */}
+        <div className="lg:col-span-6 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-6">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h2 className="text-base font-serif font-bold text-[#0F2C59]">
+              {isEditing ? "Edit Wilayah" : "Tambah Wilayah Baru"}
+            </h2>
+            {isEditing && (
+              <span className="text-[10px] font-mono bg-[#A89053]/15 text-[#A89053] px-2 py-0.5 rounded font-bold uppercase">
+                ID: {editRegionId}
+              </span>
+            )}
+          </div>
 
           <form onSubmit={handleSave} className="space-y-5 font-sans text-xs">
+            {/* Key & Slug */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                  Region Key / ID *
+                </label>
+                <input 
+                  type="text" 
+                  required
+                  value={idField}
+                  disabled={isEditing}
+                  onChange={(e) => setIdField(e.target.value.toLowerCase())}
+                  placeholder="e.g. indonesia, japan"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] disabled:opacity-50 text-slate-800"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                  Slug (URL)
+                </label>
+                <input 
+                  type="text" 
+                  value={slugField}
+                  onChange={(e) => setSlugField(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}
+                  placeholder="e.g. indonesia"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
+                />
+              </div>
+            </div>
+
+            {/* Region Cover Image Upload */}
             <div>
               <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                Region ID / Code
+                Gambar Sampul Wilayah (URL / Upload Lokal)
+              </label>
+              <div className="flex gap-2 items-center">
+                <input 
+                  type="text" 
+                  value={regionImageField}
+                  onChange={(e) => setRegionImageField(e.target.value)}
+                  placeholder="https://..."
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-slate-800"
+                />
+                <label className="inline-flex items-center gap-1 px-3 py-2.5 rounded-xl bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 font-bold uppercase tracking-wider text-[9px] cursor-pointer shrink-0">
+                  {isUploadingRegion ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                  <span>{isUploadingRegion ? "Uploading..." : "Upload"}</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    disabled={isUploadingRegion}
+                    onChange={(e) => handleImageFileUpload(e, setRegionImageField, setIsUploadingRegion)} 
+                  />
+                </label>
+              </div>
+              {regionImageField && (
+                <div className="mt-2 h-24 rounded-xl overflow-hidden border border-slate-200">
+                  <img src={regionImageField} alt="Region Cover Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
+            </div>
+
+            {/* Gradient Styling */}
+            <div>
+              <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                Tailwind Gradient Fallback
               </label>
               <input 
                 type="text" 
-                required
-                value={idField}
-                disabled={isEditing}
-                onChange={(e) => setIdField(e.target.value.toLowerCase())}
-                placeholder="e.g. indonesia, japan, europe"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] disabled:opacity-50 text-slate-800"
+                value={gradientField}
+                onChange={(e) => setGradientField(e.target.value)}
+                placeholder="from-[#E0F2FE] to-[#7DD3FC]"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
               />
             </div>
 
@@ -217,211 +444,273 @@ export default function AdminDestinationsPage() {
                   type="button"
                   onClick={handleAutoTranslate}
                   disabled={isTranslating || (formLang === "id" ? !nameIDField.trim() : !nameENField.trim())}
-                  className="inline-flex items-center gap-1 text-[9px] font-mono uppercase bg-[#A89053] text-white px-2 py-0.5 rounded hover:bg-[#0F2C59] transition-colors disabled:opacity-50 cursor-pointer font-bold"
+                  className="inline-flex items-center gap-1 text-[9px] font-mono uppercase bg-[#A89053] text-white px-2.5 py-1 rounded-lg hover:bg-[#0F2C59] transition-colors disabled:opacity-50 cursor-pointer font-bold"
                 >
                   {isTranslating ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
-                  <span>{formLang === "id" ? "Translate to EN" : "Translate to ID"}</span>
+                  <span>Auto Translate</span>
                 </button>
               </div>
             </div>
 
-            {/* Tabbed Content Fields */}
+            {/* Language Dependent Content */}
             {formLang === "id" ? (
-              <div className="space-y-4">
+              <div className="space-y-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
                 <div>
                   <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                    Region Name (ID)
+                    Nama Wilayah (ID) *
                   </label>
                   <input 
                     type="text" 
                     required
                     value={nameIDField}
-                    onChange={(e) => {
-                      setNameIDField(e.target.value);
-                      if (!slugField) setSlugField(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"));
-                    }}
+                    onChange={(e) => setNameIDField(e.target.value)}
                     placeholder="e.g. Indonesia"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-slate-800"
                   />
                 </div>
-
                 <div>
                   <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                    Subtitle / Description (ID)
+                    Deskripsi Singkat (ID)
                   </label>
                   <textarea 
-                    rows={3}
+                    rows={2}
                     value={subtitleIDField}
                     onChange={(e) => setSubtitleIDField(e.target.value)}
-                    placeholder="Deskripsi singkat dalam Bahasa Indonesia..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
+                    placeholder="Deskripsi singkat wilayah..."
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-slate-800 resize-none"
                   />
                 </div>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
                 <div>
                   <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
                     Region Name (EN)
                   </label>
                   <input 
                     type="text" 
-                    required
                     value={nameENField}
                     onChange={(e) => setNameENField(e.target.value)}
                     placeholder="e.g. Indonesia"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-slate-800"
                   />
                 </div>
-
                 <div>
                   <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                    Subtitle / Description (EN)
+                    Subtitle (EN)
                   </label>
                   <textarea 
-                    rows={3}
+                    rows={2}
                     value={subtitleENField}
                     onChange={(e) => setSubtitleENField(e.target.value)}
-                    placeholder="Brief description in English..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
+                    placeholder="Short region subtitle in English..."
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-slate-800 resize-none"
                   />
                 </div>
               </div>
             )}
 
-            <div>
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                Slug (URL)
-              </label>
-              <input 
-                type="text" 
-                value={slugField}
-                onChange={(e) => setSlugField(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}
-                placeholder="e.g. indonesia"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
-              />
-            </div>
-
-            {/* Sub Destinations List Manager */}
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-2 font-bold">
-                Sub Destinations ({subDestinationsList.length})
+            {/* Sub-Destinations List */}
+            <div className="space-y-3 pt-2">
+              <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold">
+                Daftar Sub-Destinasi ({subDestinationsList.length})
               </label>
 
-              <div className="flex gap-2 mb-3">
-                <input 
-                  type="text" 
-                  value={newSubName}
-                  onChange={(e) => setNewSubName(e.target.value)}
-                  placeholder="e.g. Labuan Bajo"
-                  className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A89053] text-slate-800"
-                />
-                <button 
-                  type="button" 
-                  onClick={handleAddSubDest}
-                  className="px-3 rounded-xl bg-slate-200 hover:bg-[#A89053] hover:text-white transition-colors cursor-pointer"
-                >
-                  <Plus size={16} />
-                </button>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {subDestinationsList.map((sub, i) => (
-                  <span 
-                    key={i} 
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 text-[11px]"
-                  >
-                    <span>{sub.name}</span>
-                    <button 
-                      type="button" 
-                      onClick={() => handleRemoveSubDest(i)}
-                      className="text-slate-400 hover:text-red-500 cursor-pointer"
-                    >
-                      <X size={12} />
-                    </button>
-                  </span>
-                ))}
-                {subDestinationsList.length === 0 && (
-                  <span className="text-[10px] text-slate-400 italic">No sub-destinations added yet.</span>
+              {/* Added Sub-destinations Chips */}
+              <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-slate-50 rounded-xl border border-slate-200/80">
+                {subDestinationsList.length === 0 ? (
+                  <span className="text-slate-400 italic text-[11px]">Belum ada sub-destinasi ditambahkan.</span>
+                ) : (
+                  subDestinationsList.map((sub, idx) => (
+                    <div key={idx} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm text-xs text-slate-700 font-semibold">
+                      {sub.image ? (
+                        <img src={sub.image} alt={sub.name} className="w-5 h-5 rounded-full object-cover shrink-0" />
+                      ) : (
+                        <MapPin size={12} className="text-[#A89053]" />
+                      )}
+                      <span>{sub.name}</span>
+                      {sub.nameEN && sub.nameEN !== sub.name && (
+                        <span className="text-[10px] text-slate-400">({sub.nameEN})</span>
+                      )}
+                      <button 
+                        type="button" 
+                        onClick={() => handleRemoveSubDest(idx)}
+                        className="hover:text-red-500 transition-colors ml-1"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))
                 )}
               </div>
+
+              {/* Add New Sub-Destination Form */}
+              <div className="p-3.5 bg-slate-100/60 rounded-xl border border-slate-200 space-y-3">
+                <span className="text-[10px] font-mono uppercase font-bold text-slate-600 block">Tambah Sub-Destinasi</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <input 
+                    type="text" 
+                    value={newSubNameID}
+                    onChange={(e) => setNewSubNameID(e.target.value)}
+                    placeholder="Nama (ID) e.g. Bali"
+                    className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                  />
+                  <input 
+                    type="text" 
+                    value={newSubNameEN}
+                    onChange={(e) => setNewSubNameEN(e.target.value)}
+                    placeholder="Nama (EN) e.g. Bali"
+                    className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <input 
+                    type="text" 
+                    value={newSubSlug}
+                    onChange={(e) => setNewSubSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}
+                    placeholder="Slug (e.g. bali)"
+                    className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                  />
+                  
+                  {/* Sub-destination Cover Upload */}
+                  <div className="flex gap-1 items-center">
+                    <input 
+                      type="text" 
+                      value={newSubImage}
+                      onChange={(e) => setNewSubImage(e.target.value)}
+                      placeholder="Gambar Sub (URL)"
+                      className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                    />
+                    <label className="p-2 rounded-lg bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 cursor-pointer shrink-0 flex items-center justify-center min-w-[28px]">
+                      {isUploadingSub ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        disabled={isUploadingSub}
+                        onChange={(e) => handleImageFileUpload(e, setNewSubImage, setIsUploadingSub)} 
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleAddSubDest}
+                  disabled={!newSubNameID.trim()}
+                  className="w-full bg-[#0F2C59] text-white py-2 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:bg-[#0F2C59]/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-1"
+                >
+                  <Plus size={12} />
+                  <span>Tambah Sub-Destinasi</span>
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button 
-                type="button" 
-                onClick={resetForm}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[10px] cursor-pointer"
-              >
-                Reset
-              </button>
-              <button 
+            {/* Form Action Buttons */}
+            <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+              <button
                 type="submit"
-                className="px-4 py-2.5 rounded-xl bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 font-bold uppercase tracking-wider text-[10px] cursor-pointer"
+                disabled={isSaving}
+                className="flex-1 bg-[#A89053] hover:bg-[#967F47] text-white font-bold py-3 px-4 rounded-xl text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
               >
-                {isEditing ? "Update" : "Save"}
+                {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                <span>{isEditing ? "Update Wilayah" : "Simpan Wilayah Baru"}</span>
               </button>
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="px-4 py-3 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors"
+                >
+                  Batal
+                </button>
+              )}
             </div>
           </form>
         </div>
 
-        {/* Regions List Grid */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
-            <h2 className="text-base font-serif font-bold text-[#0F2C59] mb-4 pb-3 border-b border-slate-100 flex items-center justify-between">
-              <span>{locale === "id" ? "Daftar Wilayah Aktif" : "Active Regions"}</span>
-              <span className="text-xs font-mono text-slate-400">{regions.length} Regions</span>
+        {/* Existing Regions List */}
+        <div className="lg:col-span-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-serif font-bold text-[#0F2C59]">
+              Daftar Wilayah ({regions.length})
             </h2>
+            {isLoading && <Loader2 size={16} className="animate-spin text-[#A89053]" />}
+          </div>
 
-            <div className="divide-y divide-slate-100">
+          {regions.length === 0 && !isLoading ? (
+            <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-500 text-xs">
+              Belum ada data wilayah di database server.
+            </div>
+          ) : (
+            <div className="space-y-3">
               {regions.map((region) => (
-                <div key={region.id} className="py-4 flex items-start justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-3.5 h-3.5 rounded bg-gradient-to-r ${region.featuredImageGradient} border border-slate-200`} />
-                      <h3 className="font-serif font-bold text-slate-800 text-sm leading-none">
-                        {locale === "id" ? region.name : (region.nameEN || region.name)}
-                      </h3>
-                      <span className="text-[10px] font-mono text-slate-400">/{region.slug}</span>
-                    </div>
-                    <p className="text-xs text-slate-500 font-sans font-light leading-relaxed max-w-lg">
-                      {locale === "id" ? region.subtitle : (region.subtitleEN || region.subtitle)}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5 pt-1.5">
-                      {region.subDestinations.map((sub, idx) => (
-                        <span key={idx} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-50 border border-slate-200/60 text-slate-500 text-[10px] font-sans">
-                          <MapPin size={9} />
-                          {sub.name}
+                <div 
+                  key={region.id}
+                  className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-4"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                          {region.id}
                         </span>
-                      ))}
+                        <h3 className="font-serif font-bold text-lg text-[#0F2C59]">{region.name}</h3>
+                        {region.nameEN && region.nameEN !== region.name && (
+                          <span className="text-xs text-slate-400 font-sans">({region.nameEN})</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-600 font-sans line-clamp-2">{region.subtitle}</p>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        onClick={() => handleEdit(region)}
+                        className="p-2 rounded-xl text-slate-500 hover:text-[#0F2C59] hover:bg-slate-100 transition-colors"
+                        title="Edit"
+                      >
+                        <Edit3 size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(region.id)}
+                        className="p-2 rounded-xl text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button 
-                      onClick={() => handleEdit(region)}
-                      className="p-2 rounded-lg bg-slate-50 hover:bg-amber-50 hover:text-amber-600 border border-slate-200 transition-colors text-slate-600 cursor-pointer"
-                      aria-label="Edit"
-                    >
-                      <Edit3 size={14} />
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(region.id)}
-                      className="p-2 rounded-lg bg-slate-50 hover:bg-red-50 hover:text-red-600 border border-slate-200 transition-colors text-slate-600 cursor-pointer"
-                      aria-label="Delete"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                  {/* Subdestinations tags */}
+                  <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-1.5">
+                    <span className="text-[10px] font-mono uppercase text-slate-400 font-bold mr-1">Sub-destinasi:</span>
+                    {region.subDestinations.length === 0 ? (
+                      <span className="text-[11px] text-slate-400 italic">Tidak ada</span>
+                    ) : (
+                      region.subDestinations.map((sub, sIdx) => (
+                        <span key={sIdx} className="text-[10px] font-sans px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200 flex items-center gap-1">
+                          {sub.image && (
+                            <img src={sub.image} alt={sub.name} className="w-3.5 h-3.5 rounded-full object-cover" />
+                          )}
+                          <span>{sub.name}</span>
+                        </span>
+                      ))
+                    )}
                   </div>
                 </div>
               ))}
-              {regions.length === 0 && (
-                <div className="py-8 text-center text-slate-400 italic">No regions found. Add one on the left.</div>
-              )}
             </div>
-          </div>
+          )}
         </div>
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

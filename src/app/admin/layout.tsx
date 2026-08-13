@@ -23,6 +23,7 @@ import {
   User
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { getStoredToken, removeStoredToken, apiFetch } from "@/lib/api";
 
 interface AdminSidebarItem {
   name: string;
@@ -46,17 +47,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       return;
     }
 
-    // Check auth status
-    const loggedIn = typeof window !== "undefined" && localStorage.getItem("kt_admin_logged_in") === "true";
-    if (!loggedIn) {
-      router.push("/admin/login");
-    } else {
-      setIsAuthenticated(true);
-    }
-    setIsCheckingAuth(false);
+    const checkAuth = async () => {
+      const token = getStoredToken();
+      if (!token) {
+        handleLogout();
+        return;
+      }
+      try {
+        await apiFetch("/auth/me");
+        setIsAuthenticated(true);
+      } catch (err) {
+        console.error("Auth check failed", err);
+        handleLogout();
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuth();
   }, [pathname, router]);
 
   const handleLogout = () => {
+    removeStoredToken();
     if (typeof window !== "undefined") {
       localStorage.removeItem("kt_admin_logged_in");
       document.cookie = "kt_admin_logged_in=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";

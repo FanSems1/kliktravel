@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Star, Trash2, Plus, MessageSquare, ShieldCheck, ThumbsUp, Sparkles, Loader2 } from "lucide-react";
+import { Star, Trash2, Plus, MessageSquare, ShieldCheck, ThumbsUp, Sparkles, Loader2, Upload, X } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { translateText } from "@/utils/translator";
+import { Toast } from "@/components/ui/Toast";
+import { uploadMedia } from "@/lib/api";
 
 interface Testimonial {
   id: string;
@@ -14,6 +16,7 @@ interface Testimonial {
   reviewEN: string;
   trip: string;
   approved: boolean;
+  avatar?: string;
 }
 
 const DEFAULT_TESTIMONIALS: Testimonial[] = [
@@ -25,7 +28,8 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     reviewID: "Pelayanan KlikTravel sangat luar biasa! Itinerary terencana dengan sangat rapi dan hotel bintang 4 di Shinjuku sangat strategis.",
     reviewEN: "KlikTravel's service was outstanding! The itinerary was beautifully planned and the 4★ Shinjuku hotel was extremely strategic.",
     trip: "Tokyo Explorer Open Trip",
-    approved: true
+    approved: true,
+    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200"
   },
   {
     id: "TEST-02",
@@ -35,7 +39,8 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     reviewID: "Perjalanan private ke Labuan Bajo sangat berkesan. Seluruh kru ramah dan makanan di phinisi bintang lima!",
     reviewEN: "Our private trip to Labuan Bajo was unforgettable. All crew members were warm and the phinisi food was five-star!",
     trip: "Labuan Bajo Private Phinisi",
-    approved: true
+    approved: true,
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200"
   }
 ];
 
@@ -53,6 +58,24 @@ export default function AdminTestimonialsPage() {
   const [reviewIDField, setReviewIDField] = useState("");
   const [reviewENField, setReviewENField] = useState("");
   const [tripField, setTripField] = useState("");
+  const [avatarField, setAvatarField] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const uploaded = await uploadMedia(file);
+      setAvatarField(uploaded.url);
+      setToast({ message: locale === "id" ? "Avatar berhasil diunggah!" : "Avatar uploaded successfully!", type: "success" });
+    } catch (err: any) {
+      setToast({ message: err.message || "Gagal mengunggah avatar", type: "error" });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   // Load from localStorage or defaults
   useEffect(() => {
@@ -105,7 +128,8 @@ export default function AdminTestimonialsPage() {
       reviewID: reviewIDField,
       reviewEN: reviewENField || reviewIDField,
       trip: tripField || "Custom Trip",
-      approved: true
+      approved: true,
+      avatar: avatarField || `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200`
     };
 
     const updated = [...testimonials, newTestimonial];
@@ -117,19 +141,23 @@ export default function AdminTestimonialsPage() {
     setReviewIDField("");
     setReviewENField("");
     setTripField("");
+    setAvatarField("");
     setFormLang("id");
+    setToast({ message: locale === "id" ? "Testimoni berhasil ditambahkan!" : "Testimonial added successfully!", type: "success" });
   };
 
   const handleDelete = (id: string) => {
     if (confirm(locale === "id" ? "Hapus ulasan ini?" : "Delete this review?")) {
       const updated = testimonials.filter(t => t.id !== id);
       saveTestimonialsStorage(updated);
+      setToast({ message: locale === "id" ? "Testimoni berhasil dihapus!" : "Testimonial deleted successfully!", type: "success" });
     }
   };
 
   const toggleApproval = (id: string) => {
     const updated = testimonials.map(t => t.id === id ? { ...t, approved: !t.approved } : t);
     saveTestimonialsStorage(updated);
+    setToast({ message: locale === "id" ? "Status moderasi berhasil diubah!" : "Moderation status updated!", type: "success" });
   };
 
   return (
@@ -212,6 +240,37 @@ export default function AdminTestimonialsPage() {
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none"
                 />
               </div>
+            </div>
+
+            {/* Avatar Photo Input */}
+            <div>
+              <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                Client Photo / Avatar (URL / Upload)
+              </label>
+              <div className="flex gap-2 items-center">
+                <input 
+                  type="text" 
+                  value={avatarField}
+                  onChange={(e) => setAvatarField(e.target.value)}
+                  placeholder="https://..."
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:border-[#A89053]"
+                />
+                <label className="inline-flex items-center gap-1 px-3 py-3 rounded-xl bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 font-bold uppercase tracking-wider text-[9px] cursor-pointer shrink-0">
+                  {isUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                  <span>{isUploading ? "Uploading..." : "Upload"}</span>
+                  <input type="file" accept="image/*" className="hidden" disabled={isUploading} onChange={handleImageUpload} />
+                </label>
+              </div>
+              {avatarField && (
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-200">
+                    <img src={avatarField} alt="Avatar Preview" className="w-full h-full object-cover" />
+                  </div>
+                  <button type="button" onClick={() => setAvatarField("")} className="text-[10px] text-red-500 font-bold uppercase tracking-wider hover:underline">
+                    Remove
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Language Tab Switcher */}
@@ -299,25 +358,37 @@ export default function AdminTestimonialsPage() {
             <div className="divide-y divide-slate-100">
               {testimonials.map((test) => (
                 <div key={test.id} className="py-4 flex items-start justify-between gap-4">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-serif font-bold text-slate-800 text-sm">{test.name}</h3>
-                      <span className="text-[10px] text-slate-400 font-sans">({test.role})</span>
-                      <span className="text-[9px] font-mono uppercase bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">
-                        {test.trip}
-                      </span>
+                  <div className="flex items-start gap-3">
+                    {/* User Avatar */}
+                    <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-100 shrink-0 bg-slate-50">
+                      {test.avatar ? (
+                        <img src={test.avatar} alt={test.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-[#0F2C59] to-[#0284C7] text-white flex items-center justify-center font-bold text-sm">
+                          {test.name.charAt(0)}
+                        </div>
+                      )}
                     </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-serif font-bold text-slate-800 text-sm">{test.name}</h3>
+                        <span className="text-[10px] text-slate-400 font-sans">({test.role})</span>
+                        <span className="text-[9px] font-mono uppercase bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">
+                          {test.trip}
+                        </span>
+                      </div>
 
-                    {/* Star Rating Preview */}
-                    <div className="flex items-center gap-0.5 text-amber-500">
-                      {Array.from({ length: test.rating }).map((_, i) => (
-                        <Star key={i} size={11} className="fill-amber-500" />
-                      ))}
+                      {/* Star Rating Preview */}
+                      <div className="flex items-center gap-0.5 text-amber-500">
+                        {Array.from({ length: test.rating }).map((_, i) => (
+                          <Star key={i} size={11} className="fill-amber-500" />
+                        ))}
+                      </div>
+
+                      <p className="text-xs text-slate-600 font-sans font-light leading-relaxed max-w-xl">
+                        "{locale === "id" ? test.reviewID : test.reviewEN}"
+                      </p>
                     </div>
-
-                    <p className="text-xs text-slate-600 font-sans font-light leading-relaxed max-w-xl">
-                      "{locale === "id" ? test.reviewID : test.reviewEN}"
-                    </p>
                   </div>
 
                   <div className="flex items-center gap-1.5 shrink-0">
@@ -348,6 +419,13 @@ export default function AdminTestimonialsPage() {
           </div>
         </div>
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

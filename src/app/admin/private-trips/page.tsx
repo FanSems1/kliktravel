@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Ship, Plus, Trash2, Edit3, MessageSquare, CheckCircle2, Clock, Calendar, Users, Phone, Sparkles, Loader2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { translateText } from "@/utils/translator";
+import { Toast } from "@/components/ui/Toast";
 
 interface PrivateTripInquiry {
   id: string;
@@ -50,6 +51,7 @@ export default function AdminPrivateTripsPage() {
   const { locale } = useLanguage();
   const [inquiries, setInquiries] = useState<PrivateTripInquiry[]>([]);
   const [translatingId, setTranslatingId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   // Load inquiries from localStorage + defaults
   useEffect(() => {
@@ -57,9 +59,7 @@ export default function AdminPrivateTripsPage() {
       const saved = localStorage.getItem("klik_private_trip_inquiries");
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Merge with DEFAULT_INQUIRIES if empty or prepend new ones
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Avoid duplicate default entries by checking ID
           const existingIds = new Set(parsed.map((p: PrivateTripInquiry) => p.id));
           const missingDefaults = DEFAULT_INQUIRIES.filter(d => !existingIds.has(d.id));
           setInquiries([...parsed, ...missingDefaults]);
@@ -84,21 +84,31 @@ export default function AdminPrivateTripsPage() {
   };
 
   const toggleStatus = (id: string) => {
+    let nextStateStr = "";
     const updated = inquiries.map(inq => {
       if (inq.id === id) {
         const nextStatus: "new" | "contacted" | "closed" = 
           inq.status === "new" ? "contacted" : inq.status === "contacted" ? "closed" : "new";
+        nextStateStr = nextStatus;
         return { ...inq, status: nextStatus };
       }
       return inq;
     });
     saveInquiriesStorage(updated);
+    setToast({
+      message: locale === "id" ? `Status diubah menjadi ${nextStateStr}` : `Status updated to ${nextStateStr}`,
+      type: "success"
+    });
   };
 
   const handleDelete = (id: string) => {
     if (confirm(locale === "id" ? "Hapus permintaan ini?" : "Delete this inquiry?")) {
       const updated = inquiries.filter(i => i.id !== id);
       saveInquiriesStorage(updated);
+      setToast({
+        message: locale === "id" ? "Permintaan berhasil dihapus" : "Inquiry deleted successfully",
+        type: "success"
+      });
     }
   };
 
@@ -109,6 +119,10 @@ export default function AdminPrivateTripsPage() {
     const updated = inquiries.map(item => item.id === inq.id ? { ...item, notesEN: translated } : item);
     saveInquiriesStorage(updated);
     setTranslatingId(null);
+    setToast({
+      message: locale === "id" ? "Catatan berhasil diterjemahkan" : "Notes translated successfully",
+      type: "success"
+    });
   };
 
   return (
@@ -222,6 +236,13 @@ export default function AdminPrivateTripsPage() {
           )}
         </div>
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

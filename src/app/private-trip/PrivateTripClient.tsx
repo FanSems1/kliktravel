@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/context/LanguageContext";
-import { Calendar, Compass, Users, Star, ShieldCheck, Phone, CheckCircle2 } from "lucide-react";
+import { Calendar, Compass, Users, Star, ShieldCheck, Phone, CheckCircle2, ChevronLeft, ChevronRight, Quote } from "lucide-react";
 
 const localizedPrivateDestinations = {
   id: [
@@ -24,19 +24,25 @@ const localizedTestimonials = {
       text: "Pengalaman private trip ke Jepang yang sangat luar biasa. Itinerary disusun sangat rapi dan fleksibel sesuai kebutuhan keluarga kami. Guide sangat informatif dan ramah.",
       name: "Andi W.",
       trip: "Kyoto Autumn Trip",
-      initial: "A"
+      initial: "A",
+      rating: 5,
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200"
     },
     {
       text: "Komodo trip terbaik yang pernah saya rasakan. Fasilitas kapal pinisi super mewah, kru yang profesional, dan makanan kelas bintang lima setiap harinya. Highly recommended!",
       name: "Sarah L.",
       trip: "Sailing Komodo",
-      initial: "S"
+      initial: "S",
+      rating: 5,
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200"
     },
     {
       text: "Layanan eksklusif dari awal hingga akhir. Seluruh kekhawatiran kami diurus dengan baik. Kami bisa menikmati liburan keluarga di Eropa tanpa sedikitpun merasa repot atau stress.",
       name: "Dimas & Keluarga",
       trip: "Swiss Alps Retreat",
-      initial: "D"
+      initial: "D",
+      rating: 5,
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200"
     }
   ],
   en: [
@@ -44,19 +50,25 @@ const localizedTestimonials = {
       text: "An absolutely amazing private trip to Japan. The itinerary was well organized and flexible according to our family's needs. The guide was informative and friendly.",
       name: "Andi W.",
       trip: "Kyoto Autumn Trip",
-      initial: "A"
+      initial: "A",
+      rating: 5,
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200"
     },
     {
       text: "The best Komodo trip I've ever experienced. Super luxury phinisi boat facilities, professional crew, and 5-star meals every day. Highly recommended!",
       name: "Sarah L.",
       trip: "Sailing Komodo",
-      initial: "S"
+      initial: "S",
+      rating: 5,
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200"
     },
     {
       text: "Exclusive service from start to finish. All our worries were handled beautifully. We enjoyed our family holiday in Europe without any hassle or stress.",
       name: "Dimas & Family",
       trip: "Swiss Alps Retreat",
-      initial: "D"
+      initial: "D",
+      rating: 5,
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200"
     }
   ]
 };
@@ -129,7 +141,32 @@ export function PrivateTripClient() {
   };
 
   const popularPrivateDestinations = localizedPrivateDestinations[locale];
-  const testimonials = localizedTestimonials[locale];
+  const [testimonialList, setTestimonialList] = useState<any[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("klik_admin_testimonials");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const approvedOnly = parsed.filter((t: any) => t.approved);
+        setTestimonialList(approvedOnly.length > 0 ? approvedOnly : localizedTestimonials[locale]);
+      } else {
+        setTestimonialList(localizedTestimonials[locale]);
+      }
+    } catch {
+      setTestimonialList(localizedTestimonials[locale]);
+    }
+  }, [locale]);
+
+  const handleScroll = (direction: "left" | "right") => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const scrollOffset = clientWidth * 0.75;
+      const targetScroll = direction === "left" ? scrollLeft - scrollOffset : scrollLeft + scrollOffset;
+      scrollRef.current.scrollTo({ left: targetScroll, behavior: "smooth" });
+    }
+  };
 
   return (
     <div className="bg-[#F8FAFC] text-foreground min-h-screen font-sans selection:bg-[#0284C7] selection:text-white pb-0">
@@ -350,52 +387,49 @@ export function PrivateTripClient() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div>
                   <label className="block font-sans text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                    {locale === "id" ? "Jumlah Peserta" : "Number of Guests"}
+                    {t("private_trip_form_label_adults")}
                   </label>
-                  <div className="flex gap-4 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 h-[46px] items-center">
-                    <div className="flex-1 flex items-center justify-between">
-                      <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{t("private_trip_form_label_adults")}</span>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleDecrement("adults")}
-                          className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center text-[#0F2C59] hover:bg-sky-50 font-bold text-xs cursor-pointer transition-colors"
-                        >
-                          -
-                        </button>
-                        <span className="text-xs font-bold text-[#0F2C59] w-3 text-center">{formData.adults}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleIncrement("adults")}
-                          className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center text-[#0F2C59] hover:bg-sky-50 font-bold text-xs cursor-pointer transition-colors"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex-1 flex items-center justify-between border-l border-gray-200 pl-4">
-                      <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{t("private_trip_form_label_children")}</span>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleDecrement("children")}
-                          className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center text-[#0F2C59] hover:bg-sky-50 font-bold text-xs cursor-pointer transition-colors"
-                        >
-                          -
-                        </button>
-                        <span className="text-xs font-bold text-[#0F2C59] w-3 text-center">{formData.children}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleIncrement("children")}
-                          className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center text-[#0F2C59] hover:bg-sky-50 font-bold text-xs cursor-pointer transition-colors"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
+                  <div className="flex bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 h-[48px] items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => handleDecrement("adults")}
+                      className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center text-[#0F2C59] hover:bg-sky-50 font-bold text-sm cursor-pointer transition-colors"
+                    >
+                      -
+                    </button>
+                    <span className="text-sm font-bold text-[#0F2C59] w-6 text-center">{formData.adults}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleIncrement("adults")}
+                      className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center text-[#0F2C59] hover:bg-sky-50 font-bold text-sm cursor-pointer transition-colors"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block font-sans text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    {t("private_trip_form_label_children")}
+                  </label>
+                  <div className="flex bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 h-[48px] items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => handleDecrement("children")}
+                      className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center text-[#0F2C59] hover:bg-sky-50 font-bold text-sm cursor-pointer transition-colors"
+                    >
+                      -
+                    </button>
+                    <span className="text-sm font-bold text-[#0F2C59] w-6 text-center">{formData.children}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleIncrement("children")}
+                      className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center text-[#0F2C59] hover:bg-sky-50 font-bold text-sm cursor-pointer transition-colors"
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
                 <div>
@@ -407,7 +441,7 @@ export function PrivateTripClient() {
                     value={formData.budget}
                     onChange={handleInputChange}
                     placeholder={t("private_trip_form_placeholder_budget")} 
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm text-[#0F2C59] focus:outline-none focus:ring-2 focus:ring-[#0284C7]/50 focus:border-[#0284C7] transition-all"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#0F2C59] focus:outline-none focus:ring-2 focus:ring-[#0284C7]/50 focus:border-[#0284C7] h-[48px] transition-all"
                   />
                 </div>
               </div>
@@ -438,38 +472,73 @@ export function PrivateTripClient() {
       </section>
 
       {/* Testimonial Section */}
-      <section className="w-full bg-[#F8FAFC] py-24 px-6 border-t border-gray-100">
+      <section className="w-full bg-[#F8FAFC] py-24 px-6 border-t border-gray-100 overflow-hidden">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-[#0284C7] font-bold block mb-4">
-              {t("private_trip_testimonial_tag")}
-            </span>
-            <h2 className="font-serif text-4xl md:text-5xl text-[#0F2C59] font-normal tracking-wide">
-              {t("private_trip_testimonial_title")}
-            </h2>
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+            <div>
+              <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-[#0284C7] font-bold block mb-4">
+                {t("private_trip_testimonial_tag")}
+              </span>
+              <h2 className="font-serif text-4xl md:text-5xl text-[#0F2C59] font-normal tracking-wide">
+                {t("private_trip_testimonial_title")}
+              </h2>
+            </div>
+            
+            {/* Carousel Arrows */}
+            <div className="flex gap-3 shrink-0">
+              <button
+                onClick={() => handleScroll("left")}
+                className="p-4 rounded-full border border-[#0F2C59]/10 text-[#0F2C59] hover:bg-[#0F2C59] hover:text-white transition-all duration-300 shadow-xs cursor-pointer"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button
+                onClick={() => handleScroll("right")}
+                className="p-4 rounded-full border border-[#0F2C59]/10 text-[#0F2C59] hover:bg-[#0F2C59] hover:text-white transition-all duration-300 shadow-xs cursor-pointer"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.slice(0, 3).map((test, idx) => (
-              <div key={idx} className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col justify-between">
-                <div>
+
+          <div
+            ref={scrollRef}
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-8"
+          >
+            {testimonialList.map((test, idx) => (
+              <div
+                key={test.id || idx}
+                className="bg-white rounded-3xl p-8 border border-gray-100 shadow-xs hover:shadow-xl transition-all duration-500 flex flex-col justify-between shrink-0 w-[85vw] sm:w-[45vw] md:w-[31vw] snap-center min-h-[320px] relative overflow-hidden group"
+              >
+                <Quote className="absolute top-6 right-6 w-16 h-16 text-slate-100 group-hover:text-amber-100/60 transition-colors duration-500 pointer-events-none" />
+
+                <div className="relative z-10">
                   <div className="flex text-amber-400 mb-6 gap-1">
-                    <Star className="w-4 h-4 fill-current" />
-                    <Star className="w-4 h-4 fill-current" />
-                    <Star className="w-4 h-4 fill-current" />
-                    <Star className="w-4 h-4 fill-current" />
-                    <Star className="w-4 h-4 fill-current" />
+                    {Array.from({ length: test.rating || 5 }).map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-current" />
+                    ))}
                   </div>
                   <p className="font-sans text-gray-600 text-sm leading-relaxed mb-8 italic">
-                    "{test.text}"
+                    "{test.reviewID || test.text}"
                   </p>
                 </div>
-                <div className="flex items-center gap-4 border-t border-gray-50 pt-6">
-                  <div className="w-10 h-10 bg-sky-50 rounded-full flex items-center justify-center font-serif text-[#0f2c59] font-bold text-lg shrink-0">
-                    {test.initial}
+                <div className="relative z-10 flex items-center gap-4 border-t border-gray-50 pt-6 mt-auto">
+                  <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border border-slate-100 shadow-md bg-slate-50 flex items-center justify-center">
+                    {test.avatar ? (
+                      <img src={test.avatar} alt={test.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-[#0F2C59] to-[#0284C7] text-white flex items-center justify-center font-serif text-lg font-bold">
+                        {test.name ? test.name.charAt(0) : "T"}
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <h4 className="font-sans font-bold text-[#0F2C59] text-sm">{test.name}</h4>
-                    <p className="font-sans text-[10px] text-gray-500 uppercase tracking-widest mt-1">{test.trip}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="font-sans font-bold text-[#0F2C59] text-base truncate">{test.name}</h4>
+                      <CheckCircle2 className="w-4 h-4 text-[#0284C7] shrink-0" />
+                    </div>
+                    <p className="font-sans text-[11px] text-[#A89053] font-semibold uppercase tracking-wider truncate mt-0.5">{test.trip}</p>
                   </div>
                 </div>
               </div>

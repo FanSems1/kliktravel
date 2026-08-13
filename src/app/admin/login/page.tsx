@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Lock, Mail, Eye, EyeOff, ArrowRight, ShieldCheck, KeyRound, AlertCircle } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { apiFetch, setStoredToken } from "@/lib/api";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -25,32 +26,39 @@ export default function AdminLoginPage() {
     setErrorMsg(null);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMsg(null);
 
-    // Simple mock authentication check
-    setTimeout(() => {
-      if ((email === "admin@kliktravel.id" || email === "admin") && password === "admin123") {
-        setSuccessMsg(locale === "id" ? "Autentikasi berhasil! Mengalihkan..." : "Authentication successful! Redirecting...");
-        // Set admin session state
-        if (typeof window !== "undefined") {
-          localStorage.setItem("kt_admin_logged_in", "true");
-          document.cookie = "kt_admin_logged_in=true; path=/; max-age=86400;";
-        }
-        setTimeout(() => {
-          router.push("/admin");
-        }, 800);
-      } else {
-        setIsLoading(false);
-        setErrorMsg(
-          locale === "id" 
-            ? "Email atau kata sandi salah. Gunakan demo: admin@kliktravel.id / admin123" 
-            : "Invalid credentials. Use demo: admin@kliktravel.id / admin123"
-        );
+    try {
+      const res = await apiFetch<{ accessToken: string; user?: any }>("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+
+      setSuccessMsg(locale === "id" ? "Autentikasi berhasil! Mengalihkan..." : "Authentication successful! Redirecting...");
+      
+      if (res.accessToken) {
+        setStoredToken(res.accessToken);
       }
-    }, 900);
+      
+      if (typeof window !== "undefined") {
+        localStorage.setItem("kt_admin_logged_in", "true");
+        document.cookie = "kt_admin_logged_in=true; path=/; max-age=86400;";
+      }
+
+      setTimeout(() => {
+        router.push("/admin");
+      }, 800);
+    } catch (err: any) {
+      setIsLoading(false);
+      setErrorMsg(
+        err.message || (locale === "id" 
+          ? "Email atau kata sandi salah." 
+          : "Invalid credentials.")
+      );
+    }
   };
 
   return (

@@ -16,27 +16,23 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const journey = journeys.find((j) => j.slug === slug);
 
-  if (!journey) {
-    return { title: "Journey Not Found | Klik Travel ID" };
-  }
-
   return {
-    title: `${journey.title} — ${journey.destination} | Klik Travel ID`,
-    description: journey.introDescription,
+    title: journey ? `${journey.title} — ${journey.destination} | Klik Travel ID` : "Journey Detail | Klik Travel ID",
+    description: journey ? journey.introDescription : "Premium editorial travel experiences curated by Klik Travel ID.",
     alternates: {
-      canonical: `https://kliktravel.id/journeys/${journey.slug}`
+      canonical: `https://kliktravel.id/journeys/${slug}`
     },
     openGraph: {
-      title: `${journey.title} | Premium Journey`,
-      description: journey.introDescription,
-      url: `https://kliktravel.id/journeys/${journey.slug}`,
+      title: journey ? `${journey.title} | Premium Journey` : "Premium Journey",
+      description: journey ? journey.introDescription : "Premium editorial travel experiences.",
+      url: `https://kliktravel.id/journeys/${slug}`,
       siteName: "Klik Travel ID",
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: `${journey.title} | Premium Journey`,
-      description: journey.introDescription,
+      title: journey ? `${journey.title} | Premium Journey` : "Premium Journey",
+      description: journey ? journey.introDescription : "Premium editorial travel experiences.",
     }
   };
 }
@@ -45,12 +41,8 @@ export default async function JourneyDetailPage({ params }: { params: Promise<{ 
   const { slug } = await params;
   const journey = journeys.find((j) => j.slug === slug);
 
-  if (!journey) {
-    notFound();
-  }
-
   // Schema.org Structured Data
-  const jsonLd = {
+  const jsonLd = journey ? {
     "@context": "https://schema.org",
     "@type": "TouristTrip",
     "name": journey.title,
@@ -74,14 +66,16 @@ export default async function JourneyDetailPage({ params }: { params: Promise<{ 
         }
       }))
     }
-  };
+  } : null;
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       <main className="bg-ivory text-foreground font-sans min-h-screen">
         <JourneyDetailClient slug={slug} />
       </main>

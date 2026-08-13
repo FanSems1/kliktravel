@@ -5,6 +5,8 @@ import { Plus, Trash2, Edit3, Save, X, BookOpen, Star, FileText, Upload, Sparkle
 import { useLanguage } from "@/context/LanguageContext";
 import { journalArticles, JournalArticle } from "@/data/journal";
 import { translateText } from "@/utils/translator";
+import { Toast } from "@/components/ui/Toast";
+import { uploadMedia } from "@/lib/api";
 
 export default function AdminJournalPage() {
   const { locale } = useLanguage();
@@ -37,6 +39,8 @@ export default function AdminJournalPage() {
   const [readTimeIDField, setReadTimeIDField] = useState("5 mnt membaca");
   const [readTimeENField, setReadTimeENField] = useState("5 min read");
   const [featuredField, setFeaturedField] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Load initial list from localStorage if present
   useEffect(() => {
@@ -61,16 +65,19 @@ export default function AdminJournalPage() {
     }
   };
 
-  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>, callback: (base64: string) => void) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === "string") {
-        callback(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    setIsUploading(true);
+    try {
+      const uploaded = await uploadMedia(file);
+      setImageField(uploaded.url);
+      setToast({ message: locale === "id" ? "Cover berhasil diunggah!" : "Cover uploaded successfully!", type: "success" });
+    } catch (err: any) {
+      setToast({ message: err.message || "Gagal mengunggah cover", type: "error" });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // Unified auto-translate handler for all active fields
@@ -128,6 +135,10 @@ export default function AdminJournalPage() {
       }
     }
     setIsTranslating(false);
+    setToast({
+      message: locale === "id" ? "Terjemahan otomatis selesai!" : "Auto-translation complete!",
+      type: "success"
+    });
   };
 
   const resetForm = () => {
@@ -173,9 +184,13 @@ export default function AdminJournalPage() {
   };
 
   const handleDelete = (slug: string) => {
-    if (confirm("Delete this article?")) {
+    if (confirm(locale === "id" ? "Hapus artikel ini?" : "Delete this article?")) {
       const updated = articles.filter(a => a.slug !== slug);
       saveArticlesStorage(updated);
+      setToast({
+        message: locale === "id" ? "Artikel berhasil dihapus" : "Article deleted successfully",
+        type: "success"
+      });
     }
   };
 
@@ -209,6 +224,12 @@ export default function AdminJournalPage() {
     }
     saveArticlesStorage(updatedList);
     resetForm();
+    setToast({
+      message: editSlug
+        ? (locale === "id" ? "Artikel berhasil diperbarui!" : "Article updated successfully!")
+        : (locale === "id" ? "Artikel berhasil dipublikasikan!" : "Article published successfully!"),
+      type: "success"
+    });
   };
 
   return (
@@ -265,9 +286,9 @@ export default function AdminJournalPage() {
                     className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
                   />
                   <label className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 font-bold uppercase tracking-wider text-[9px] cursor-pointer shrink-0">
-                    <Upload size={12} />
-                    <span>Upload</span>
-                    <input type="file" accept="image/*" className="hidden" onChange={e => handleImageFileChange(e, setImageField)} />
+                    {isUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                    <span>{isUploading ? "Uploading..." : "Upload"}</span>
+                    <input type="file" accept="image/*" className="hidden" disabled={isUploading} onChange={handleImageUpload} />
                   </label>
                 </div>
               </div>
@@ -576,6 +597,13 @@ export default function AdminJournalPage() {
           </div>
         </div>
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

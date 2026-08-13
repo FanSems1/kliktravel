@@ -5,21 +5,25 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, Search, ChevronDown, Globe, ArrowRight } from "lucide-react";
-import { indonesianRegions } from "@/data/destinations";
+import { localizedRegions, RegionDestination } from "@/data/destinations";
 import { useLanguage } from "@/context/LanguageContext";
+import { apiFetch } from "@/lib/api";
 
-const regionImages: Record<string, string> = {
+const regionHeroImages: Record<string, string> = {
   indonesia: "https://images.unsplash.com/photo-1501179691627-eeaa65ea017c?q=80&w=800",
   thailand: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=800",
+  tailen: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=800",
   vietnam: "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=800",
   korea: "https://images.unsplash.com/photo-1517154421773-0529f29ea451?q=80&w=800",
   japan: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=800",
   china: "https://images.unsplash.com/photo-1547989453-11e67ffb3885?q=80&w=800",
+  swiss: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?q=80&w=800",
+  switzerland: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?q=80&w=800",
   india: "https://images.unsplash.com/photo-1564507592333-c60657eea523?q=80&w=800",
   others: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=800",
 };
 
-const defaultFeaturedImage = "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=800"; // Komodo Sailing
+const defaultFeaturedImage = "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=800";
 
 export function Header() {
   const { t, locale, setLocale } = useLanguage();
@@ -31,6 +35,68 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDestinationsHovered, setIsDestinationsHovered] = useState(false);
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
+
+  // Dynamic Regions state
+  const [regions, setRegions] = useState<RegionDestination[]>(localizedRegions[locale] || []);
+
+  useEffect(() => {
+    async function loadRegions() {
+      try {
+        // 1. Try public API first
+        const data = await apiFetch<any[]>(`/destinations?locale=${locale}`).catch(() => null);
+        if (data && Array.isArray(data) && data.length > 0) {
+          const mapped: RegionDestination[] = data.map((r) => {
+            let gradient = r.featuredImageGradient || "from-[#E0F2FE] to-[#7DD3FC]";
+            let image = "";
+            if (gradient.includes("||")) {
+              const parts = gradient.split("||");
+              gradient = parts[0];
+              image = parts[1];
+            }
+
+            const subDestinations = (r.subDestinations || []).map((s: any) => {
+              let subName = s.name || s.nameId || s.nameEn || "";
+              let subImage = "";
+              if (subName.includes("||")) {
+                const parts = subName.split("||");
+                subName = parts[0];
+                subImage = parts[1];
+              }
+              return {
+                name: subName,
+                slug: s.slug,
+                image: subImage
+              };
+            });
+
+            return {
+              id: r.id || r.key || r.slug,
+              name: r.name ? r.name.split("||")[0] : r.slug,
+              slug: r.slug,
+              subtitle: r.subtitle || "",
+              featuredImageGradient: gradient,
+              image: image || regionHeroImages[r.slug] || regionHeroImages[r.key] || defaultFeaturedImage,
+              subDestinations
+            };
+          });
+          setRegions(mapped);
+          return;
+        }
+
+        // 2. Fallback to localStorage
+        const saved = localStorage.getItem("klik_admin_destinations");
+        if (saved) {
+          setRegions(JSON.parse(saved));
+          return;
+        }
+      } catch (err) {
+        console.error("Header: Failed to load regions", err);
+      }
+      setRegions(localizedRegions[locale] || []);
+    }
+
+    loadRegions();
+  }, [locale]);
 
   const handleHomeClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (pathname === "/") {
@@ -47,7 +113,6 @@ export function Header() {
     }
   };
 
-  // Check if current page is light-themed and needs a dark navbar
   const isLightPage = 
     (pathname === "/journal" ? isScrolled : false) ||
     pathname?.startsWith("/journal/") ||
@@ -74,6 +139,8 @@ export function Header() {
     setLocale(locale === "id" ? "en" : "id");
   };
 
+  const activeHoveredObj = hoveredRegion ? regions.find(r => r.slug === hoveredRegion) : null;
+
   return (
     <>
       <motion.header
@@ -97,13 +164,13 @@ export function Header() {
             />
           </Link>
           
-          {/* Desktop Nav Links (Full width single row, transparent-to-solid) */}
+          {/* Desktop Nav Links */}
           <nav className="hidden md:flex items-center space-x-10">
             <Link 
               href="/"
               onClick={handleHomeClick}
               className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${
-                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white/80 hover:text-white"
+                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white font-semibold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-white/90"
               }`}
             >
               {t("nav_home")}
@@ -115,7 +182,7 @@ export function Header() {
             <Link 
               href="/journeys"
               className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${
-                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white/80 hover:text-white"
+                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white font-semibold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-white/90"
               }`}
             >
               {t("nav_journeys")}
@@ -124,15 +191,15 @@ export function Header() {
               }`} />
             </Link>
 
-            {/* Destinations Hover Item */}
+            {/* Destinations / OPEN TRIP Hover Item */}
             <div 
               className="relative py-2"
               onMouseEnter={() => setIsDestinationsHovered(true)}
               onMouseLeave={() => setIsDestinationsHovered(false)}
             >
               <button
-                className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 flex items-center space-x-1 ${
-                  showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white/80 hover:text-white"
+                className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 flex items-center space-x-1 cursor-pointer ${
+                  showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white font-semibold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-white/90"
                 }`}
               >
                 <span>{t("nav_destinations")}</span>
@@ -159,25 +226,25 @@ export function Header() {
                           {t("destinations_title")}
                         </span>
                         <h4 className="font-serif text-2xl text-[#0F2C59] font-normal mb-3">
-                          {hoveredRegion ? indonesianRegions.find(r => r.slug === hoveredRegion)?.name : t("destinations_subtitle")}
+                          {activeHoveredObj ? activeHoveredObj.name : t("destinations_subtitle")}
                         </h4>
-                        <p className="font-sans text-xs text-[#0F2C59]/70 leading-relaxed font-light">
-                          {hoveredRegion 
-                            ? indonesianRegions.find(r => r.slug === hoveredRegion)?.subtitle 
+                        <p className="font-sans text-xs text-[#0F2C59]/70 leading-relaxed font-light line-clamp-3">
+                          {activeHoveredObj 
+                            ? activeHoveredObj.subtitle 
                             : t("destinations_desc")}
                         </p>
                       </div>
                       
                       {/* Premium Image Featured */}
-                      <div className="w-full aspect-[4/3] rounded-xl overflow-hidden relative mt-6 shadow-sm group">
+                      <div className="w-full aspect-[4/3] rounded-xl overflow-hidden relative mt-6 shadow-sm group border border-slate-100">
                         <img 
-                          src={hoveredRegion ? regionImages[hoveredRegion] : defaultFeaturedImage} 
+                          src={activeHoveredObj?.image || activeHoveredObj?.featuredImageGradient || regionHeroImages[activeHoveredObj?.slug || ""] || defaultFeaturedImage} 
                           alt="Featured Destination"
                           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#0F2C59]/80 via-transparent to-transparent opacity-80" />
-                        <div className="absolute bottom-4 left-4 right-4 font-sans font-medium text-xs tracking-wide text-white">
-                          {hoveredRegion ? `EXPLORE ${indonesianRegions.find(r => r.slug === hoveredRegion)?.name.toUpperCase()}` : t("destinations_featured")}
+                        <div className="absolute bottom-4 left-4 right-4 font-sans font-medium text-xs tracking-wide text-white uppercase">
+                          {activeHoveredObj ? `EXPLORE ${activeHoveredObj.name}` : t("destinations_featured")}
                         </div>
                       </div>
                     </div>
@@ -189,7 +256,7 @@ export function Header() {
                           {t("destinations_regions")}
                         </span>
                         <div className="grid grid-cols-2 gap-y-4 gap-x-6">
-                          {indonesianRegions.map((region) => (
+                          {regions.map((region) => (
                             <Link
                               key={region.slug}
                               href={`/destinations/${region.slug}`}
@@ -197,7 +264,7 @@ export function Header() {
                               onMouseLeave={() => setHoveredRegion(null)}
                               className="group flex items-center justify-between font-sans text-sm text-[#0F2C59]/80 hover:text-[#0284C7] transition-all duration-300 py-1"
                             >
-                              <span className="group-hover:translate-x-1 transition-transform duration-300">
+                              <span className="group-hover:translate-x-1 transition-transform duration-300 font-medium">
                                 {region.name}
                               </span>
                               <ArrowRight size={14} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
@@ -230,7 +297,7 @@ export function Header() {
                 key={item.href} 
                 href={item.href}
                 className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${
-                  showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white/80 hover:text-white"
+                  showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white font-semibold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-white/90"
                 }`}
               >
                 {t(item.key as keyof typeof import("@/data/translations").translations["id"])}
@@ -246,7 +313,7 @@ export function Header() {
             <button 
               onClick={toggleLanguage}
               className={`flex items-center space-x-1 transition-colors p-1 cursor-pointer ${
-                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white/80 hover:text-white"
+                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-white/90"
               }`}
               aria-label="Toggle Language"
             >
@@ -257,7 +324,7 @@ export function Header() {
             </button>
             <button 
               className={`transition-colors p-1 cursor-pointer ${
-                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white/80 hover:text-white"
+                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-white/90"
               }`} 
               aria-label="Search"
             >
@@ -318,7 +385,6 @@ export function Header() {
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             className="fixed inset-0 z-40 bg-ivory flex flex-col justify-between p-8 pt-32 overflow-y-auto"
           >
-            {/* Background Texture inside menu */}
             <div className="absolute inset-0 image-texture opacity-10 pointer-events-none" />
 
             <div className="flex flex-col space-y-6 text-left max-w-md mx-auto w-full z-10">
@@ -336,6 +402,14 @@ export function Header() {
                 className="font-serif text-4xl tracking-wide text-foreground hover:text-[#0284C7] transition-colors block py-2"
               >
                 {t("nav_journeys")}
+              </Link>
+
+              <Link 
+                href="/destinations"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="font-serif text-4xl tracking-wide text-foreground hover:text-[#0284C7] transition-colors block py-2"
+              >
+                {t("nav_destinations")}
               </Link>
 
               {[
@@ -363,7 +437,6 @@ export function Header() {
               </div>
             </div>
 
-            {/* Bottom Menu Info */}
             <div className="max-w-md mx-auto w-full border-t border-foreground/10 pt-8 z-10 flex justify-between items-center text-[10px] tracking-widest uppercase font-mono text-foreground mt-8">
               <div className="flex space-x-4 items-center">
                 <span>Klik Travel ID</span>

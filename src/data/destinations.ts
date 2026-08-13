@@ -6,9 +6,12 @@ export interface RegionDestination {
   subtitle: string;
   subtitleEN?: string;
   featuredImageGradient: string;
+  image?: string;
   subDestinations: {
     name: string;
+    nameEN?: string;
     slug: string;
+    image?: string;
   }[];
 }
 

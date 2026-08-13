@@ -1,19 +1,23 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { localizedRegions } from "@/data/destinations";
+import { motion, AnimatePresence } from "framer-motion";
+import { localizedRegions, RegionDestination } from "@/data/destinations";
 import { useLanguage } from "@/context/LanguageContext";
-import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Loader2 } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 const regionHeroImages: Record<string, string> = {
   indonesia: "https://images.unsplash.com/photo-1501179691627-eeaa65ea017c?q=80&w=2000",
   thailand: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2000",
+  tailen: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2000",
   vietnam: "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=2000",
   korea: "https://images.unsplash.com/photo-1517154421773-0529f29ea451?q=80&w=2000",
   japan: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2000",
   china: "https://images.unsplash.com/photo-1547989453-11e67ffb3885?q=80&w=2000",
+  swiss: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?q=80&w=2000",
+  switzerland: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?q=80&w=2000",
   india: "https://images.unsplash.com/photo-1564507592333-c60657eea523?q=80&w=2000",
   others: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=2000",
 };
@@ -46,17 +50,69 @@ const subDestinationImages: Record<string, string> = {
   australia: "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?q=80&w=800",
 };
 
+const defaultFeaturedImage = "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=2000";
+
 interface DestinationDetailClientProps {
   slug: string;
 }
 
 export function DestinationDetailClient({ slug }: DestinationDetailClientProps) {
   const { locale } = useLanguage();
-  const region = localizedRegions[locale].find((r) => r.slug === slug);
+  const [region, setRegion] = useState<RegionDestination | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [activeFilter, setActiveFilter] = useState("DESTINATIONS");
 
-  if (!region) return null;
+  useEffect(() => {
+    async function loadRegion() {
+      try {
+        const data = await apiFetch<any>(`/destinations/${slug}?locale=${locale}`).catch(() => null);
+        if (data) {
+          let gradient = data.featuredImageGradient || "from-[#E0F2FE] to-[#7DD3FC]";
+          let image = "";
+          if (gradient.includes("||")) {
+            const parts = gradient.split("||");
+            gradient = parts[0];
+            image = parts[1];
+          }
+
+          const subDestinations = (data.subDestinations || []).map((s: any) => {
+            let subName = s.name || s.nameId || s.nameEn || "";
+            let subImage = "";
+            if (subName.includes("||")) {
+              const parts = subName.split("||");
+              subName = parts[0];
+              subImage = parts[1];
+            }
+            return {
+              name: subName,
+              slug: s.slug,
+              image: subImage
+            };
+          });
+
+          setRegion({
+            id: data.id || data.key || data.slug,
+            name: data.name ? data.name.split("||")[0] : data.slug,
+            slug: data.slug,
+            subtitle: data.subtitle || "",
+            featuredImageGradient: gradient,
+            image: image || regionHeroImages[data.slug] || regionHeroImages[data.key] || defaultFeaturedImage,
+            subDestinations
+          });
+          setIsLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.error("DestinationDetailClient: Failed to load region", err);
+      }
+
+      // Fallback
+      const staticRegion = localizedRegions[locale].find((r) => r.slug === slug) || null;
+      setRegion(staticRegion);
+      setIsLoading(false);
+    }
+    loadRegion();
+  }, [slug, locale]);
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -70,11 +126,36 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#0284C7] animate-spin" />
+      </div>
+    );
+  }
+
+  if (!region) {
+    return (
+      <div className="min-h-screen bg-ivory flex flex-col items-center justify-center p-6 text-center">
+        <h2 className="font-serif text-3xl text-[#0F2C59] mb-4">Destination Not Found</h2>
+        <Link href="/destinations" className="text-[#0284C7] hover:underline font-medium text-sm">
+          Return to Destinations
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-ivory text-foreground min-h-screen font-sans selection:bg-[#A89053] selection:text-white">
       {/* Cinematic Hero */}
       <section className="relative w-full h-screen overflow-hidden">
-        {regionHeroImages[region.slug] ? (
+        {region.image ? (
+          <img 
+            src={region.image} 
+            alt={region.name} 
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : regionHeroImages[region.slug] ? (
           <img 
             src={regionHeroImages[region.slug]} 
             alt={region.name} 
@@ -83,33 +164,24 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
         ) : (
           <div className={`absolute inset-0 bg-gradient-to-tr ${region.featuredImageGradient}`} />
         )}
-        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/30 to-transparent z-[1]" />
+        <div className="absolute inset-0 bg-black/30" />
         <div className="absolute inset-0 image-texture opacity-30 mix-blend-overlay" />
         
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 mt-16">
-          <motion.h1 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-            className="font-serif text-5xl md:text-8xl text-white font-normal tracking-wider mb-6"
-          >
+          <h1 className="font-serif text-5xl md:text-8xl text-white font-normal tracking-wider mb-6">
             {region.name.toUpperCase()}
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.8 }}
-            className="font-sans text-sm md:text-lg text-white/80 max-w-2xl font-light"
-          >
+          </h1>
+          <p className="font-sans text-sm md:text-lg text-white/80 max-w-2xl font-light">
             {region.subtitle}
-          </motion.p>
+          </p>
         </div>
       </section>
 
       {/* Explore Sub-Destinations / Carousel Section */}
       <main className="w-full">
         {/* Top Header & Filter Pills */}
-        <div className="max-w-7xl mx-auto px-6 md:px-12 py-16 md:py-24 text-center flex flex-col items-center">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 py-16 py-24 text-center flex flex-col items-center">
           <h2 className="font-sans font-bold text-4xl md:text-5xl lg:text-6xl text-[#0F2C59] mb-6 tracking-tight">
             Explore {region.name}
           </h2>
@@ -118,7 +190,7 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
           </p>
         </div>
 
-        {/* Carousel Section (No Background) */}
+        {/* Carousel Section */}
         <div className="w-full pb-24 relative overflow-hidden">
           
           <div className="max-w-[1600px] mx-auto relative">
@@ -151,7 +223,7 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800",
                   "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?q=80&w=800",
                 ];
-                const image = subDestinationImages[sub.slug] || mockImages[idx % mockImages.length];
+                const image = sub.image || subDestinationImages[sub.slug] || mockImages[idx % mockImages.length];
 
                 return (
                   <Link 
@@ -160,7 +232,7 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                     className="snap-start shrink-0 w-[85vw] sm:w-[50vw] md:w-[35vw] lg:w-[25vw] flex flex-col group cursor-pointer"
                   >
                     {/* Card Image */}
-                    <div className="w-full aspect-[4/3] rounded-2xl relative overflow-hidden mb-6 bg-charcoal shadow-md">
+                    <div className="w-full aspect-[4/3] rounded-2xl relative overflow-hidden mb-6 bg-charcoal shadow-md border border-slate-100">
                       <img 
                         src={image} 
                         alt={sub.name} 
@@ -168,7 +240,6 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                       />
                       <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500" />
                       
-                      {/* Badge (Klik Travel Sky Blue) */}
                       <div className="absolute bottom-0 left-0 bg-[#0284C7] text-white text-[10px] md:text-xs font-sans font-bold uppercase tracking-wider px-4 md:px-5 py-2 md:py-2.5">
                         {locale === "id" ? "PAKET TOUR" : "TOUR PACKAGE"}
                       </div>

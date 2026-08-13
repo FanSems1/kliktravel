@@ -1,24 +1,39 @@
 export interface ItineraryDay {
   day: number;
   title: string;
+  titleEN?: string;
   activities: string[];
+  activitiesEN?: string[];
   description: string;
+  descriptionEN?: string;
   hotel: string;
+  hotelEN?: string;
   image: string;
+  images?: string[];
 }
 
 export interface TourPackageDetail {
   slug: string;
+  regionSlug?: string;
+  subSlug?: string;
   name: string;
+  nameEN?: string;
   tagline: string;
+  taglineEN?: string;
   duration: string;
+  durationEN?: string;
   price: string;
+  priceEN?: string;
   hotelRating: string;
+  hotelRatingEN?: string;
   featuredImage: string;
   highlights: string[];
+  highlightsEN?: string[];
   itinerary: ItineraryDay[];
   inclusions: string[];
+  inclusionsEN?: string[];
   exclusions: string[];
+  exclusionsEN?: string[];
 }
 
 export const localizedTourPackages: Record<"id" | "en", Record<string, TourPackageDetail>> = {
