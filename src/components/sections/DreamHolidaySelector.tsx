@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Compass, Milestone, CalendarDays, Plane, Clock, Flame, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { apiFetch } from "@/lib/api";
 
 type Tab = "destinasi" | "tipe" | "waktu";
 
@@ -30,14 +31,102 @@ export function DreamHolidaySelector() {
   const [activeTab, setActiveTab] = useState<Tab>("destinasi");
   const [activePeriod, setActivePeriod] = useState<string>("all");
 
-  const destinations = [
-    { nameID: "China", nameEN: "China", image: "https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?q=80&w=2070", slug: "china" },
-    { nameID: "Eropa", nameEN: "Europe", image: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=2070", slug: "europe" },
-    { nameID: "Indonesia", nameEN: "Indonesia", image: "https://images.unsplash.com/photo-1501179691627-eeaa65ea017c?q=80&w=2070", slug: "indonesia" },
-    { nameID: "Jepang", nameEN: "Japan", image: "https://images.unsplash.com/photo-1528164344705-47542687000d?q=80&w=2092", slug: "japan" },
-    { nameID: "Korea", nameEN: "Korea", image: "https://images.unsplash.com/photo-1538485399081-7191377e8241?q=80&w=2074", slug: "korea" },
-    { nameID: "Thailand", nameEN: "Thailand", image: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2070", slug: "thailand" },
-  ];
+  const [destinations, setDestinations] = useState<any[]>([]);
+  const [departures, setDepartures] = useState<DepartureSchedule[]>([]);
+
+  useEffect(() => {
+    async function loadData() {
+      // 1. Fetch dynamic destinations
+      try {
+        const data = await apiFetch<any[]>(`/destinations?locale=${locale}`).catch(() => null);
+        if (data && Array.isArray(data) && data.length > 0) {
+          const mapped = data.map((r) => {
+            let gradient = r.featuredImageGradient || "from-[#E0F2FE] to-[#7DD3FC]";
+            let image = "";
+            if (gradient.includes("||")) {
+              const parts = gradient.split("||");
+              gradient = parts[0];
+              image = parts[1];
+            }
+            return {
+              nameID: r.name ? r.name.split("||")[0] : r.slug,
+              nameEN: r.name ? r.name.split("||")[0] : r.slug,
+              image: image || r.featuredImage || "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=1200",
+              slug: r.slug,
+            };
+          });
+          setDestinations(mapped);
+          localStorage.setItem("klik_admin_destinations_selector", JSON.stringify(mapped));
+        } else {
+          const saved = localStorage.getItem("klik_admin_destinations_selector");
+          if (saved) {
+            setDestinations(JSON.parse(saved));
+          }
+        }
+      } catch (err) {
+        console.error("DreamHolidaySelector: Failed to load destinations", err);
+      }
+
+      // 2. Fetch dynamic departures
+      try {
+        const openTrips = await apiFetch<any[]>(`/open-trips?locale=${locale}`).catch(() => null);
+        if (openTrips && Array.isArray(openTrips) && openTrips.length > 0) {
+          const mapped = openTrips.map((p) => {
+            let periodKey: DepartureSchedule["periodKey"] = "all";
+            const dText = (p.departureDate || p.departureDateEN || p.datesID || p.departureDates || "").toLowerCase();
+            if (dText.includes("agu") || dText.includes("sep") || dText.includes("aug")) {
+              periodKey = "agu-sep";
+            } else if (dText.includes("okt") || dText.includes("nov") || dText.includes("oct")) {
+              periodKey = "okt-nov";
+            } else if (dText.includes("des") || dText.includes("dec")) {
+              periodKey = "des";
+            } else if (dText.includes("apr") || dText.includes("mei") || dText.includes("spring") || dText.includes("may") || dText.includes("mar")) {
+              periodKey = "spring";
+            }
+
+            let statusType: DepartureSchedule["statusType"] = "guaranteed";
+            if (p.statusType) {
+              statusType = p.statusType;
+            } else if (p.seatsLeft !== undefined && p.seatsLeft <= 3 && p.seatsLeft > 0) {
+              statusType = "limited";
+            } else if (p.isPromo) {
+              statusType = "promo";
+            } else if (p.isBestseller) {
+              statusType = "bestseller";
+            }
+
+            return {
+              id: p.id || p.slug || Math.random().toString(),
+              titleID: p.name || "",
+              titleEN: p.nameEN || p.name || "",
+              destinationID: p.regionName || p.regionSlug || "",
+              destinationEN: p.regionName || p.regionSlug || "",
+              datesID: p.departureDate || p.datesID || p.departureDates || "TBA",
+              datesEN: p.departureDateEN || p.departureDate || p.datesEN || p.departureDates || "TBA",
+              periodKey,
+              airline: p.airline || p.airlineName || "",
+              durationID: p.duration || "5 Hari 4 Malam",
+              durationEN: p.duration || "5 Days 4 Nights",
+              statusType,
+              price: p.price || "Contact Us",
+              image: p.featuredImage || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200",
+            };
+          });
+          setDepartures(mapped);
+          localStorage.setItem("klik_admin_departures_selector", JSON.stringify(mapped));
+        } else {
+          const saved = localStorage.getItem("klik_admin_departures_selector");
+          if (saved) {
+            setDepartures(JSON.parse(saved));
+          }
+        }
+      } catch (err) {
+        console.error("DreamHolidaySelector: Failed to load departures", err);
+      }
+    }
+
+    loadData();
+  }, [locale]);
 
   const tripTypes = [
     { 
@@ -52,105 +141,6 @@ export function DreamHolidaySelector() {
       image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2073",
       link: "/private-trip"
     },
-  ];
-
-  const departures: DepartureSchedule[] = [
-    {
-      id: "1",
-      titleID: "Ekspedisi Berlayar Phinisi Komodo",
-      titleEN: "Komodo Phinisi Sailing Expedition",
-      destinationID: "Labuan Bajo, Indonesia",
-      destinationEN: "Labuan Bajo, Indonesia",
-      datesID: "12 — 16 AGU 2026",
-      datesEN: "12 — 16 AUG 2026",
-      periodKey: "agu-sep",
-      airline: "Garuda Indonesia",
-      durationID: "5 Hari 4 Malam",
-      durationEN: "5 Days 4 Nights",
-      statusType: "guaranteed",
-      price: "IDR 24.5 JT",
-      image: "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=1200"
-    },
-    {
-      id: "2",
-      titleID: "Dedaunan Musim Gugur di Kyoto & Gunung Fuji",
-      titleEN: "Autumn Leaves in Kyoto & Mount Fuji",
-      destinationID: "Jepang",
-      destinationEN: "Japan",
-      datesID: "10 — 17 NOV 2026",
-      datesEN: "10 — 17 NOV 2026",
-      periodKey: "okt-nov",
-      airline: "Japan Airlines",
-      durationID: "8 Hari 7 Malam",
-      durationEN: "8 Days 7 Nights",
-      statusType: "limited",
-      price: "IDR 28.9 JT",
-      image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=1200"
-    },
-    {
-      id: "3",
-      titleID: "Keajaiban Musim Dingin Harbin & Festival Es",
-      titleEN: "Winter Wonder Harbin & Ice Festival",
-      destinationID: "Harbin & Beijing, China",
-      destinationEN: "Harbin & Beijing, China",
-      datesID: "20 — 28 DES 2026",
-      datesEN: "20 — 28 DEC 2026",
-      periodKey: "des",
-      airline: "Cathay Pacific",
-      durationID: "9 Hari 8 Malam",
-      durationEN: "9 Days 8 Nights",
-      statusType: "bestseller",
-      price: "IDR 31.5 JT",
-      image: "https://images.unsplash.com/photo-1508804185872-d7bad1006fc5?q=80&w=1200"
-    },
-    {
-      id: "4",
-      titleID: "Penyembuhan Spiritual & Sacred Bali",
-      titleEN: "Spiritual Healing & Sacred Bali Retreat",
-      destinationID: "Ubud & Sidemen, Indonesia",
-      destinationEN: "Ubud & Sidemen, Indonesia",
-      datesID: "04 — 09 DES 2026",
-      datesEN: "04 — 09 DEC 2026",
-      periodKey: "des",
-      airline: "Garuda Indonesia",
-      durationID: "6 Hari 5 Malam",
-      durationEN: "6 Days 5 Nights",
-      statusType: "promo",
-      price: "IDR 15.5 JT",
-      image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=1200"
-    },
-    {
-      id: "5",
-      titleID: "Pulau Jeju & Seoul Nuansa Musim Gugur",
-      titleEN: "Jeju Island & Seoul Autumn Palette",
-      destinationID: "Korea Selatan",
-      destinationEN: "South Korea",
-      datesID: "15 — 22 OKT 2026",
-      datesEN: "15 — 22 OCT 2026",
-      periodKey: "okt-nov",
-      airline: "Korean Air",
-      durationID: "8 Hari 7 Malam",
-      durationEN: "8 Days 7 Nights",
-      statusType: "guaranteed",
-      price: "IDR 22.0 JT",
-      image: "https://images.unsplash.com/photo-1517154421773-0529f29ea451?q=80&w=1200"
-    },
-    {
-      id: "6",
-      titleID: "Ekspedisi Agung Bunga Sakura 2027",
-      titleEN: "Sakura Blossom Grand Expedition 2027",
-      destinationID: "Tokyo, Kyoto & Osaka, Jepang",
-      destinationEN: "Tokyo, Kyoto & Osaka, Japan",
-      datesID: "02 — 10 APR 2027",
-      datesEN: "02 — 10 APR 2027",
-      periodKey: "spring",
-      airline: "Singapore Airlines",
-      durationID: "9 Hari 8 Malam",
-      durationEN: "9 Days 8 Nights",
-      statusType: "promo",
-      price: "IDR 34.8 JT",
-      image: "https://images.unsplash.com/photo-1528164344705-47542687000d?q=80&w=1200"
-    }
   ];
 
   const filteredDepartures = activePeriod === "all"
@@ -175,7 +165,7 @@ export function DreamHolidaySelector() {
   };
 
   return (
-    <section className="py-24 bg-[#FAF9F6] relative overflow-hidden">
+    <section className="py-24 bg-[#F8FAFC] relative overflow-hidden">
       {/* Background Subtle Accents */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-[#0284C7]/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#A89053]/5 rounded-full blur-3xl pointer-events-none translate-y-1/2 -translate-x-1/2" />
@@ -426,7 +416,7 @@ export function DreamHolidaySelector() {
                     const duration = locale === "id" ? item.durationID : item.durationEN;
 
                     const statusLabel = {
-                      guaranteed: locale === "id" ? "PASTI JALAN" : "GUARANTEED",
+                      guaranteed: locale === "id" ? "AVAILABLE" : "AVAILABLE",
                       limited: locale === "id" ? "SISA 3 SEAT" : "ONLY 3 SEATS LEFT",
                       bestseller: locale === "id" ? "BEST SELLER" : "BEST SELLER",
                       promo: item.id === "6" 
@@ -458,29 +448,33 @@ export function DreamHolidaySelector() {
                               <span>{dates}</span>
                             </div>
 
-                            {/* Status Badge Top Right */}
-                            <div className={`absolute top-4 right-4 px-3 py-1 rounded-full font-sans text-[10px] font-bold tracking-wider uppercase border backdrop-blur-md flex items-center gap-1.5 ${statusStyles[item.statusType]}`}>
-                              {item.statusType === "guaranteed" && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-                              )}
-                              {item.statusType === "limited" && (
-                                <Flame className="w-3 h-3 text-[#F59E0B]" />
-                              )}
-                              <span>{statusLabel}</span>
-                            </div>
-
                             {/* Airline Tag Bottom Left */}
-                            <div className="absolute bottom-3 left-4 text-white/90 font-sans text-[11px] font-medium flex items-center gap-1.5 drop-shadow-md">
-                              <Plane className="w-3.5 h-3.5 text-[#38BDF8]" />
-                              <span>{item.airline}</span>
-                            </div>
+                            {item.airline && (
+                              <div className="absolute bottom-3 left-4 text-white/90 font-sans text-[11px] font-medium flex items-center gap-1.5 drop-shadow-md">
+                                <Plane className="w-3.5 h-3.5 text-[#38BDF8]" />
+                                <span>{item.airline}</span>
+                              </div>
+                            )}
                           </div>
 
                           {/* Card Content Body */}
                           <div className="p-6 md:p-7">
-                            <span className="font-mono text-[10px] tracking-[0.25em] text-[#A89053] font-bold uppercase block mb-1">
-                              {destination}
-                            </span>
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                              <span className="font-mono text-[10px] tracking-[0.25em] text-[#A89053] font-bold uppercase block">
+                                {destination}
+                              </span>
+                              
+                              {/* Status Badge */}
+                              <div className={`px-2.5 py-0.5 rounded-full font-sans text-[9px] font-bold tracking-wider uppercase border flex items-center gap-1 ${statusStyles[item.statusType]}`}>
+                                {item.statusType === "guaranteed" && (
+                                  <span className="w-1 h-1 rounded-full bg-[#10B981] animate-pulse" />
+                                )}
+                                {item.statusType === "limited" && (
+                                  <Flame className="w-2.5 h-2.5 text-[#F59E0B]" />
+                                )}
+                                <span>{statusLabel}</span>
+                              </div>
+                            </div>
                             <h3 className="font-serif text-xl md:text-2xl font-normal text-[#0F2C59] leading-snug mb-3 group-hover:text-[#0284C7] transition-colors">
                               {title}
                             </h3>
@@ -490,8 +484,6 @@ export function DreamHolidaySelector() {
                                 <Clock className="w-3.5 h-3.5 text-[#0F2C59]/50" />
                                 <span>{duration}</span>
                               </div>
-                              <span>•</span>
-                              <span>{t("dream_card_small_group")}</span>
                             </div>
                           </div>
                         </div>
@@ -508,7 +500,7 @@ export function DreamHolidaySelector() {
                           </div>
 
                           <a
-                            href={`https://wa.me/628123456789?text=${encodeURIComponent(
+                            href={`https://wa.me/6281230011027?text=${encodeURIComponent(
                               locale === "id"
                                 ? `Halo Klik Travel ID, saya ingin menanyakan info seat & itinerary untuk *${title}* jadwal keberangkatan *${dates}*.`
                                 : `Hello Klik Travel ID, I'd like to ask about seat availability & itinerary for *${title}* departing on *${dates}*.`

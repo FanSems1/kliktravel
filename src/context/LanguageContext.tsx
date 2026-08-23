@@ -17,10 +17,18 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("id");
 
   useEffect(() => {
-    // Check if user has a saved preference, otherwise default to "id"
+    const sessionInit = sessionStorage.getItem("kliktravel-init");
+    if (!sessionInit) {
+      sessionStorage.setItem("kliktravel-init", "true");
+      setLocaleState("id");
+      localStorage.setItem("kliktravel-locale", "id");
+      return;
+    }
     const saved = localStorage.getItem("kliktravel-locale") as Locale;
     if (saved && (saved === "id" || saved === "en")) {
       setLocaleState(saved);
+    } else {
+      setLocaleState("id");
     }
   }, []);
 

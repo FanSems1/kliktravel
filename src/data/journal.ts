@@ -1,4 +1,5 @@
 export interface JournalArticle {
+  id?: string;
   slug: string;
   image: string;
   categoryID: string;
@@ -43,8 +44,52 @@ export const journalArticles: JournalArticle[] = [
     titleEN: "The Golden Hours of Mount Bromo",
     excerptID: "Panduan visual dan esai foto menangkap keindahan mistis kabut pagi dan matahari terbit di atas kaldera purba Bromo.",
     excerptEN: "A visual guide and photo essay capturing the mystical beauty of morning mist and sunrise over Bromo's ancient caldera.",
-    contentID: "Berdiri di tepi kawah Gunung Bromo sebelum fajar adalah pengalaman yang magis. Saat matahari perlahan terbit, langit berubah warna menjadi jingga keemasan, menembus kabut tebal yang menyelimuti lautan pasir di bawahnya. Ini adalah tempat di mana bumi terasa sangat hidup sekaligus tenang.",
-    contentEN: "Standing on the crater rim of Mount Bromo before dawn is a magical experience. As the sun slowly rises, the sky shifts to golden amber, cutting through the heavy mist blanketing the sea of sand below. It is a place where the earth feels vibrantly alive yet deeply still.",
+    contentID: `Berdiri di bibir kawah Gunung Bromo sesaat sebelum fajar menyingsing adalah pengalaman spiritual yang tak tertandingi. Ketika kegelapan malam perlahan memudar, kabut tebal menyelimuti lautan pasir (Segara Wedi) di bawahnya bagaikan samudera mistis yang tak berujung, menciptakan suasana sunyi yang begitu syahdu.
+
+Dari kejauhan, siluet Gunung Batok yang berulir indah dan kepulan asap putih vulkanik dari kawah aktif Bromo berdiri kokoh di bawah langit jingga keemasan. Momen-momen inilah yang dinanti-nanti oleh para penjelajah dari seluruh penjuru dunia—sebuah lanskap magis yang terasa seperti ditarik dari planet lain.
+
+> "Bromo bukan sekadar destinasi wisata; ia adalah teater alam semesta tempat keindahan magis bumi dipertunjukkan secara murni."
+
+CHAPTER I: Pendakian Tengah Malam & Cahaya Penanjakan
+
+Perjalanan dimulai pada pukul 03.00 pagi. Dengan menggunakan kendaraan jip 4x4, Anda akan menembus malam yang dingin menuju puncak Penanjakan 1. Sambil menggenggam secangkir kopi atau teh hangat dari kedai lokal, Anda akan menyaksikan matahari perlahan terbit dari balik ufuk timur, membiaskan sinar keemasan di atas jajaran Gunung Bromo, Batok, dan Semeru yang menjulang tinggi.
+
+[GRID]
+- https://images.unsplash.com/photo-1626082896492-766af4fc6596?q=80&w=800 | Jip 4x4 di Lautan Pasir
+- https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=600 | Bibir Kawah
+
+CHAPTER II: Menyeberangi Segara Wedi & Tradisi Luhur Tengger
+
+Setelah menyaksikan matahari terbit, petualangan berlanjut turun ke Segara Wedi (Lautan Pasir). Di sini, Anda bisa menunggangi kuda atau berjalan kaki melintasi hamparan pasir abu vulkanik menuju anak tangga kawah Bromo. Bromo memegang peran suci bagi masyarakat Hindu Tengger. Setiap tahun, mereka menggelar upacara Yadnya Kasada untuk memberikan persembahan hasil bumi ke dalam kawah aktif sebagai wujud syukur dan penghormatan kepada para leluhur.
+
+[TIPS] Tips Perjalanan Jurnal Kurator
+- Musim Terbaik: Musim Kemarau (Mei - September) untuk pemandangan langit bersih dan bebas kabut hujan.
+- Perlengkapan Wajib: Jaket tebal (suhu bisa turun hingga 5°C), sarung tangan, masker wajah (pelindung debu belerang), dan kacamata.
+- Etika Kunjungan: Jangan menginjak tempat sesaji di sekitar pura Luhur Poten di kaki Gunung Bromo.
+- Rekomendasi Foto: King Kong Hill menawarkan sudut pemandangan kaldera yang megah dengan kerumunan pengunjung yang lebih sedikit daripada Penanjakan 1.`,
+    contentEN: `Standing on the crater rim of Mount Bromo moments before dawn is an unparalleled spiritual encounter. As the shadows of the night slowly recede, a sea of dense mist blankets the ancient caldera below like a mystical, endless ocean, creating a profound silence.
+
+In the distance, the deeply ribbed silhouette of Mount Batok and the steady white plumes of volcanic smoke from Bromo's active vent rise against a golden amber sky. These are the fleeting moments travelers chase—a majestic landscape that feels pulled from another planet entirely.
+
+> "Bromo is not just a destination; it is a grand theater where the earth's raw volcanic beauty is performed in its purest form."
+
+CHAPTER I: The Midnight Ascent & Sunrise over Penanjakan
+
+The journey begins in the freezing stillness at 3:00 AM. Boarding a rugged 4x4 Jeep, you traverse the dark volcanic plain to reach the Penanjakan sunrise viewpoint. Clutching a warm cup of coffee from a local shack, you watch the sun peak over the horizon, bathing Bromo, Batok, and the towering Semeru volcano in a glorious golden glow.
+
+[GRID]
+- https://images.unsplash.com/photo-1626082896492-766af4fc6596?q=80&w=800 | 4x4 Jeep Crossing
+- https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=600 | Crater Rim
+
+CHAPTER II: Traversing Segara Wedi & Tenggerese Heritage
+
+After sunrise, the adventure descends onto the vast ash desert known as Segara Wedi (Sea of Sand). From there, you can ride a horse or hike across the desolate volcanic flats to climb the stairs leading right to the crater's steaming lip. Mount Bromo remains deeply sacred to the Tenggerese Hindu community. Each year, they hold the Yadnya Kasada festival, offering agricultural harvest and livestock into the crater as a gesture of gratitude to the gods.
+
+[PROTOCOL] Curator's Travel Protocol
+- Best Season: Dry Season (May - September) for clear, cloudless skies and optimal sunrise viewpoints.
+- Travel Essentials: Warm windbreaker (temperatures dip to 5°C), gloves, face mask (for sulfur/ash protection), and sunglasses.
+- Cultural Etiquette: Avoid stepping on sacred offering sites (sesaji) around the Luhur Poten temple at the foot of Bromo.
+- Best Photo Angle: King Kong Hill offers a majestic panoramic caldera view with fewer crowds than the main Penanjakan 1 platform.`,
     dateID: "28 Jun 2026",
     dateEN: "Jun 28, 2026",
     readTimeID: "4 mnt membaca",

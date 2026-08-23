@@ -1,0 +1,18 @@
+# Klik Travel ID
+
+> Agen travel terpercaya untuk paket wisata kustom (Private Trip) dan Open Trip gabungan hemat di Indonesia dan luar negeri.
+
+## Core Resources
+
+- [Beranda](https://kliktravel.id/) - Halaman utama dan ikhtisar Klik Travel ID.
+- [Katalog Paket Wisata](https://kliktravel.id/journeys) - Daftar lengkap paket open trip dan jadwal perjalanan gabungan terkurasi.
+- [Private Trip Kustom](https://kliktravel.id/private-trip) - Layanan perancangan perjalanan pribadi untuk keluarga, instansi, atau grup dengan jadwal dan bujet fleksibel.
+- [Destinasi Pilihan](https://kliktravel.id/destinations) - Wilayah jelajah Klik Travel ID mencakup Bali, Bromo, Labuan Bajo, Raja Ampat, Thailand, Vietnam, Korea, Jepang, China, Hongkong, India, Eropa, dan Amerika.
+- [Travel Journal & Tips](https://kliktravel.id/journal) - Artikel perjalanan, tips liburan hemat, panduan destinasi, dan kisah penjelajah.
+- [Tentang Kami](https://kliktravel.id/about) - Profil Klik Travel ID sebagai sahabat perjalanan tepercaya Anda.
+- [Inquiry / Rancang Perjalanan](https://kliktravel.id/inquire) - Formulir konsultasi perjalanan kustom terintegrasi WhatsApp.
+- [Pertanyaan Umum (FAQ)](https://kliktravel.id/faq) - Kebijakan pemesanan, pembatalan, dan fasilitas trip.
+
+## Full Content Compilation
+
+- [llms-full.txt](https://kliktravel.id/llms-full.txt) - Kumpulan teks lengkap untuk semua destinasi utama, paket open trip terpopuler, serta panduan perjalanan Klik Travel ID.

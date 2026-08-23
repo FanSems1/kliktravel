@@ -177,9 +177,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
         console.error("JourneyDetailClient: Failed to fetch API data", err);
       }
 
-      // 4. Fallback: Static data
-      const staticJourney = localizedJourneys[locale].find((j) => j.slug === slug) || null;
-      setJourney(staticJourney);
+      setJourney(null);
       setIsLoading(false);
     }
 
@@ -589,6 +587,152 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
         </div>
 
       </div>
+
+      {/* Syarat & Ketentuan Section */}
+      <section className="max-w-7xl mx-auto px-6 md:px-12 mb-16">
+        <div className="bg-white border border-charcoal/10 rounded-3xl p-8 md:p-12 shadow-sm">
+          <div className="flex flex-col gap-1 mb-8 pb-4 border-b border-charcoal/10">
+            <span className="font-mono text-[9px] uppercase tracking-widest text-[#0284C7] font-bold">
+              {locale === "id" ? "REGULASI PERJALANAN" : "TRAVEL REGULATION"}
+            </span>
+            <h2 className="font-serif font-normal text-2xl md:text-3xl text-foreground">
+              {locale === "id" ? "SYARAT DAN KETENTUAN" : "TERMS AND CONDITIONS"}
+            </h2>
+          </div>
+
+          {/* Wholesaler Note Alert */}
+          <div className="bg-amber-50/60 border border-amber-200/80 text-amber-900 text-xs md:text-sm rounded-2xl p-4 flex gap-3 items-start mb-8 font-sans">
+            <svg className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span className="font-medium leading-relaxed">
+              {locale === "id" 
+                ? "Rules (Term and Condition) telah diatur sesuai dengan yang ditetapkan oleh wholesaler dan tidak dapat diganggu gugat."
+                : "Rules (Term and Condition) have been set by the wholesaler and are non-negotiable."}
+            </span>
+          </div>
+
+          {/* Terms Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 text-foreground/80 text-xs md:text-sm leading-relaxed">
+            
+            {/* 1. Pendaftaran */}
+            <div className="space-y-3">
+              <h4 className="font-sans font-bold text-foreground text-sm md:text-base flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-charcoal/5 flex items-center justify-center font-mono text-xs font-bold text-foreground">1</span>
+                {locale === "id" ? "Pendaftaran" : "Registration"}
+              </h4>
+              <ul className="space-y-2 list-disc pl-5 font-light">
+                <li>
+                  {locale === "id" 
+                    ? "Konfirmasi pendaftaran tour harus disertai dengan pembayaran DP sebesar Rp 5.000.000 (non-refundable) dan sisanya dapat dicicil 3x sampai pelunasan 30 hari sebelum tanggal keberangkatan."
+                    : "Tour registration confirmation must be accompanied by a DP payment of IDR 5,000,000 (non-refundable). The balance can be paid in 3 installments up to 30 days before departure."}
+                </li>
+                <li>
+                  {locale === "id" 
+                    ? "Harga yang terlampir dalam penawaran paket masih dapat berubah sewaktu-waktu selama tour belum dikonfirmasi."
+                    : "Prices enclosed in the package offer are subject to change until the tour is fully confirmed."}
+                </li>
+                <li>
+                  {locale === "id" 
+                    ? "Itinerary bersifat tidak mengikat dan dapat berubah sewaktu-waktu menyesuaikan kondisi di lapangan atau situasi yang tidak terduga (Force Majeure)."
+                    : "Itinerary is non-binding and subject to change to adjust with field conditions or unexpected situations (Force Majeure)."}
+                </li>
+              </ul>
+            </div>
+
+            {/* 2. Pembayaran */}
+            <div className="space-y-3">
+              <h4 className="font-sans font-bold text-foreground text-sm md:text-base flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-charcoal/5 flex items-center justify-center font-mono text-xs font-bold text-foreground">2</span>
+                {locale === "id" ? "Pembayaran" : "Payment"}
+              </h4>
+              <ul className="space-y-2 list-disc pl-5 font-light">
+                <li>
+                  {locale === "id" ? "Pembayaran ditransfer ke nomor rekening berikut:" : "Payments should be transferred to the following account:"}
+                  <div className="bg-ivory border border-charcoal/10 rounded-xl p-3 mt-1.5 font-mono text-xs select-all text-foreground flex flex-col gap-0.5">
+                    <span className="font-semibold text-foreground">BCA 2860475998</span>
+                    <span>a.n. PT Bersama Jelajah Dunia</span>
+                  </div>
+                </li>
+                <li>
+                  {locale === "id" 
+                    ? "Pelunasan pembayaran dilakukan maksimal H-30 sebelum keberangkatan."
+                    : "Full payment balance must be settled at least 30 days (H-30) prior to departure."}
+                </li>
+                <li>
+                  {locale === "id" 
+                    ? "Pendaftaran yang dilakukan kurang dari 30 hari sebelum tanggal keberangkatan harus melakukan pembayaran penuh (full payment)."
+                    : "Registrations made less than 30 days before departure require immediate full payment."}
+                </li>
+                <li>
+                  {locale === "id" 
+                    ? "Wajib konfirmasi semua pembayaran dengan mengirimkan bukti transfer."
+                    : "All payments must be confirmed by sending transfer receipts."}
+                </li>
+              </ul>
+            </div>
+
+            {/* 3. Pembatalan */}
+            <div className="space-y-3">
+              <h4 className="font-sans font-bold text-foreground text-sm md:text-base flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-charcoal/5 flex items-center justify-center font-mono text-xs font-bold text-foreground">3</span>
+                {locale === "id" ? "Pembatalan" : "Cancellation"}
+              </h4>
+              <ul className="space-y-2 list-disc pl-5 font-light">
+                <li>
+                  {locale === "id" ? "Penalti pembatalan oleh peserta:" : "Cancellation penalties by participant:"}
+                  <ul className="list-disc pl-5 mt-1 space-y-1">
+                    <li>
+                      <strong>&gt; 30 hari:</strong> {locale === "id" ? "DP dan pembayaran yang sudah masuk hangus" : "DP and any paid amounts are non-refundable"}
+                    </li>
+                    <li>
+                      <strong>29 - 0 hari:</strong> {locale === "id" ? "Dikenakan biaya 100% dari harga tour" : "Charged 100% of the total tour price"}
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  {locale === "id" 
+                    ? "Pembatalan akibat Force Majeure (bencana alam, cuaca buruk, kerusuhan, wabah penyakit, dll): perjalanan dapat dijadwalkan ulang atau dibatalkan. Tidak ada pengembalian dana atas fasilitas yang tidak terpakai, dan pihak Travel tidak bertanggung jawab atas kerugian/ketidaknyamanan yang terjadi."
+                    : "Cancellations due to Force Majeure (natural disasters, severe weather, riots, disease outbreaks, etc.): trips may be rescheduled or cancelled. No refund is provided for unused amenities, and the Travel agency is not liable for any losses/inconveniences."}
+                </li>
+                <li>
+                  {locale === "id" 
+                    ? "Untuk alasan apa pun pembatalan sepihak oleh peserta, DP dan cicilan yang masuk tetap tidak dapat dikembalikan."
+                    : "For any personal reasons of cancellation by the participant, DP and installments remain non-refundable."}
+                </li>
+              </ul>
+            </div>
+
+            {/* 4. Visa */}
+            <div className="space-y-3">
+              <h4 className="font-sans font-bold text-foreground text-sm md:text-base flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-charcoal/5 flex items-center justify-center font-mono text-xs font-bold text-foreground">4</span>
+                Visa
+              </h4>
+              <ul className="space-y-2 list-disc pl-5 font-light">
+                <li>
+                  {locale === "id" 
+                    ? "Penolakan atau keterlambatan penerbitan visa bukan merupakan tanggung jawab pihak travel dan sepenuhnya merupakan hak prerogatif pihak Kedutaan."
+                    : "Rejection or delay in visa issuance is entirely under the Embassy's authority and is not the responsibility of the travel agency."}
+                </li>
+              </ul>
+            </div>
+
+          </div>
+
+          {/* Consent Clause Footer */}
+          <div className="bg-ivory border border-charcoal/10 rounded-2xl p-4 flex gap-3 items-center mt-8 text-foreground/80 text-xs md:text-sm font-sans font-medium">
+            <svg className="w-5 h-5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>
+              {locale === "id" 
+                ? "Dengan melakukan pendaftaran, peserta dianggap mengerti dan menyetujui syarat dan ketentuan yang berlaku."
+                : "By registering, participants are deemed to have understood and agreed to the applicable terms and conditions."}
+            </span>
+          </div>
+        </div>
+      </section>
 
       {/* 10. FINAL CTA */}
       <section className="relative w-full aspect-[21/9] min-h-[500px] overflow-hidden mt-12">

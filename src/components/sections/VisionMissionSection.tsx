@@ -27,7 +27,7 @@ const missions = [
     titleID: "Kemitraan Profesional",
     titleEN: "Professional Partnerships",
     textID: "Bekerja sama dengan mitra terpercaya untuk pengalaman perjalanan terbaik.",
-    textEN: "Collaborating with premium trusted operators to ensure exceptional experiences.",
+    textEN: "Collaborating with quality trusted operators to ensure exceptional experiences.",
     image: "https://images.unsplash.com/photo-1530789253388-582c481c54b0?q=80&w=600",
   },
   {

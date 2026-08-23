@@ -1,31 +1,27 @@
 import { Metadata } from "next";
 import { IndonesiaHero } from "@/components/sections/IndonesiaHero";
-import { DreamHolidaySelector } from "@/components/sections/DreamHolidaySelector";
-import { AboutUsSection } from "@/components/sections/AboutUsSection";
-import { VisionMissionSection } from "@/components/sections/VisionMissionSection";
-import { WhyChooseUsSection } from "@/components/sections/WhyChooseUsSection";
 import { ServicesSection } from "@/components/sections/ServicesSection";
+import { DreamHolidaySelector } from "@/components/sections/DreamHolidaySelector";
 import { FeaturedJourneys } from "@/components/sections/FeaturedJourneys";
-import { ExperienceSection } from "@/components/sections/ExperienceSection";
+import { WhyChooseUsSection } from "@/components/sections/WhyChooseUsSection";
+import { AboutUsSection } from "@/components/sections/AboutUsSection";
 import { TestimonialsSection } from "@/components/sections/TestimonialsSection";
-import { JournalPreview } from "@/components/sections/JournalPreview";
 import { FinalCTA } from "@/components/sections/FinalCTA";
-import { WaveTransition } from "@/components/ui/WaveTransition";
 
 export const metadata: Metadata = {
-  title: "Klik Travel ID | Journeys Beyond The Ordinary",
-  description: "Curating exceptional editorial journeys across the Indonesian archipelago and beyond. Redefining modern luxury travel through thoughtful curation and exclusive access.",
+  title: "Klik Travel ID | Paket Wisata & Open Trip Indonesia - Luar Negeri",
+  description: "Rencanakan liburan impianmu bersama Klik Travel ID. Dari pantai eksotis Bali & Labuan Bajo, suasana romantis Korea & Jepang, hingga sudut indah Eropa dengan harga jujur dan itinerary nyaman.",
   alternates: {
     canonical: "https://kliktravel.id",
   },
   openGraph: {
-    title: "Klik Travel ID | Premium Editorial Journeys",
-    description: "Curating exceptional editorial journeys across the Indonesian archipelago and beyond.",
+    title: "Klik Travel ID | Agen Travel Terpercaya untuk Paket Wisata & Open Trip",
+    description: "Rencanakan liburan impianmu bersama Klik Travel ID. Dari pantai eksotis Bali & Labuan Bajo, suasana romantis Korea & Jepang, hingga sudut indah Eropa dengan harga jujur dan itinerary nyaman.",
     url: "https://kliktravel.id",
     siteName: "Klik Travel ID",
     images: [
       {
-        url: "https://kliktravel.id/og-image.jpg", // Placeholder
+        url: "https://kliktravel.id/og-image.jpg",
         width: 1200,
         height: 630,
       }
@@ -35,9 +31,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Klik Travel ID | Journeys Beyond The Ordinary",
-    description: "Curating exceptional editorial journeys across the Indonesian archipelago and beyond.",
-    images: ["https://kliktravel.id/twitter-image.jpg"], // Placeholder
+    title: "Klik Travel ID | Paket Wisata & Open Trips Pilihan",
+    description: "Menyediakan paket wisata terpercaya, open trip seru, dan private tour kustom melintasi kepulauan Indonesia dan mancanegara.",
+    images: ["https://kliktravel.id/twitter-image.jpg"],
   }
 };
 
@@ -52,7 +48,7 @@ export default function Home() {
         "name": "Klik Travel ID",
         "url": "https://kliktravel.id",
         "logo": "https://kliktravel.id/logo.png",
-        "description": "Premium travel curation focusing on editorial journeys and exclusive local experiences."
+        "description": "Quality travel curation focusing on local journeys and authentic experiences."
       },
       {
         "@type": "WebSite",
@@ -73,46 +69,28 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* 
-        Visually hidden H1 to fulfill the SEO requirement of a single H1,
-        since our Hero uses highly stylized components that don't easily fit a standard H1 tag.
-      */}
       <h1 className="sr-only">Journeys Beyond The Ordinary</h1>
 
-      {/* 01 - Hero / Opening Experience */}
+      {/* 01 - Hero */}
       <IndonesiaHero />
 
-      {/* 02 - Dream Holiday Selector */}
-      <DreamHolidaySelector />
-
-      {/* 03 - Tentang Kami */}
-      <AboutUsSection />
-
-      {/* 04 - Services */}
+      {/* 02 - Pilihan Layanan (Open Trip & Private Trip) */}
       <ServicesSection />
 
-      {/* 05 - Organic / Wave Section Transition */}
-      <WaveTransition colorClass="text-charcoal" className="bg-ivory" />
-
-      {/* 06 - Featured Journeys */}
+      {/* 03 - Destinasi & Paket Wisata */}
+      <DreamHolidaySelector />
       <FeaturedJourneys />
 
-      {/* 07 - Experience / Momen Kebersamaan Customer */}
-      <ExperienceSection />
-
-      {/* Testimonials Section */}
-      <TestimonialsSection />
-
-      {/* 08 - Visi & Misi */}
-      <VisionMissionSection />
-
-      {/* 09 - Why Choose Us (Keunggulan) */}
+      {/* 04 - Kenapa Klik Travel? */}
       <WhyChooseUsSection />
 
-      {/* 10 - Journal / Travel Stories */}
-      {/* <JournalPreview /> */}
+      {/* 05 - Tentang Kami (Termasuk Visi & Misi) */}
+      <AboutUsSection />
 
-      {/* 11 - Final CTA */}
+      {/* 06 - Testimonial */}
+      <TestimonialsSection />
+
+      {/* 07 - Gallery / Video & CTA WhatsApp */}
       <FinalCTA />
     </>
   );

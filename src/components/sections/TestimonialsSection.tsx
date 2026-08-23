@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Star, Quote, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { apiFetch } from "@/lib/api";
 
 interface TestimonialItem {
   id: string;
@@ -23,8 +24,8 @@ const DEFAULT_TESTIMONIALS: TestimonialItem[] = [
     name: "Rian Dewantara",
     role: "Travel Enthusiast",
     rating: 5,
-    reviewID: "Pelayanan KlikTravel sangat luar biasa! Itinerary terencana dengan sangat rapi dan hotel bintang 4 di Shinjuku sangat strategis.",
-    reviewEN: "KlikTravel's service was outstanding! The itinerary was beautifully planned and the 4★ Shinjuku hotel was extremely strategic.",
+    reviewID: "Pelayanan KlikTravel sangat luar biasa! Itinerary terencana dengan sangat rapi dan pilihan hotel sangat strategis.",
+    reviewEN: "KlikTravel's service was outstanding! The itinerary was beautifully planned and the hotel choices were extremely strategic.",
     trip: "Tokyo Explorer Open Trip",
     approved: true,
     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200"
@@ -34,9 +35,9 @@ const DEFAULT_TESTIMONIALS: TestimonialItem[] = [
     name: "Amelia Putri",
     role: "Corporate Executive",
     rating: 5,
-    reviewID: "Perjalanan private ke Labuan Bajo sangat berkesan. Seluruh kru ramah dan makanan di phinisi bintang lima!",
-    reviewEN: "Our private trip to Labuan Bajo was unforgettable. All crew members were warm and the phinisi food was five-star!",
-    trip: "Labuan Bajo Private Phinisi",
+    reviewID: "Perjalanan private ke Labuan Bajo sangat berkesan. Seluruh kru ramah dan pelayanan sangat memuaskan!",
+    reviewEN: "Our private trip to Labuan Bajo was unforgettable. All crew members were warm and the service was super satisfying!",
+    trip: "Labuan Bajo Private Trip",
     approved: true,
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200"
   },
@@ -45,9 +46,9 @@ const DEFAULT_TESTIMONIALS: TestimonialItem[] = [
     name: "Dimas Wijaya",
     role: "Verified Traveler",
     rating: 5,
-    reviewID: "Layanan eksklusif dari awal konsultasi hingga akhir perjalanan. Kami bisa menikmati liburan keluarga di Swiss Alps tanpa rasa khawatir.",
-    reviewEN: "Exclusive, seamless service from consultation to departure. We enjoyed our family retreat in the Swiss Alps with zero stress.",
-    trip: "Swiss Alps & Europe Retreat",
+    reviewID: "Pelayanan ramah dan profesional dari awal konsultasi hingga akhir perjalanan. Kami bisa menikmati liburan keluarga tanpa rasa khawatir.",
+    reviewEN: "Friendly and professional service from consultation to departure. We enjoyed our family retreat with zero stress.",
+    trip: "Swiss Alps & Europe Trip",
     approved: true,
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200"
   }
@@ -56,21 +57,43 @@ const DEFAULT_TESTIMONIALS: TestimonialItem[] = [
 export function TestimonialsSection() {
   const { locale } = useLanguage();
   const [list, setList] = useState<TestimonialItem[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("klik_admin_testimonials");
-      if (saved) {
-        const parsed = JSON.parse(saved) as TestimonialItem[];
-        const approvedOnly = parsed.filter((t) => t.approved);
-        setList(approvedOnly.length > 0 ? approvedOnly : DEFAULT_TESTIMONIALS);
-      } else {
-        setList(DEFAULT_TESTIMONIALS);
+    async function fetchTestimonials() {
+      setIsLoading(true);
+      try {
+        const apiData = await apiFetch<TestimonialItem[]>("/testimonials").catch(() => null);
+        if (apiData && Array.isArray(apiData) && apiData.length > 0) {
+          const approvedOnly = apiData.filter((t) => t.approved !== false);
+          if (approvedOnly.length > 0) {
+            setList(approvedOnly);
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        const saved = localStorage.getItem("klik_admin_testimonials");
+        if (saved) {
+          const parsed = JSON.parse(saved) as TestimonialItem[];
+          const approvedOnly = parsed.filter((t) => t.approved);
+          if (approvedOnly.length > 0) {
+            setList(approvedOnly);
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch {
+        // Suppress errors and fallback to defaults
       }
-    } catch {
+      
+      // Fallback to curated default testimonials if API and localStorage are empty
       setList(DEFAULT_TESTIMONIALS);
+      setIsLoading(false);
     }
+
+    fetchTestimonials();
   }, []);
 
   const handleScroll = (direction: "left" | "right") => {
@@ -85,10 +108,24 @@ export function TestimonialsSection() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <section className="bg-ivory text-foreground py-16 relative z-10 border-t border-charcoal/5">
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-[#0284C7] border-t-transparent rounded-full animate-spin" />
+        </div>
+      </section>
+    );
+  }
+
+  if (list.length === 0) {
+    return null;
+  }
+
   return (
     <section className="bg-ivory text-foreground py-24 md:py-32 relative z-10 border-t border-charcoal/5 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
-        
+
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
           <div className="max-w-2xl">
@@ -101,7 +138,7 @@ export function TestimonialsSection() {
             >
               {locale === "id" ? "ULASAN PELANGGAN" : "GUEST TESTIMONIALS"}
             </motion.span>
-            
+
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -109,7 +146,7 @@ export function TestimonialsSection() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-4xl md:text-5xl font-serif text-[#0F2C59] tracking-tight leading-tight mb-4"
             >
-              {locale === "id" ? "Kisah Impian Yang Terwujud" : "Unforgettable Travel Stories"}
+              {locale === "id" ? "Pengalaman Bersama Klik Travel" : "Experience with Klik Travel"}
             </motion.h2>
 
             <motion.p

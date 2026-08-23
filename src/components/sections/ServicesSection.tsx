@@ -10,27 +10,27 @@ export function ServicesSection() {
   const { t, locale } = useLanguage();
 
   const openTripFeatures = locale === "id" ? [
-    "Jadwal perjalanan teratur & terencana",
-    "Bertemu teman dan komunitas baru",
-    "Pilihan wisata dengan budget lebih hemat",
-    "Aktivitas rombongan yang seru"
+    "Jadwal keberangkatan tersedia dan terbatas",
+    "Pilihan destinasi beragam",
+    "Harga lebih terjangkau",
+    "Bertemu dan berbagi pengalaman dengan traveler lainnya"
   ] : [
-    "Fixed and organized travel itineraries",
-    "Meet new friends and join travel community",
-    "More budget-friendly trip options",
-    "Exciting group activities"
+    "Departure schedule is available and limited",
+    "Diverse destination choices",
+    "More affordable pricing",
+    "Meet and share experiences with other travelers"
   ];
 
   const privateTripFeatures = locale === "id" ? [
-    "Rute dan waktu dapat disesuaikan (Custom)",
-    "Privasi penuh tanpa digabung peserta lain",
-    "Fasilitas premium sesuai preferensi Anda",
-    "Cocok untuk keluarga, honeymoon, & corporate"
+    "Jadwal dan itinerary fleksibel",
+    "Tidak bergabung dengan peserta lain",
+    "Cocok untuk keluarga, teman, komunitas, dan corporate",
+    "Perjalanan dapat disesuaikan dengan kebutuhan"
   ] : [
-    "Fully customizable dates & routes",
-    "Complete privacy with no stranger merge",
-    "Premium facilities tailormade for you",
-    "Ideal for families, honeymoons, & corporate groups"
+    "Flexible schedule and itinerary",
+    "No merging with other participants",
+    "Ideal for families, friends, communities, and corporate groups",
+    "Trips can be tailored to your requirements"
   ];
 
   const containerVariants = {
@@ -66,7 +66,7 @@ export function ServicesSection() {
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#38BDF8] block mb-4 font-semibold">
             {t("services_tag")}
           </span>
-          <h2 className="text-4xl md:text-5xl font-serif text-white tracking-tight mb-5">
+          <h2 className="text-3xl md:text-4xl font-serif text-white tracking-tight mb-4">
             {t("services_title")}
           </h2>
           <p className="font-sans text-white/70 text-sm md:text-base font-light leading-relaxed">
@@ -108,8 +108,8 @@ export function ServicesSection() {
                 <h3 className="font-serif text-3xl text-white tracking-wide mb-4">Open Trip</h3>
                 <p className="font-sans text-white/80 text-sm font-light leading-relaxed mb-8 min-h-[60px]">
                   {locale === "id" 
-                    ? "Bergabunglah dengan wisatawan lain dalam liburan hemat dan terjadwal. Ciptakan memori seru bersama teman-teman baru."
-                    : "Join other like-minded travelers in structured budget-friendly dates. Build amazing connections along the way."}
+                    ? "Bergabung dengan perjalanan yang sudah terjadwal dan nikmati liburan bersama peserta lainnya. Pilihan destinasi menarik dengan harga yang lebih terjangkau."
+                    : "Join scheduled group trips and enjoy vacations with other participants. Attractive destination choices at more affordable prices."}
                 </p>
                 
                 {/* Checklist */}
@@ -161,8 +161,8 @@ export function ServicesSection() {
                 <h3 className="font-serif text-3xl text-white tracking-wide mb-4">Private Trip</h3>
                 <p className="font-sans text-white/80 text-sm font-light leading-relaxed mb-8 min-h-[60px]">
                   {locale === "id" 
-                    ? "Liburan eksklusif dan privat khusus untuk Anda. Waktu yang fleksibel dan rute yang sepenuhnya dapat disesuaikan."
-                    : "Private custom luxury getaways tailored strictly around your dates, pace, and preference."}
+                    ? "Rencanakan perjalanan sesuai kebutuhan Anda. Tentukan destinasi, tanggal, itinerary, dan jumlah peserta sesuai keinginan."
+                    : "Plan travel according to your needs. Set the destination, dates, itinerary, and number of participants to your liking."}
                 </p>
                 
                 {/* Checklist */}
@@ -198,7 +198,7 @@ export function ServicesSection() {
           transition={{ duration: 1.2, delay: 0.3 }}
           className="mt-24 text-center max-w-3xl mx-auto border-t border-white/10 pt-14"
         >
-          <p className="font-serif text-2xl md:text-3xl lg:text-4xl italic text-white mb-6">
+          <p className="font-serif text-xl md:text-2xl italic text-white mb-4">
             {locale === "id" 
               ? "\"Kami percaya bahwa setiap perjalanan adalah sebuah cerita.\""
               : "\"We believe that every single journey is an individual story.\""}
@@ -206,7 +206,7 @@ export function ServicesSection() {
           <p className="font-sans text-xs md:text-sm text-white/70 tracking-[0.2em] uppercase font-light leading-relaxed">
             {locale === "id" 
               ? "Kami berkomitmen memberikan pelayanan terbaik, harga yang kompetitif, dan pengalaman yang aman."
-              : "We are committed to rendering top tier safety, high-end hospitality, and competitive rates."}
+              : "We are committed to providing the best service, competitive rates, and a safe travel experience."}
           </p>
         </motion.div>
 

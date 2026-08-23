@@ -2,15 +2,15 @@
 
 import React from "react";
 import Link from "next/link";
-import { 
-  Users, 
-  Calendar, 
-  Compass, 
-  TrendingUp, 
-  Plus, 
-  ArrowUpRight, 
-  Clock, 
-  CheckCircle2, 
+import {
+  Users,
+  Calendar,
+  Compass,
+  TrendingUp,
+  Plus,
+  ArrowUpRight,
+  Clock,
+  CheckCircle2,
   AlertCircle,
   MessageSquare,
   MapPin,
@@ -145,29 +145,29 @@ export default function AdminDashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 md:p-8 rounded-2xl border border-slate-200/80 shadow-sm">
         <div>
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#A89053] font-bold block mb-1">
-            KlikTravel.ID Admin Hub
+            KlikTravel Admin Hub
           </span>
           <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#0F2C59]">
             {locale === "id" ? "Selamat Datang di Panel Manajemen" : "Welcome to Management Panel"}
           </h1>
           <p className="text-xs md:text-sm text-slate-500 font-sans mt-1">
-            {locale === "id" 
+            {locale === "id"
               ? "Kelola paket wisata, konten dinamis, serta konsultasi pelanggan secara real-time."
               : "Manage tour packages, dynamic content, and customer inquiries in real-time."}
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <Link
             href="/admin/journeys"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 transition-all font-sans text-xs font-semibold uppercase tracking-wider shadow-md"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 transition-all font-sans text-xs font-semibold uppercase tracking-wider shadow-md"
           >
             <Plus size={14} />
             <span>{locale === "id" ? "Tambah Tour Baru" : "Add New Tour"}</span>
           </Link>
           <Link
             href="/admin/journal"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all font-sans text-xs font-semibold uppercase tracking-wider"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all font-sans text-xs font-semibold uppercase tracking-wider"
           >
             <FileText size={14} />
             <span>{locale === "id" ? "Artikel Jurnal" : "Journal Post"}</span>
@@ -180,8 +180,8 @@ export default function AdminDashboardPage() {
         {metrics.map((metric, i) => {
           const Icon = metric.icon;
           return (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow"
             >
               <div className="flex items-center justify-between mb-4">
@@ -287,11 +287,10 @@ export default function AdminDashboardPage() {
                   <td className="py-4 px-6 font-bold text-slate-800">{inq.customer}</td>
                   <td className="py-4 px-6 font-medium text-slate-700">{inq.destination}</td>
                   <td className="py-4 px-6">
-                    <span className={`text-[10px] font-mono uppercase font-semibold px-2 py-0.5 rounded ${
-                      inq.type === "Private Trip" 
-                        ? "bg-purple-100 text-purple-700" 
+                    <span className={`text-[10px] font-mono uppercase font-semibold px-2 py-0.5 rounded ${inq.type === "Private Trip"
+                        ? "bg-purple-100 text-purple-700"
                         : "bg-blue-100 text-blue-700"
-                    }`}>
+                      }`}>
                       {inq.type}
                     </span>
                   </td>

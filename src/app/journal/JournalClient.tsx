@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/context/LanguageContext";
 import { journalArticles, JournalArticle } from "@/data/journal";
-import { ArrowRight, Clock, Calendar, Compass, Maximize2, X, ChevronLeft, ChevronRight, Camera } from "lucide-react";
+import { apiFetch } from "@/lib/api";
+import { ArrowRight, Clock, Calendar, Compass, Maximize2, X, ChevronLeft, ChevronRight, Camera, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { Heading } from "@/components/ui/Heading";
 
@@ -79,8 +80,50 @@ export function JournalClient() {
   const { locale, t } = useLanguage();
   const [activeCategory, setActiveCategory] = useState("ALL");
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
-  const [slideIndex, setSlideIndex] = useState(0);
-  const [itemsList, setItemsList] = useState<GalleryItem[]>(galleryItems);
+  const [itemsList, setItemsList] = useState<GalleryItem[]>([]);
+  
+  // Dynamic API articles state
+  const [allArticles, setAllArticles] = useState<JournalArticle[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isError, setIsError] = useState<boolean>(false);
+  const [featuredIndex, setFeaturedIndex] = useState(0);
+
+  useEffect(() => {
+    async function loadJournals() {
+      setIsLoading(true);
+      setIsError(false);
+      try {
+        const data = await apiFetch<JournalArticle[]>("/journal").catch(() => null);
+        if (data && Array.isArray(data) && data.length > 0) {
+          setAllArticles(data);
+          setIsLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to fetch journal from API", err);
+      }
+      
+      // Fallback to localStorage if created via admin
+      try {
+        const saved = localStorage.getItem("klik_admin_journal_articles");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setAllArticles(parsed);
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error("Failed to parse localStorage journals", err);
+      }
+      
+      setAllArticles([]);
+      setIsError(true);
+      setIsLoading(false);
+    }
+    loadJournals();
+  }, []);
 
   useEffect(() => {
     try {
@@ -101,12 +144,14 @@ export function JournalClient() {
             }));
           if (vjItems.length > 0) {
             setItemsList(vjItems);
+            return;
           }
         }
       }
     } catch (e) {
       console.error(e);
     }
+    setItemsList([]);
   }, []);
 
   // Determine localized categories
@@ -118,7 +163,7 @@ export function JournalClient() {
   ];
 
   // Filter articles
-  const filteredArticles = journalArticles.filter((article) => {
+  const filteredArticles = allArticles.filter((article) => {
     if (activeCategory === "ALL") return true;
     const catObj = categories.find((c) => c.key === activeCategory);
     if (!catObj) return true;
@@ -127,31 +172,49 @@ export function JournalClient() {
     );
   });
 
-  // Spotlight article (usually the featured one)
-  const spotlightArticle = journalArticles.find((a) => a.featured) || journalArticles[0];
-  const gridArticles = filteredArticles.filter((a) => a.slug !== spotlightArticle.slug || activeCategory !== "ALL");
+  // Collect all featured articles
+  const featuredArticles = allArticles.filter((a) => a.featured);
+  const finalFeatured = featuredArticles.length > 0 ? featuredArticles : (allArticles.length > 0 ? [allArticles[0]] : []);
+  
+  // Spotlight article currently active in featured carousel
+  const spotlightArticle = finalFeatured[featuredIndex] || null;
+
+  // Filter out featured articles from the general list under "ALL" to avoid duplication
+  const featuredSlugs = new Set(finalFeatured.map((f) => f.slug));
+  const gridArticles = filteredArticles.filter(
+    (a) => !featuredSlugs.has(a.slug) || activeCategory !== "ALL"
+  );
+
+  // Auto-play featured carousel if multiple articles exist
+  useEffect(() => {
+    if (finalFeatured.length <= 1) return;
+    const interval = setInterval(() => {
+      setFeaturedIndex((prev) => (prev === finalFeatured.length - 1 ? 0 : prev + 1));
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [finalFeatured.length]);
 
   const handleCategoryChange = (key: string) => {
     setActiveCategory(key);
-    setSlideIndex(0);
-  };
-
-  const maxSlides = Math.max(0, gridArticles.length - 3);
-
-  const handlePrev = () => {
-    setSlideIndex((prev) => Math.max(0, prev - 1));
-  };
-
-  const handleNext = () => {
-    setSlideIndex((prev) => Math.min(maxSlides, prev + 1));
   };
 
   const galleryScrollRef = React.useRef<HTMLDivElement>(null);
+  const articleScrollRef = React.useRef<HTMLDivElement>(null);
 
   const scrollGallery = (direction: "left" | "right") => {
     if (galleryScrollRef.current) {
       const scrollAmount = galleryScrollRef.current.clientWidth * 0.75;
       galleryScrollRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth"
+      });
+    }
+  };
+
+  const scrollArticles = (direction: "left" | "right") => {
+    if (articleScrollRef.current) {
+      const scrollAmount = articleScrollRef.current.clientWidth * 0.75;
+      articleScrollRef.current.scrollBy({
         left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth"
       });
@@ -191,7 +254,7 @@ export function JournalClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.8 }}
-            className="font-mono text-xs md:text-sm tracking-[0.4em] uppercase text-sky-300 font-semibold mb-6 block"
+            className="font-mono text-[10px] sm:text-xs md:text-sm tracking-[0.18em] sm:tracking-[0.3em] md:tracking-[0.4em] uppercase text-sky-300 font-semibold mb-4 md:mb-6 block max-w-full leading-relaxed"
           >
             {locale === "id" ? "CATATAN PERJALANAN" : "FIELD JOURNAL"}
           </motion.span>
@@ -218,51 +281,93 @@ export function JournalClient() {
 
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 pt-16">
 
-        {/* Featured Spotlight Article (Only shows when "All" is active) */}
+        {/* Featured Spotlight Section (Only shows when "All" is active) */}
         {activeCategory === "ALL" && spotlightArticle && (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="mb-20 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center"
-          >
-            <div className="lg:col-span-7">
-              <div className="relative aspect-[16/10] md:aspect-[21/12] w-full rounded-3xl overflow-hidden shadow-xl bg-charcoal/10 group">
-                <img
-                  src={spotlightArticle.image}
-                  alt={locale === "id" ? spotlightArticle.titleID : spotlightArticle.titleEN}
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1.2s] ease-[cubic-bezier(0.16,1,0.3,1)]"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
-              </div>
-            </div>
-
-            <div className="lg:col-span-5 flex flex-col justify-center">
-              <div className="flex items-center gap-3 font-mono text-[9px] tracking-[0.2em] text-[#0284C7] uppercase font-bold mb-4">
-                <span>{locale === "id" ? spotlightArticle.categoryID : spotlightArticle.categoryEN}</span>
-                <span className="w-1 h-1 rounded-full bg-charcoal/30" />
-                <span className="text-charcoal/60">{locale === "id" ? spotlightArticle.readTimeID : spotlightArticle.readTimeEN}</span>
-              </div>
-              <h2 className="font-serif text-3xl md:text-4xl text-charcoal mb-5 leading-tight hover:text-[#0284C7] transition-colors">
-                <Link href={`/journal/${spotlightArticle.slug}`}>
-                  {locale === "id" ? spotlightArticle.titleID : spotlightArticle.titleEN}
-                </Link>
-              </h2>
-              <p className="font-sans text-charcoal/70 text-sm leading-relaxed mb-6 font-light">
-                {locale === "id" ? spotlightArticle.excerptID : spotlightArticle.excerptEN}
-              </p>
-              <div className="flex items-center gap-6">
-                <Link
-                  href={`/journal/${spotlightArticle.slug}`}
-                  className="font-mono text-[10px] tracking-[0.25em] uppercase text-charcoal font-semibold hover:text-[#0284C7] transition-colors flex items-center gap-2 group/btn"
+          <div className="relative mb-24 bg-[#0F2C59]/5 p-6 md:p-12 rounded-[2rem] overflow-hidden border border-[#0F2C59]/10">
+            
+            {/* Carousel Navigation (if more than 1 featured article) */}
+            {finalFeatured.length > 1 && (
+              <div className="absolute top-6 right-6 md:top-12 md:right-12 z-20 flex gap-2">
+                <button
+                  onClick={() => setFeaturedIndex(prev => (prev === 0 ? finalFeatured.length - 1 : prev - 1))}
+                  className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center text-[#0F2C59] hover:bg-[#0284C7] hover:text-white hover:border-[#0284C7] shadow-sm transition-all cursor-pointer"
+                  aria-label="Previous Featured"
                 >
-                  {locale === "id" ? "BACA JURNAL" : "READ ARTICLE"}
-                  <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
-                </Link>
-                <span className="font-mono text-[10px] text-charcoal/40">{locale === "id" ? spotlightArticle.dateID : spotlightArticle.dateEN}</span>
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  onClick={() => setFeaturedIndex(prev => (prev === finalFeatured.length - 1 ? 0 : prev + 1))}
+                  className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center text-[#0F2C59] hover:bg-[#0284C7] hover:text-white hover:border-[#0284C7] shadow-sm transition-all cursor-pointer"
+                  aria-label="Next Featured"
+                >
+                  <ChevronRight size={18} />
+                </button>
               </div>
-            </div>
-          </motion.div>
+            )}
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={spotlightArticle.slug}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.5 }}
+                className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center"
+              >
+                <div className="lg:col-span-7">
+                  <div className="relative aspect-[16/10] md:aspect-[21/12] w-full rounded-3xl overflow-hidden shadow-xl bg-charcoal/10 group">
+                    <img
+                      src={spotlightArticle.image}
+                      alt={locale === "id" ? spotlightArticle.titleID : spotlightArticle.titleEN}
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1.2s] ease-[cubic-bezier(0.16,1,0.3,1)]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
+                  </div>
+                </div>
+
+                <div className="lg:col-span-5 flex flex-col justify-center">
+                  <div className="flex items-center gap-3 font-mono text-[9px] tracking-[0.2em] text-[#0284C7] uppercase font-bold mb-4">
+                    <span>{locale === "id" ? spotlightArticle.categoryID : spotlightArticle.categoryEN}</span>
+                    <span className="w-1 h-1 rounded-full bg-charcoal/30" />
+                    <span className="text-charcoal/60">{locale === "id" ? spotlightArticle.readTimeID : spotlightArticle.readTimeEN}</span>
+                  </div>
+                  <h2 className="font-serif text-3xl md:text-4xl text-charcoal mb-5 leading-tight hover:text-[#0284C7] transition-colors">
+                    <Link href={`/journal/${spotlightArticle.slug}`}>
+                      {locale === "id" ? spotlightArticle.titleID : spotlightArticle.titleEN}
+                    </Link>
+                  </h2>
+                  <p className="font-sans text-charcoal/70 text-sm leading-relaxed mb-6 font-light">
+                    {locale === "id" ? spotlightArticle.excerptID : spotlightArticle.excerptEN}
+                  </p>
+                  <div className="flex items-center gap-6">
+                    <Link
+                      href={`/journal/${spotlightArticle.slug}`}
+                      className="font-mono text-[10px] tracking-[0.25em] uppercase text-charcoal font-semibold hover:text-[#0284C7] transition-colors flex items-center gap-2 group/btn"
+                    >
+                      {locale === "id" ? "BACA JURNAL" : "READ ARTICLE"}
+                      <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                    </Link>
+                    <span className="font-mono text-[10px] text-charcoal/40">{locale === "id" ? spotlightArticle.dateID : spotlightArticle.dateEN}</span>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Pagination dots (if more than 1 featured article) */}
+            {finalFeatured.length > 1 && (
+              <div className="flex justify-center gap-2 mt-8 lg:mt-0 lg:absolute lg:bottom-12 lg:right-12 z-20">
+                {finalFeatured.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setFeaturedIndex(i)}
+                    className={`w-2.5 h-2.5 rounded-full transition-all cursor-pointer ${i === featuredIndex ? "bg-[#0284C7] w-6" : "bg-charcoal/20 hover:bg-charcoal/40"}`}
+                    aria-label={`Go to slide ${i + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+
+          </div>
         )}
 
         {/* Category Filters */}
@@ -281,22 +386,46 @@ export function JournalClient() {
           ))}
         </div>
 
-        {/* Article Slider Section */}
-        <div className="relative w-full overflow-hidden">
+        {/* Article Horizontal Track Section */}
+        <div className="relative w-full">
+          
+          {/* Track Controls */}
+          {gridArticles.length > 0 && (
+            <div className="absolute -top-16 right-0 flex items-center gap-3">
+              <button
+                onClick={() => scrollArticles("left")}
+                className="w-10 h-10 rounded-full border border-charcoal/10 flex items-center justify-center bg-white/50 backdrop-blur-md text-charcoal hover:bg-[#0284C7] hover:text-white hover:border-[#0284C7] transition-all duration-300 shadow-sm cursor-pointer"
+                aria-label="Scroll left"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                onClick={() => scrollArticles("right")}
+                className="w-10 h-10 rounded-full border border-charcoal/10 flex items-center justify-center bg-white/50 backdrop-blur-md text-charcoal hover:bg-[#0284C7] hover:text-white hover:border-[#0284C7] transition-all duration-300 shadow-sm cursor-pointer"
+                aria-label="Scroll right"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          )}
 
-          {/* Mobile swipe list */}
-          <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory scrollbar-none gap-6 pb-6 -mx-6 px-6">
+          {/* Horizontal Article List Track */}
+          <div
+            ref={articleScrollRef}
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            className="flex gap-8 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-8 scroll-smooth"
+          >
             {gridArticles.map((article) => (
               <div
                 key={article.slug}
-                className="group flex flex-col justify-between border border-charcoal/10 p-5 rounded-2xl bg-white/40 backdrop-blur-sm shadow-sm shrink-0 w-[85vw] sm:w-[60vw] snap-center"
+                className="group flex flex-col justify-between border border-charcoal/10 p-6 rounded-3xl bg-white/40 backdrop-blur-sm shadow-sm hover:shadow-xl transition-all duration-500 shrink-0 w-[85vw] sm:w-[50vw] md:w-[35vw] lg:w-[28vw] snap-center min-h-[460px]"
               >
                 <div className="w-full">
-                  <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-charcoal/10 mb-6">
+                  <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden bg-charcoal/10 mb-6">
                     <img
                       src={article.image}
                       alt={locale === "id" ? article.titleID : article.titleEN}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1.2s] ease-[cubic-bezier(0.16,1,0.3,1)]"
                     />
                     <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full font-mono text-[8px] tracking-widest text-[#0284C7] font-bold shadow-sm uppercase">
                       {locale === "id" ? article.categoryID : article.categoryEN}
@@ -307,7 +436,7 @@ export function JournalClient() {
                     {locale === "id" ? article.dateID : article.dateEN} • {locale === "id" ? article.readTimeID : article.readTimeEN}
                   </span>
 
-                  <h3 className="font-serif text-xl text-charcoal mb-3 leading-snug">
+                  <h3 className="font-serif text-xl text-charcoal mb-3 leading-snug group-hover:text-[#0284C7] transition-colors">
                     <Link href={`/journal/${article.slug}`}>
                       {locale === "id" ? article.titleID : article.titleEN}
                     </Link>
@@ -318,7 +447,7 @@ export function JournalClient() {
                   </p>
                 </div>
 
-                <div className="border-t border-charcoal/10 pt-4 flex items-center justify-between">
+                <div className="border-t border-charcoal/10 pt-4 flex items-center justify-between mt-auto">
                   <Link
                     href={`/journal/${article.slug}`}
                     className="font-mono text-[9px] tracking-[0.2em] uppercase text-charcoal font-semibold hover:text-[#0284C7] transition-colors flex items-center gap-1 group/item"
@@ -329,89 +458,31 @@ export function JournalClient() {
                 </div>
               </div>
             ))}
-          </div>
-
-          {/* Desktop Animated Slider (Exactly 3 per view) */}
-          <div className="hidden md:block overflow-hidden relative pb-4">
-            <motion.div
-              className="flex gap-8"
-              animate={{ x: `calc(-${slideIndex} * (100% + 32px) / 3)` }}
-              transition={{ type: "spring", stiffness: 220, damping: 28 }}
-            >
-              {gridArticles.map((article) => (
-                <div
-                  key={article.slug}
-                  className="group flex flex-col justify-between border border-charcoal/10 p-6 rounded-2xl bg-white/40 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow shrink-0 w-[calc((100%-64px)/3)]"
-                >
-                  <div className="w-full">
-                    <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-charcoal/10 mb-6">
-                      <img
-                        src={article.image}
-                        alt={locale === "id" ? article.titleID : article.titleEN}
-                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1s]"
-                      />
-                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full font-mono text-[8px] tracking-widest text-[#0284C7] font-bold shadow-sm uppercase">
-                        {locale === "id" ? article.categoryID : article.categoryEN}
-                      </div>
-                    </div>
-
-                    <span className="font-mono text-[9px] tracking-widest text-charcoal/50 uppercase block mb-2">
-                      {locale === "id" ? article.dateID : article.dateEN} • {locale === "id" ? article.readTimeID : article.readTimeEN}
-                    </span>
-
-                    <h3 className="font-serif text-xl text-charcoal mb-3 leading-snug group-hover:text-[#0284C7] transition-colors">
-                      <Link href={`/journal/${article.slug}`}>
-                        {locale === "id" ? article.titleID : article.titleEN}
-                      </Link>
-                    </h3>
-
-                    <p className="font-sans text-xs text-charcoal/70 leading-relaxed mb-6 font-light line-clamp-3">
-                      {locale === "id" ? article.excerptID : article.excerptEN}
-                    </p>
-                  </div>
-
-                  <div className="border-t border-charcoal/10 pt-4 flex items-center justify-between">
-                    <Link
-                      href={`/journal/${article.slug}`}
-                      className="font-mono text-[9px] tracking-[0.2em] uppercase text-charcoal font-semibold hover:text-[#0284C7] transition-colors flex items-center gap-1 group/item"
-                    >
-                      {locale === "id" ? "BACA SELENGKAPNYA" : "READ STORY"}
-                      <ArrowRight size={10} className="group-hover/item:translate-x-1 transition-transform" />
-                    </Link>
-                  </div>
+            
+            {isLoading ? (
+              <div className="w-full flex items-center justify-center py-20">
+                <div className="w-8 h-8 border-4 border-[#0284C7] border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : isError || allArticles.length === 0 ? (
+              <div className="w-full flex flex-col items-center justify-center text-center py-16 px-6 bg-white/40 backdrop-blur-sm border border-charcoal/10 rounded-3xl">
+                <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mb-4 border border-amber-100 shadow-sm">
+                  <AlertTriangle size={24} />
                 </div>
-              ))}
-            </motion.div>
+                <h3 className="font-serif text-xl text-charcoal mb-2 font-semibold">
+                  {locale === "id" ? "Layanan Jurnal Sedang Pemeliharaan" : "Journal Service Under Maintenance"}
+                </h3>
+                <p className="text-charcoal/60 text-xs md:text-sm max-w-md font-light leading-relaxed">
+                  {locale === "id" 
+                    ? "Kami sedang melakukan pemeliharaan data jurnal. Silakan kembali lagi beberapa saat lagi." 
+                    : "We are currently conducting journal data maintenance. Please check back shortly."}
+                </p>
+              </div>
+            ) : gridArticles.length === 0 ? (
+              <div className="w-full text-center py-16 font-sans text-charcoal/50 font-light">
+                {locale === "id" ? "Tidak ada artikel di kategori ini." : "No articles found in this category."}
+              </div>
+            ) : null}
           </div>
-
-          {/* Slider Controls */}
-          {maxSlides > 0 && (
-            <div className="hidden md:flex justify-end items-center gap-4 mt-8">
-              <button
-                onClick={handlePrev}
-                disabled={slideIndex === 0}
-                className={`w-10 h-10 rounded-full border border-charcoal/20 flex items-center justify-center transition-all ${slideIndex === 0
-                    ? "opacity-40 cursor-not-allowed"
-                    : "hover:bg-charcoal hover:text-white hover:border-charcoal cursor-pointer"
-                  }`}
-                aria-label="Previous articles"
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <button
-                onClick={handleNext}
-                disabled={slideIndex === maxSlides}
-                className={`w-10 h-10 rounded-full border border-charcoal/20 flex items-center justify-center transition-all ${slideIndex === maxSlides
-                    ? "opacity-40 cursor-not-allowed"
-                    : "hover:bg-charcoal hover:text-white hover:border-charcoal cursor-pointer"
-                  }`}
-                aria-label="Next articles"
-              >
-                <ChevronRight size={18} />
-              </button>
-            </div>
-          )}
-
         </div>
 
         {/* Dynamic Travel Photo Gallery Section */}

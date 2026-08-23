@@ -1,43 +1,117 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ListingFilter } from "@/components/journeys/ListingFilter";
 import { JourneyCard } from "@/components/journeys/JourneyCard";
 import { localizedJourneys } from "@/data/journeys";
 import { useLanguage } from "@/context/LanguageContext";
+import { apiFetch } from "@/lib/api";
 import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 export function JourneysClient() {
   const { t, locale } = useLanguage();
-  const journeys = localizedJourneys[locale];
+  const [journeys, setJourneys] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    async function loadJourneys() {
+      try {
+        const data = await apiFetch<any[]>("/admin/journeys").catch(() => []);
+        if (data && Array.isArray(data) && data.length > 0) {
+          const filtered = data.filter((item: any) => item.isPublished !== false && item.status !== "Draft" && item.status !== "draft");
+          const formatted = filtered.map((item: any) => {
+            const content = locale === "id" ? (item.contentId || item.contentID) : (item.contentEn || item.contentEN);
+            const fallbackContent = item.contentId || item.contentID || item.contentEn || item.contentEN || {};
+            const activeContent = content || fallbackContent;
+
+            let formattedPrice = activeContent.price;
+            if (!formattedPrice && item.priceRaw) {
+              const numPrice = Number(item.priceRaw);
+              formattedPrice = numPrice ? `IDR ${(numPrice / 1000000).toFixed(1)} JT` : "";
+            }
+            if (!formattedPrice) {
+              formattedPrice = "Hubungi Kami";
+            }
+
+            return {
+              id: item.id,
+              slug: item.slug,
+              title: activeContent.title || item.slug,
+              destination: activeContent.destination || "Indonesia",
+              subtitle: activeContent.subtitle || "",
+              durationDays: item.durationDays,
+              durationLabel: activeContent.durationLabel || `${item.durationDays} Hari`,
+              dates: activeContent.dates || "",
+              airline: activeContent.airline || "",
+              price: formattedPrice,
+              priceRaw: Number(item.priceRaw) || 0,
+              travelMonth: activeContent.travelMonth || "",
+              travelStyle: activeContent.travelStyle || "",
+              imageGradient: item.imageGradient || "from-[#38BDF8] to-[#0369A1]",
+              image: item.image || "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=1200",
+              introHeading: activeContent.introHeading || "",
+              introDescription: activeContent.introDescription || "",
+              isPublished: item.isPublished !== false,
+            };
+          });
+          setJourneys(formatted);
+        } else {
+          setJourneys([]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch journeys:", err);
+        setJourneys([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadJourneys();
+  }, [locale]);
 
   const [selectedDestination, setSelectedDestination] = useState<string>("all");
   const [selectedStyle, setSelectedStyle] = useState<string>("all");
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
 
+  // Dynamically derive unique destinations, styles, and months from published journeys
+  const uniqueDestinations = Array.from(
+    new Set(
+      journeys
+        .map((j) => j.destination)
+        .filter((d) => typeof d === "string" && d.trim() !== "")
+    )
+  );
+
+  const uniqueStyles = Array.from(
+    new Set(
+      journeys
+        .map((j) => j.travelStyle)
+        .filter((s) => typeof s === "string" && s.trim() !== "")
+    )
+  );
+
+  const uniqueMonths = Array.from(
+    new Set(
+      journeys
+        .map((j) => j.travelMonth)
+        .filter((m) => typeof m === "string" && m.trim() !== "")
+    )
+  );
+
   const filteredJourneys = journeys.filter((j) => {
+    // Status filter
+    const matchStatus = j.isPublished !== false;
+
     // Destination filter
-    const matchDest = selectedDestination === "all" || 
-      (selectedDestination === "komodo" && j.slug.includes("komodo")) ||
-      (selectedDestination === "java" && j.slug.includes("java")) ||
-      (selectedDestination === "bali" && j.slug.includes("bali")) ||
-      (selectedDestination === "sumatra" && j.slug.includes("sumatra"));
+    const matchDest = selectedDestination === "all" || j.destination === selectedDestination;
       
     // Style filter
-    const matchStyle = selectedStyle === "all" || 
-      (selectedStyle === "marine" && (j.travelStyle.toLowerCase().includes("marine") || j.travelStyle.toLowerCase().includes("bahari"))) ||
-      (selectedStyle === "cultural" && (j.travelStyle.toLowerCase().includes("cultural") || j.travelStyle.toLowerCase().includes("budaya"))) ||
-      (selectedStyle === "wellness" && j.travelStyle.toLowerCase().includes("wellness")) ||
-      (selectedStyle === "active" && (j.travelStyle.toLowerCase().includes("active") || j.travelStyle.toLowerCase().includes("aktif")));
+    const matchStyle = selectedStyle === "all" || j.travelStyle === selectedStyle;
 
     // Month filter
-    const matchMonth = selectedMonth === "all" || 
-      (selectedMonth === "jul" && j.travelMonth.toLowerCase().includes("jul")) ||
-      (selectedMonth === "aug" && (j.travelMonth.toLowerCase().includes("aug") || j.travelMonth.toLowerCase().includes("agu"))) ||
-      (selectedMonth === "nov" && j.travelMonth.toLowerCase().includes("nov")) ||
-      (selectedMonth === "dec" && (j.travelMonth.toLowerCase().includes("dec") || j.travelMonth.toLowerCase().includes("des")));
+    const matchMonth = selectedMonth === "all" || j.travelMonth === selectedMonth;
 
-    return matchDest && matchStyle && matchMonth;
+    return matchStatus && matchDest && matchStyle && matchMonth;
   });
 
   return (
@@ -62,7 +136,7 @@ export function JourneysClient() {
             className="max-w-3xl"
           >
             <span className="font-mono text-xs tracking-[0.4em] uppercase text-white/80 font-bold block mb-4">
-              {locale === "id" ? "PENGALAMAN EKSKLUSIF" : "EDITORIAL TRAVEL EXPERIENCES"}
+              {locale === "id" ? "PENGALAMAN TERKURASI" : "EDITORIAL TRAVEL EXPERIENCES"}
             </span>
             <h1 className="font-serif text-5xl md:text-7xl font-normal text-white tracking-wide mb-8 leading-tight drop-shadow-sm">
               {t("journeys_title")}
@@ -83,12 +157,20 @@ export function JourneysClient() {
           setSelectedStyle={setSelectedStyle}
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
+          destinationsList={uniqueDestinations}
+          stylesList={uniqueStyles}
+          monthsList={uniqueMonths}
           totalCount={filteredJourneys.length}
         />
         
         {/* Asymmetric Grid Wrapper */}
         <div className="grid grid-cols-12 gap-y-24 md:gap-y-40 gap-x-8 md:gap-x-12 items-center min-h-[400px]">
-          {filteredJourneys.length > 0 ? (
+          {isLoading ? (
+            <div className="col-span-12 flex flex-col items-center justify-center py-20">
+              <Loader2 className="animate-spin text-[#0284C7] mb-3" size={32} />
+              <span className="text-xs text-charcoal/60 font-mono tracking-widest uppercase">Memuat Perjalanan...</span>
+            </div>
+          ) : filteredJourneys.length > 0 ? (
             filteredJourneys.map((journey, index) => (
               <JourneyCard key={journey.id} journey={journey} index={index} />
             ))
@@ -112,7 +194,7 @@ export function JourneysClient() {
         </div>
 
         {/* Load More Continuation */}
-        {filteredJourneys.length > 0 && (
+        {!isLoading && filteredJourneys.length > 0 && (
           <div className="mt-32 pt-16 border-t border-charcoal/10 flex justify-center">
             <button className="group flex flex-col items-center space-y-4 text-charcoal hover:text-[#0284C7] transition-colors duration-300">
               <span className="font-mono text-[10px] tracking-[0.3em] uppercase font-semibold">

@@ -21,7 +21,8 @@ import {
   ChevronLeft, 
   ChevronRight,
   User,
-  Image as ImageIcon
+  Image as ImageIcon,
+  BarChart3
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { getStoredToken, removeStoredToken, apiFetch } from "@/lib/api";
@@ -138,6 +139,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       icon: MessageSquare,
     },
     {
+      name: "Laporan & Analitik",
+      nameEN: "Reports & Analytics",
+      href: "/admin/reports",
+      icon: BarChart3,
+    },
+    {
       name: "Pengaturan",
       nameEN: "Settings",
       href: "/admin/settings",
@@ -147,6 +154,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex">
+      <meta name="robots" content="noindex, nofollow" />
       {/* Desktop Sidebar */}
       <aside 
         className={`hidden md:flex flex-col bg-[#0F2C59] text-white transition-all duration-300 relative border-r border-white/10 ${
@@ -162,9 +170,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 alt="KlikTravel.ID Logo" 
                 className="h-8 w-8 object-contain rounded-lg shrink-0" 
               />
-              <span className="font-serif text-lg tracking-wider font-bold text-white uppercase">
-                KlikTravel<span className="text-[#A89053]">.ID</span>
-              </span>
               <span className="bg-earth/80 text-[8px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.5 rounded text-white border border-white/15">
                 Admin
               </span>
@@ -255,8 +260,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     alt="KlikTravel.ID Logo" 
                     className="h-8 w-8 object-contain rounded-lg shrink-0" 
                   />
-                  <span className="font-serif text-lg tracking-wider font-bold text-white uppercase">
-                    KlikTravel<span className="text-[#A89053]">.ID</span>
+                  <span className="bg-earth/80 text-[8px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.5 rounded text-white border border-white/15">
+                    Admin
                   </span>
                 </div>
                 <button 
@@ -356,7 +361,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Dashboard Main Workspace */}
-        <main className="flex-1 p-6 md:p-8 max-w-[1600px] w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-[1600px] w-full mx-auto">
           {children}
         </main>
       </div>

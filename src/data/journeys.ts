@@ -55,6 +55,9 @@ export interface Journey {
   inclusions: string[];
   exclusions: string[];
   faqs: JourneyFAQ[];
+  status?: "Available" | "Closed" | "Draft" | "active" | "draft" | "inactive" | "AVAILABLE" | "CLOSED" | "DRAFT";
+  remainingSeats?: number;
+  maxSeats?: number;
 }
 
 export const localizedJourneys: Record<"id" | "en", Journey[]> = {
@@ -76,7 +79,7 @@ export const localizedJourneys: Record<"id" | "en", Journey[]> = {
       imageGradient: "from-[#38BDF8] to-[#0369A1]",
       image: "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=1200",
       introHeading: "MENGARUNGI ALAM NAGA.",
-      introDescription: "Memulai perjalanan menggunakan kapal Phinisi kayu mewah menjelajahi pulau-pulau terpencil di kepulauan Komodo. Berjalan kaki melintasi sabana berbatu untuk melihat komodo prasejarah, berenang bersama pari manta raksasa, dan menyaksikan matahari terbenam di atas pulau-pulau vulkanik dari dek privat Anda.",
+      introDescription: "Memulai perjalanan menggunakan kapal Phinisi kayu pilihan menjelajahi pulau-pulau terpencil di kepulauan Komodo. Berjalan kaki melintasi sabana berbatu untuk melihat komodo prasejarah, berenang bersama pari manta raksasa, dan menyaksikan matahari terbenam di atas pulau-pulau vulkanik dari dek privat Anda.",
       countriesCount: 1,
       chapters: [
         {
@@ -102,7 +105,7 @@ export const localizedJourneys: Record<"id" | "en", Journey[]> = {
         {
           day: "HARI 01",
           title: "Tiba di Labuan Bajo",
-          description: "Tiba di Bandara Komodo. Diantar menuju pelabuhan dan menaiki kapal Phinisi mewah kami. Berlayar menuju Pulau Kelor untuk pendakian singkat dan matahari terbenam."
+          description: "Tiba di Bandara Komodo. Diantar menuju pelabuhan dan menaiki kapal Phinisi pilihan kami. Berlayar menuju Pulau Kelor untuk pendakian singkat dan matahari terbenam."
         },
         {
           day: "HARI 02",
@@ -126,7 +129,7 @@ export const localizedJourneys: Record<"id" | "en", Journey[]> = {
         }
       ],
       highlights: [
-        "Pelayaran kapal Phinisi mewah privat",
+        "Pelayaran kapal Phinisi pilihan privat",
         "Trekking melihat Komodo bersama petugas ahli",
         "Berenang bersama Pari Manta",
         "Matahari terbit di Pulau Padar",
@@ -134,7 +137,7 @@ export const localizedJourneys: Record<"id" | "en", Journey[]> = {
       ],
       accommodations: [
         {
-          name: "Ayana Lako di'a (Phinisi Mewah)",
+          name: "Ayana Lako di'a (Phinisi Pilihan)",
           city: "Kepulauan Komodo",
           roomType: "Kabin Master Suite"
         }
@@ -145,7 +148,7 @@ export const localizedJourneys: Record<"id" | "en", Journey[]> = {
       },
       inclusions: [
         "Penerbangan domestik dengan Garuda Indonesia",
-        "Penginapan 4 malam di kapal Phinisi mewah",
+        "Penginapan 4 malam di kapal Phinisi pilihan",
         "Seluruh makanan disiapkan oleh koki privat di kapal",
         "Peralatan snorkeling dan pemandu privat",
         "Biaya masuk Taman Nasional dan tip petugas"
@@ -179,7 +182,7 @@ export const localizedJourneys: Record<"id" | "en", Journey[]> = {
       imageGradient: "from-[#E0F2FE] to-[#38BDF8]",
       image: "https://images.unsplash.com/photo-1584810359583-96fc3448beaa?q=80&w=1200",
       introHeading: "CANDI DI BALIK KABUT.",
-      introDescription: "Melintasi tulang punggung pulau Jawa menggunakan kereta panoramik mewah. Menyaksikan matahari terbit yang menyinari candi Borobudur, bersepeda melintasi desa-desa kerajaan Jawa, dan berdiri di tepi Gunung Bromo yang bergemuruh.",
+      introDescription: "Melintasi tulang punggung pulau Jawa menggunakan kereta panoramik pilihan. Menyaksikan matahari terbit yang menyinari candi Borobudur, bersepeda melintasi desa-desa kerajaan Jawa, dan berdiri di tepi Gunung Bromo yang bergemuruh.",
       countriesCount: 1,
       chapters: [],
       itinerary: [],

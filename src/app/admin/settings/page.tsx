@@ -8,7 +8,7 @@ export default function AdminSettingsPage() {
   const { locale, setLocale } = useLanguage();
 
   const [siteName, setSiteName] = useState("KlikTravel.ID");
-  const [whatsapp, setWhatsapp] = useState("+6281234567890");
+  const [whatsapp, setWhatsapp] = useState("+62 812-3001-1027");
   const [email, setEmail] = useState("info@kliktravel.id");
   const [instagram, setInstagram] = useState("@kliktravelid");
   const [savedSuccess, setSavedSuccess] = useState(false);

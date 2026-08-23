@@ -2,9 +2,9 @@ export const translations = {
   id: {
     // Navigation
     nav_home: "Beranda",
-    nav_journeys: "Perjalanan",
-    nav_destinations: "Open Trip",
+    nav_journeys: "Open Trip",
     nav_experiences: "Private Trip",
+    nav_destinations: "Destinasi",
     nav_about: "Tentang Kami",
     nav_journal: "Jurnal",
     nav_plan_journey: "Rancang Perjalanan",
@@ -28,15 +28,15 @@ export const translations = {
     hero_subtitle: "PARTNER PERJALANAN TERPERCAYA",
     hero_heading_1: "JELAJAHI DESTINASI",
     hero_heading_2: "IMPIAN ANDA",
-    hero_description: "Temukan paket wisata terbaik, open trip seru, dan private tour eksklusif ke berbagai destinasi favorit di Indonesia dan mancanegara bersama Klik Travel.",
+    hero_description: "Temukan paket wisata terbaik, open trip seru, dan private tour fleksibel ke berbagai destinasi favorit di Indonesia dan mancanegara bersama Klik Travel.",
     hero_btn_start: "Lihat Paket Wisata",
 
     // Ethos / Experience Section
-    ethos_tag: "ETOS KAMI",
+    ethos_tag: "Kenapa Memilih Klik Travel",
     ethos_heading_1: "KAMI TIDAK HANYA MEMASARKAN TUR.",
     ethos_heading_2: "KAMI MERANCANG PENGALAMAN SEPERTI SEBUAH KARYA SENI.",
-    ethos_desc_1: "Kami percaya perjalanan terbaik tidak bisa diukur dari berapa banyak tempat yang visited, melainkan seberapa dalam Anda menyatu dengan tempat tersebut.",
-    ethos_desc_2: "Setiap perjalanan kami dikurasi secara terbatas, menyatukan kenyamanan tingkat tinggi dengan keotentikan budaya lokal yang tak tersentuh.",
+    ethos_desc_1: "Kami percaya perjalanan terbaik tidak bisa diukur dari berapa banyak tempat yang dikunjungi, melainkan seberapa dalam Anda menikmati perjalanan tersebut.",
+    ethos_desc_2: "Setiap perjalanan kami dikurasi dengan cermat, menyatukan kenyamanan terbaik dengan keotentikan budaya lokal yang hangat.",
     ethos_watch_experience: "Tonton Pengalaman — Sekilas tentang Perlindungan Kami",
 
     // Journeys Listing Page
@@ -73,19 +73,19 @@ export const translations = {
     detail_explore_more: "Jelajahi Lainnya",
 
     // Footer
-    footer_tagline: "Merancang ekspedisi editorial melintasi nusantara.",
+    footer_tagline: "Merancang ekspedisi terpercaya melintasi nusantara.",
     footer_rights: "Hak Cipta Dilindungi.",
     footer_explore: "Jelajahi",
     footer_company: "Perusahaan",
     footer_social: "Sosial Media",
     footer_newsletter_title: "Inspirasi perjalanan, sesekali.",
     footer_newsletter_placeholder: "Masukkan alamat email Anda",
-    footer_brand_desc: "Kurasi perjalanan editorial yang luar biasa melintasi kepulauan Indonesia dan sekitarnya. Mendefinisikan ulang kemewahan modern.",
+    footer_brand_desc: "Kurasi perjalanan terkurasi & open trip berkualitas melintasi kepulauan Indonesia dan sekitarnya. Kenyamanan & fleksibilitas untuk semua kalangan.",
 
     // DreamHolidaySelector
     dream_tag: "EKSPEDISI TERKURASI",
     dream_title: "Pilih Liburan Impian",
-    dream_desc: "Rencanakan liburan eksklusif bersama Klik Travel ID. Temukan destinasi favorit, tentukan tipe perjalanan impian Anda, dan pilih tanggal keberangkatan yang telah dijamin kepastiannya.",
+    dream_desc: "Rencanakan liburan impian bersama Klik Travel ID. Temukan destinasi favorit, tentukan tipe perjalanan impian Anda, dan pilih tanggal keberangkatan yang telah dijamin kepastiannya.",
     dream_btn_all_destinations: "Jelajahi Semua Destinasi",
     dream_tab_destinasi: "Destinasi",
     dream_tab_tipe: "Tipe Perjalanan",
@@ -103,7 +103,7 @@ export const translations = {
     dream_card_reserve: "Reservasi",
     dream_custom_banner_tag: "INGIN TANGGAL LAIN TERKUSTOMISASI?",
     dream_custom_banner_title: "Butuh Tanggal Keberangkatan Khusus Keluarga atau Perusahaan?",
-    dream_custom_banner_desc: "Kami dapat merancang jadwal privat sesuai permintaan Anda dengan akomodasi dan fasilitas bintang 5.",
+    dream_custom_banner_desc: "Kami dapat merancang jadwal privat sesuai permintaan Anda dengan akomodasi dan fasilitas pilihan yang nyaman.",
     dream_custom_banner_btn: "RANCANG PRIVATE TRIP →",
 
     // FeaturedJourneys
@@ -116,14 +116,14 @@ export const translations = {
 
     // ServicesSection
     services_tag: "LAYANAN KAMI",
-    services_title: "Layanan Wisata Premium",
-    services_desc: "Dari pelayaran phinisi mewah hingga perjalanan budaya terkurasi, kami menawarkan perjalanan premium yang dirancang khusus untuk kenyamanan Anda.",
+    services_title: "Temukan Cara Terbaik untuk Berlibur",
+    services_desc: "Pilih perjalanan yang sesuai dengan kebutuhan Anda. Nikmati kemudahan dengan Open Trip atau rancang Private Trip sesuai keinginan, dengan destinasi menarik di Indonesia dan berbagai negara lainnya",
     services_learn_more: "Pelajari Selengkapnya →",
 
     // WhyChooseUsSection
-    why_tag: "KEUNGGULAN KAMI",
-    why_title: "Mengapa Memilih Klik Travel ID?",
-    why_desc: "Kami menggabungkan kenyamanan kelas atas, pemandu lokal ahli, dan rencana perjalanan yang dirancang secara detail untuk menciptakan petualangan yang tak terlupakan.",
+    why_tag: "KENAPA KLIK TRAVEL?",
+    why_title: "Kenapa Klik Travel?",
+    why_desc: "",
 
     // VisionMissionSection
     vision_tag: "VISI & MISI",
@@ -134,7 +134,7 @@ export const translations = {
 
     // PhilosophySection
     philosophy_tag: "FILOSOFI KAMI",
-    philosophy_title: "Seni Perjalanan yang Lambat",
+    philosophy_title: "Seni Perjalanan yang Bermakna",
     philosophy_subtitle: "Menghubungkan Anda secara mendalam dengan destinasi pilihan.",
     philosophy_desc: "Kami percaya perjalanan sejati tidak diukur dari jumlah destinasi, melainkan dari kedalaman hubungan yang Anda jalin dengan budaya setempat.",
 
@@ -147,28 +147,28 @@ export const translations = {
     departures_title: "Jadwal Keberangkatan Terdekat",
 
     // FinalCTA
-    cta_tag: "RESERVASI",
+    cta_tag: "GALLERY",
     cta_title: "Siap Menjelajah Dunia?",
-    cta_desc: "Diskusikan rencana perjalanan impian Anda bersama konsultan perjalanan ahli kami sekarang.",
+    cta_desc: "Diskusikan rencana perjalanan impian Anda bersama konsultan perjalanan kami sekarang.",
     cta_btn: "Konsultasikan Perjalanan →",
 
     // Private Trip Page
-    private_trip_tag: "PENGALAMAN TANPA BATAS",
+    private_trip_tag: "PENGALAMAN FLEKSIBEL",
     private_trip_title: "Rancang Perjalanan Pribadi Anda",
-    private_trip_desc: "Setiap perjalanan adalah kanvas kosong. Nikmati kebebasan penuh, layanan eksklusif, dan jadwal yang disesuaikan hanya untuk Anda dan orang-orang terkasih.",
+    private_trip_desc: "Setiap perjalanan adalah kanvas kosong. Nikmati kebebasan penuh, layanan personal, dan jadwal yang disesuaikan dengan budget serta keinginan Anda.",
     private_trip_btn_start: "Mulai Merancang",
     private_trip_freedom_title: "Kebebasan Rute",
     private_trip_freedom_desc: "Tentukan sendiri destinasi impian Anda, tanpa terikat jadwal grup wisata umum.",
-    private_trip_flexibility_title: "Fleksibilitas Waktu",
-    private_trip_flexibility_desc: "Berangkat kapan saja. Habiskan waktu lebih lama di tempat yang Anda sukai.",
-    private_trip_service_title: "Layanan Eksklusif",
-    private_trip_service_desc: "Dari hotel butik mewah hingga kendaraan pribadi yang sangat nyaman.",
+    private_trip_flexibility_title: "Fleksibilitas Waktu & Budget",
+    private_trip_flexibility_desc: "Berangkat kapan saja. Sesuaikan fasilitas dan budget perjalanan sesuai kebutuhan grup Anda.",
+    private_trip_service_title: "Layanan Personal",
+    private_trip_service_desc: "Dari hotel butik nyaman hingga kendaraan pribadi yang bersih dan aman.",
     private_trip_privacy_title: "Privasi Penuh",
     private_trip_privacy_desc: "Hanya Anda, keluarga, atau kerabat terdekat. Tanpa ada orang asing.",
     private_trip_inspiration_tag: "INSPIRASI DESTINASI",
     private_trip_inspiration_title: "Favorit Pelanggan Kami",
     private_trip_form_title: "Ceritakan Perjalanan Impian Anda.",
-    private_trip_form_desc: "Tim Travel Expert kami siap membantu Anda menyusun itinerary eksklusif, mengatur akomodasi bintang 5, hingga memastikan setiap detail perjalanan berjalan sempurna tanpa cela.",
+    private_trip_form_desc: "Tim Travel Expert kami siap membantu Anda menyusun itinerary kustom, mengatur akomodasi pilihan yang nyaman, hingga memastikan setiap detail perjalanan berjalan lancar.",
     private_trip_form_label_name: "Nama Lengkap",
     private_trip_form_placeholder_name: "Contoh: Bambang Soetjipto",
     private_trip_form_label_phone: "Nomor Telepon / WhatsApp",
@@ -202,9 +202,9 @@ export const translations = {
   en: {
     // Navigation
     nav_home: "Home",
-    nav_journeys: "Journeys",
-    nav_destinations: "Open Trip",
+    nav_journeys: "Open Trip",
     nav_experiences: "Private Trip",
+    nav_destinations: "Destinations",
     nav_about: "About Us",
     nav_journal: "Journal",
     nav_plan_journey: "Plan Your Journey",
@@ -303,7 +303,7 @@ export const translations = {
     dream_card_reserve: "Reserve",
     dream_custom_banner_tag: "CUSTOM DEPARTURE DATES?",
     dream_custom_banner_title: "Need Custom Dates for Family or Corporate Groups?",
-    dream_custom_banner_desc: "We can design customized private itineraries tailored to your exact dates, featuring premium 5-star accommodations.",
+    dream_custom_banner_desc: "We can design customized private itineraries tailored to your exact dates, featuring handpicked comfortable accommodations.",
     dream_custom_banner_btn: "PLAN PRIVATE TRIP →",
 
     // FeaturedJourneys
@@ -316,14 +316,14 @@ export const translations = {
 
     // ServicesSection
     services_tag: "OUR SERVICES",
-    services_title: "Premium Travel Services",
-    services_desc: "From luxurious wooden phinisi cruises to customized heritage railway journeys, we design high-end travel experiences tailored around your comfort.",
+    services_title: "Find the Best Way to Vacation",
+    services_desc: "Choose a trip that suits your needs. Enjoy the convenience of an Open Trip or design a Private Trip to your liking, with attractive destinations across Indonesia and other countries.",
     services_learn_more: "Learn More →",
 
     // WhyChooseUsSection
-    why_tag: "OUR STRENGTHS",
-    why_title: "Why Travel with Klik Travel ID?",
-    why_desc: "We merge upscale accommodations, expert local guides, and carefully details-engineered itineraries to create lifelong memories.",
+    why_tag: "WHY KLIK TRAVEL?",
+    why_title: "Why Klik Travel?",
+    why_desc: "",
 
     // VisionMissionSection
     vision_tag: "VISION & MISSION",
@@ -349,26 +349,26 @@ export const translations = {
     // FinalCTA
     cta_tag: "RESERVATION",
     cta_title: "Ready to Explore the World?",
-    cta_desc: "Speak directly with our expert destination architects to plan your luxury getaway today.",
+    cta_desc: "Speak directly with our expert destination guides to plan your next getaway today.",
     cta_btn: "Consult Your Journey →",
 
     // Private Trip Page
     private_trip_tag: "LIMITLESS EXPERIENCE",
     private_trip_title: "Design Your Private Journey",
-    private_trip_desc: "Every journey is a blank canvas. Enjoy full freedom, exclusive luxury services, and tailored schedules created just for you and your loved ones.",
+    private_trip_desc: "Every journey is a blank canvas. Enjoy full freedom, personalized services, and tailored schedules created just for you and your loved ones.",
     private_trip_btn_start: "Start Designing",
     private_trip_freedom_title: "Route Freedom",
     private_trip_freedom_desc: "Define your dream destinations without being tied to standard group tour schedules.",
-    private_trip_flexibility_title: "Time Flexibility",
-    private_trip_flexibility_desc: "Depart whenever you wish. Spend as much time as you desire in places you love.",
-    private_trip_service_title: "Exclusive Service",
-    private_trip_service_desc: "From boutique luxury hotels to ultra-comfortable private transportation.",
+    private_trip_flexibility_title: "Time & Budget Flexibility",
+    private_trip_flexibility_desc: "Depart whenever you wish. Adjust standard amenities and budget to fit your group's size and needs.",
+    private_trip_service_title: "Personalized Service",
+    private_trip_service_desc: "From comfortable boutique hotels to reliable private transportation.",
     private_trip_privacy_title: "Complete Privacy",
     private_trip_privacy_desc: "Only you, your family, or close friends. No strangers onboard.",
     private_trip_inspiration_tag: "DESTINATION INSPIRATION",
     private_trip_inspiration_title: "Guest Favorites",
     private_trip_form_title: "Tell Us About Your Dream Journey.",
-    private_trip_form_desc: "Our Travel Expert team is ready to curate your bespoke itinerary, arrange 5-star stays, and ensure every detail of your trip flows effortlessly.",
+    private_trip_form_desc: "Our Travel Expert team is ready to curate your bespoke itinerary, arrange comfortable stays, and ensure every detail of your trip flows effortlessly.",
     private_trip_form_label_name: "Full Name",
     private_trip_form_placeholder_name: "e.g., Bambang Soetjipto",
     private_trip_form_label_phone: "Phone / WhatsApp Number",

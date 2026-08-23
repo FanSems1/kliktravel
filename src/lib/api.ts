@@ -37,10 +37,23 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
 
   const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
 
-  const res = await fetch(url, {
-    ...options,
-    headers,
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      ...options,
+      headers,
+    });
+  } catch (err: any) {
+    const isNetworkError = err instanceof TypeError || err.message?.toLowerCase().includes("fetch");
+    if (isNetworkError) {
+      console.warn(`[API Network Error] Failed to reach ${url}:`, err);
+    }
+    throw new Error(
+      isNetworkError
+        ? `Gagal terhubung ke API Server (${url}). Pastikan backend server atau dev tunnel Anda sedang aktif.`
+        : err.message || "Terjadi kesalahan koneksi jaringan."
+    );
+  }
 
   if (!res.ok) {
     let errorMessage = `HTTP ${res.status} - ${res.statusText}`;

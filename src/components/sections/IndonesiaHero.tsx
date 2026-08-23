@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
+import Link from "next/link";
 import { Heading } from "@/components/ui/Heading";
 import { Text } from "@/components/ui/Text";
 import { useLanguage } from "@/context/LanguageContext";
@@ -31,18 +32,18 @@ export function IndonesiaHero() {
       </motion.div>
 
       {/* Hero Content */}
-      <div className="relative z-10 w-full h-full flex flex-col items-center justify-center pt-24 pb-12">
+      <div className="relative z-10 w-full h-full flex flex-col items-center justify-start pt-28 xs:pt-32 sm:pt-40 md:justify-center md:pt-24 pb-12">
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-          className="flex flex-col items-center justify-center text-center px-6"
+          className="flex flex-col items-center justify-start md:justify-center text-center px-6"
         >
-          <span className="font-mono text-[10px] md:text-[11px] tracking-[0.4em] uppercase text-white font-semibold mb-6 px-5 py-2 bg-black/30 backdrop-blur-md border border-white/20 rounded-full shadow-lg">
+          <span className="font-mono text-[8px] xs:text-[10px] md:text-[11px] tracking-[0.2em] xs:tracking-[0.4em] whitespace-nowrap uppercase text-white font-semibold mb-6 px-4 xs:px-5 py-2 bg-black/30 backdrop-blur-md border border-white/20 rounded-full shadow-lg">
             {t("hero_subtitle")}
           </span>
 
-          <Heading variant="display" className="text-white drop-shadow-lg !text-4xl md:!text-6xl lg:!text-[8.5rem]">
+          <Heading variant="display" className="text-white drop-shadow-lg !text-[28px] xs:!text-[34px] md:!text-7xl lg:!text-[8.5rem] !leading-tight md:!leading-none">
             {t("hero_heading_1")} <br />
             <span className="font-sans font-light italic tracking-tight uppercase text-white/90">{t("hero_heading_2")}</span>
           </Heading>
@@ -57,9 +58,12 @@ export function IndonesiaHero() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
             className="mt-10 pointer-events-auto"
           >
-            <button className="rounded-full bg-earth text-white px-8 py-3.5 text-xs tracking-[0.2em] uppercase font-sans shadow-xl hover:bg-earth-dark transition-all duration-300">
+            <Link 
+              href="/destinations"
+              className="inline-block rounded-full bg-earth text-white px-5 py-2 text-[10px] md:px-8 md:py-3.5 md:text-xs tracking-[0.2em] uppercase font-sans shadow-xl hover:bg-earth-dark transition-all duration-300 font-semibold text-center"
+            >
               {t("hero_btn_start")}
-            </button>
+            </Link>
           </motion.div>
         </motion.div>
       </div>

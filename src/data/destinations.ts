@@ -1,5 +1,6 @@
 export interface RegionDestination {
   id: string;
+  key?: string;
   name: string;
   nameEN?: string;
   slug: string;
@@ -7,6 +8,7 @@ export interface RegionDestination {
   subtitleEN?: string;
   featuredImageGradient: string;
   image?: string;
+  status?: "active" | "draft" | "inactive";
   subDestinations: {
     name: string;
     nameEN?: string;
@@ -27,7 +29,9 @@ export const localizedRegions: Record<"id" | "en", RegionDestination[]> = {
         { name: "Bali", slug: "bali" },
         { name: "Gunung Bromo", slug: "bromo" },
         { name: "Labuan Bajo", slug: "labuan-bajo" },
-        { name: "Raja Ampat", slug: "raja-ampat" }
+        { name: "Raja Ampat", slug: "raja-ampat" },
+        { name: "Yogyakarta", slug: "yogyakarta" },
+        { name: "Lombok", slug: "lombok" }
       ]
     },
     {
@@ -39,7 +43,10 @@ export const localizedRegions: Record<"id" | "en", RegionDestination[]> = {
       subDestinations: [
         { name: "Bangkok", slug: "bangkok" },
         { name: "Phuket", slug: "phuket" },
-        { name: "Chiang Mai", slug: "chiang-mai" }
+        { name: "Chiang Mai", slug: "chiang-mai" },
+        { name: "Pattaya", slug: "pattaya" },
+        { name: "Krabi", slug: "krabi" },
+        { name: "Ayutthaya", slug: "ayutthaya" }
       ]
     },
     {
@@ -51,7 +58,10 @@ export const localizedRegions: Record<"id" | "en", RegionDestination[]> = {
       subDestinations: [
         { name: "Hanoi", slug: "hanoi" },
         { name: "Ho Chi Minh", slug: "ho-chi-minh" },
-        { name: "Da Nang", slug: "da-nang" }
+        { name: "Da Nang", slug: "da-nang" },
+        { name: "Ha Long Bay", slug: "halong-bay" },
+        { name: "Hoi An", slug: "hoi-an" },
+        { name: "Nha Trang", slug: "nha-trang" }
       ]
     },
     {
@@ -63,7 +73,10 @@ export const localizedRegions: Record<"id" | "en", RegionDestination[]> = {
       subDestinations: [
         { name: "Seoul", slug: "seoul" },
         { name: "Busan", slug: "busan" },
-        { name: "Jeju", slug: "jeju" }
+        { name: "Jeju", slug: "jeju" },
+        { name: "Incheon", slug: "incheon" },
+        { name: "Gyeongju", slug: "gyeongju" },
+        { name: "Pulau Nami", slug: "nami-island" }
       ]
     },
     {
@@ -75,7 +88,10 @@ export const localizedRegions: Record<"id" | "en", RegionDestination[]> = {
       subDestinations: [
         { name: "Tokyo", slug: "tokyo" },
         { name: "Kyoto", slug: "kyoto" },
-        { name: "Osaka", slug: "osaka" }
+        { name: "Osaka", slug: "osaka" },
+        { name: "Hokkaido", slug: "hokkaido" },
+        { name: "Gunung Fuji", slug: "mount-fuji" },
+        { name: "Okinawa", slug: "okinawa" }
       ]
     },
     {
@@ -87,7 +103,25 @@ export const localizedRegions: Record<"id" | "en", RegionDestination[]> = {
       subDestinations: [
         { name: "Beijing", slug: "beijing" },
         { name: "Shanghai", slug: "shanghai" },
-        { name: "Chengdu", slug: "chengdu" }
+        { name: "Chengdu", slug: "chengdu" },
+        { name: "Tembok Raksasa", slug: "great-wall" },
+        { name: "Xi'an", slug: "xian" },
+        { name: "Guilin", slug: "guilin" }
+      ]
+    },
+    {
+      id: "hongkong",
+      name: "Hongkong",
+      slug: "hongkong",
+      subtitle: "Gedung pencakar langit megah, pelabuhan legendaris, dan perpaduan budaya timur-barat yang unik.",
+      featuredImageGradient: "from-[#BAE6FD] to-[#38BDF8]",
+      subDestinations: [
+        { name: "Victoria Harbour", slug: "victoria-harbour" },
+        { name: "Disneyland Hong Kong", slug: "disneyland-hk" },
+        { name: "Victoria Peak", slug: "victoria-peak" },
+        { name: "Tsim Sha Tsui", slug: "tsim-sha-tsui" },
+        { name: "Lantau Island", slug: "lantau-island" },
+        { name: "Mong Kok", slug: "mong-kok" }
       ]
     },
     {
@@ -99,7 +133,10 @@ export const localizedRegions: Record<"id" | "en", RegionDestination[]> = {
       subDestinations: [
         { name: "Delhi", slug: "delhi" },
         { name: "Mumbai", slug: "mumbai" },
-        { name: "Jaipur", slug: "jaipur" }
+        { name: "Jaipur", slug: "jaipur" },
+        { name: "Agra", slug: "agra" },
+        { name: "Goa", slug: "goa" },
+        { name: "Kerala", slug: "kerala" }
       ]
     },
     {
@@ -111,7 +148,10 @@ export const localizedRegions: Record<"id" | "en", RegionDestination[]> = {
       subDestinations: [
         { name: "Eropa", slug: "europe" },
         { name: "Amerika", slug: "america" },
-        { name: "Australia", slug: "australia" }
+        { name: "Australia", slug: "australia" },
+        { name: "Afrika", slug: "africa" },
+        { name: "Timur Tengah", slug: "middle-east" },
+        { name: "Selandia Baru", slug: "new-zealand" }
       ]
     }
   ],
@@ -126,7 +166,9 @@ export const localizedRegions: Record<"id" | "en", RegionDestination[]> = {
         { name: "Bali", slug: "bali" },
         { name: "Mount Bromo", slug: "bromo" },
         { name: "Labuan Bajo", slug: "labuan-bajo" },
-        { name: "Raja Ampat", slug: "raja-ampat" }
+        { name: "Raja Ampat", slug: "raja-ampat" },
+        { name: "Yogyakarta", slug: "yogyakarta" },
+        { name: "Lombok", slug: "lombok" }
       ]
     },
     {
@@ -138,7 +180,10 @@ export const localizedRegions: Record<"id" | "en", RegionDestination[]> = {
       subDestinations: [
         { name: "Bangkok", slug: "bangkok" },
         { name: "Phuket", slug: "phuket" },
-        { name: "Chiang Mai", slug: "chiang-mai" }
+        { name: "Chiang Mai", slug: "chiang-mai" },
+        { name: "Pattaya", slug: "pattaya" },
+        { name: "Krabi", slug: "krabi" },
+        { name: "Ayutthaya", slug: "ayutthaya" }
       ]
     },
     {
@@ -150,7 +195,10 @@ export const localizedRegions: Record<"id" | "en", RegionDestination[]> = {
       subDestinations: [
         { name: "Hanoi", slug: "hanoi" },
         { name: "Ho Chi Minh", slug: "ho-chi-minh" },
-        { name: "Da Nang", slug: "da-nang" }
+        { name: "Da Nang", slug: "da-nang" },
+        { name: "Ha Long Bay", slug: "halong-bay" },
+        { name: "Hoi An", slug: "hoi-an" },
+        { name: "Nha Trang", slug: "nha-trang" }
       ]
     },
     {
@@ -162,7 +210,10 @@ export const localizedRegions: Record<"id" | "en", RegionDestination[]> = {
       subDestinations: [
         { name: "Seoul", slug: "seoul" },
         { name: "Busan", slug: "busan" },
-        { name: "Jeju", slug: "jeju" }
+        { name: "Jeju", slug: "jeju" },
+        { name: "Incheon", slug: "incheon" },
+        { name: "Gyeongju", slug: "gyeongju" },
+        { name: "Nami Island", slug: "nami-island" }
       ]
     },
     {
@@ -174,7 +225,10 @@ export const localizedRegions: Record<"id" | "en", RegionDestination[]> = {
       subDestinations: [
         { name: "Tokyo", slug: "tokyo" },
         { name: "Kyoto", slug: "kyoto" },
-        { name: "Osaka", slug: "osaka" }
+        { name: "Osaka", slug: "osaka" },
+        { name: "Hokkaido", slug: "hokkaido" },
+        { name: "Mount Fuji", slug: "mount-fuji" },
+        { name: "Okinawa", slug: "okinawa" }
       ]
     },
     {
@@ -186,7 +240,25 @@ export const localizedRegions: Record<"id" | "en", RegionDestination[]> = {
       subDestinations: [
         { name: "Beijing", slug: "beijing" },
         { name: "Shanghai", slug: "shanghai" },
-        { name: "Chengdu", slug: "chengdu" }
+        { name: "Chengdu", slug: "chengdu" },
+        { name: "Great Wall", slug: "great-wall" },
+        { name: "Xi'an", slug: "xian" },
+        { name: "Guilin", slug: "guilin" }
+      ]
+    },
+    {
+      id: "hongkong",
+      name: "Hong Kong",
+      slug: "hongkong",
+      subtitle: "Majestic skyscrapers, legendary harbors, and a unique fusion of East and West cultures.",
+      featuredImageGradient: "from-[#BAE6FD] to-[#38BDF8]",
+      subDestinations: [
+        { name: "Victoria Harbour", slug: "victoria-harbour" },
+        { name: "Disneyland Hong Kong", slug: "disneyland-hk" },
+        { name: "Victoria Peak", slug: "victoria-peak" },
+        { name: "Tsim Sha Tsui", slug: "tsim-sha-tsui" },
+        { name: "Lantau Island", slug: "lantau-island" },
+        { name: "Mong Kok", slug: "mong-kok" }
       ]
     },
     {
@@ -198,7 +270,10 @@ export const localizedRegions: Record<"id" | "en", RegionDestination[]> = {
       subDestinations: [
         { name: "Delhi", slug: "delhi" },
         { name: "Mumbai", slug: "mumbai" },
-        { name: "Jaipur", slug: "jaipur" }
+        { name: "Jaipur", slug: "jaipur" },
+        { name: "Agra", slug: "agra" },
+        { name: "Goa", slug: "goa" },
+        { name: "Kerala", slug: "kerala" }
       ]
     },
     {
@@ -210,7 +285,10 @@ export const localizedRegions: Record<"id" | "en", RegionDestination[]> = {
       subDestinations: [
         { name: "Europe", slug: "europe" },
         { name: "America", slug: "america" },
-        { name: "Australia", slug: "australia" }
+        { name: "Australia", slug: "australia" },
+        { name: "Africa", slug: "africa" },
+        { name: "Middle East", slug: "middle-east" },
+        { name: "New Zealand", slug: "new-zealand" }
       ]
     }
   ]

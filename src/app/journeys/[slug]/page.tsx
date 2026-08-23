@@ -17,22 +17,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const journey = journeys.find((j) => j.slug === slug);
 
   return {
-    title: journey ? `${journey.title} — ${journey.destination} | Klik Travel ID` : "Journey Detail | Klik Travel ID",
-    description: journey ? journey.introDescription : "Premium editorial travel experiences curated by Klik Travel ID.",
+    title: journey ? `${journey.title} — ${journey.destination} | Klik Travel ID` : "Detail Perjalanan | Klik Travel ID",
+    description: journey ? journey.introDescription : "Paket liburan dan open trip terfavorit dengan itinerary santai dan nyaman bersama Klik Travel ID.",
     alternates: {
       canonical: `https://kliktravel.id/journeys/${slug}`
     },
     openGraph: {
-      title: journey ? `${journey.title} | Premium Journey` : "Premium Journey",
-      description: journey ? journey.introDescription : "Premium editorial travel experiences.",
+      title: journey ? `${journey.title} | Klik Travel ID` : "Detail Perjalanan",
+      description: journey ? journey.introDescription : "Paket liburan dan open trip terfavorit.",
       url: `https://kliktravel.id/journeys/${slug}`,
       siteName: "Klik Travel ID",
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: journey ? `${journey.title} | Premium Journey` : "Premium Journey",
-      description: journey ? journey.introDescription : "Premium editorial travel experiences.",
+      title: journey ? `${journey.title} | Klik Travel ID` : "Detail Perjalanan",
+      description: journey ? journey.introDescription : "Paket liburan dan open trip terfavorit.",
     }
   };
 }

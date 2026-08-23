@@ -11,38 +11,31 @@ export function WhyChooseUsSection() {
   const whyChooseUs = [
     {
       icon: <Award className="w-5 h-5" />,
-      title: locale === "id" ? "Harga Terbaik" : "Best Price Guarantee",
+      title: locale === "id" ? "Harga Terbaik" : "Best Prices",
       description: locale === "id"
-        ? "Paket wisata kompetitif tanpa mengurangi kualitas pelayanan."
-        : "Competitive travel packages without compromising service quality."
-    },
-    {
-      icon: <Compass className="w-5 h-5" />,
-      title: locale === "id" ? "Destinasi Lengkap" : "Diverse Destinations",
-      description: locale === "id"
-        ? "Melayani rute favorit di Indonesia dan mancanegara."
-        : "Serving all favorite routes across Indonesia and internationally."
-    },
-    {
-      icon: <HeartHandshake className="w-5 h-5" />,
-      title: locale === "id" ? "Pelayanan Ramah" : "Stellar Service",
-      description: locale === "id"
-        ? "Tim profesional siap melayani dari awal hingga akhir."
-        : "Dedicated professional team ready to assist from start to finish."
+        ? "Pilihan perjalanan dengan harga kompetitif dan sesuai dengan fasilitas yang didapatkan."
+        : "Competitive trip choices matching the facilities provided."
     },
     {
       icon: <ShieldCheck className="w-5 h-5" />,
-      title: locale === "id" ? "Aman & Terpercaya" : "Safe & Trustworthy",
+      title: locale === "id" ? "Aman & Terpercaya" : "Safe & Reliable",
       description: locale === "id"
-        ? "Didukung tim berlisensi dan mitra terakreditasi."
-        : "Fully licensed travel guides and accredited field operators."
+        ? "Pelayanan yang jelas dan profesional untuk memberikan rasa nyaman sejak pemesanan hingga perjalanan."
+        : "Clear and professional service providing peace of mind from booking to destination."
     },
     {
-      icon: <Smartphone className="w-5 h-5" />,
-      title: locale === "id" ? "Pemesanan Mudah" : "Easy Booking",
+      icon: <Compass className="w-5 h-5" />,
+      title: locale === "id" ? "Destinasi Beragam" : "Diverse Destinations",
       description: locale === "id"
-        ? "Reservasi digital real-time cepat tanpa ribet."
-        : "Fast, real-time online reservation with zero hassle."
+        ? "Pilihan destinasi menarik di Indonesia dan mancanegara."
+        : "Attractive destination choices across Indonesia and abroad."
+    },
+    {
+      icon: <HeartHandshake className="w-5 h-5" />,
+      title: locale === "id" ? "Layanan Profesional" : "Professional Service",
+      description: locale === "id"
+        ? "Tim kami siap membantu memberikan informasi dan pelayanan terbaik untuk perjalanan Anda."
+        : "Our team is ready to help provide the best information and service for your trip."
     }
   ];
 
@@ -60,7 +53,7 @@ export function WhyChooseUsSection() {
   };
 
   return (
-    <section className="py-16 md:py-20 bg-[#FAF6EE] text-foreground relative overflow-hidden">
+    <section className="py-16 md:py-20 bg-[#F8FAFC] text-foreground relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-6">
         
         {/* Header */}
@@ -85,7 +78,7 @@ export function WhyChooseUsSection() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
         >
           {whyChooseUs.map((item, idx) => (
             <motion.div 

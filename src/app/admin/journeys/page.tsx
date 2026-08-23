@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, Edit3, Compass, MapPin, Hotel, Calendar, X, Image as ImageIcon, Upload, Sparkles, Loader2, ChevronUp, ChevronDown, Check, Info } from "lucide-react";
+import { Plus, Trash2, Edit3, Compass, MapPin, Hotel, Calendar, X, Image as ImageIcon, Upload, Sparkles, Loader2, ChevronUp, ChevronDown, Check, Info, ArrowLeft, Search, Users } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { Journey, JourneyChapter, JourneyAccommodation, JourneyItinerary, JourneyFAQ } from "@/data/journeys";
 import { TourPackageDetail, ItineraryDay } from "@/data/tours";
@@ -39,6 +39,8 @@ interface ApiOpenTrip {
 export default function AdminJourneysPage() {
   const { locale } = useLanguage();
   const [activeTab, setActiveTab] = useState<"curated" | "open">("curated");
+  const [viewMode, setViewMode] = useState<"list" | "form">("list");
+  const [searchQuery, setSearchQuery] = useState("");
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   // Upload loading states
@@ -80,7 +82,7 @@ export default function AdminJourneysPage() {
     setCjExclusions(ot.exclusionsID || ot.exclusionsEN || []);
     setToast({ message: "Berhasil mengimpor data dari Open Trip", type: "success" });
   };
-  
+
   // Form active language tab switcher
   const [formLang, setFormLang] = useState<"id" | "en">("id");
   const [isTranslating, setIsTranslating] = useState(false);
@@ -174,7 +176,8 @@ export default function AdminJourneysPage() {
           flights: activeContent.flights || cId.flights || { airline: "", route: [] },
           inclusions: activeContent.inclusions || cId.inclusions || [],
           exclusions: activeContent.exclusions || cId.exclusions || [],
-          faqs: activeContent.faqs || cId.faqs || []
+          faqs: activeContent.faqs || cId.faqs || [],
+          status: (j as any).status === "active" ? "Available" : (j as any).status === "inactive" ? "Closed" : (j as any).status === "draft" ? "Draft" : ((j as any).status || "Available")
         };
       }));
 
@@ -207,7 +210,8 @@ export default function AdminJourneysPage() {
           inclusionsEN: cEn.inclusions || cId.inclusions || [],
           exclusions: isEn ? (cEn.exclusions || cId.exclusions) : cId.exclusions || [],
           exclusionsEN: cEn.exclusions || cId.exclusions || [],
-          itinerary: isEn ? (cEn.itinerary || cId.itinerary) : cId.itinerary || []
+          itinerary: isEn ? (cEn.itinerary || cId.itinerary) : cId.itinerary || [],
+          status: (ot as any).status === "active" ? "Available" : (ot as any).status === "inactive" ? "Closed" : (ot as any).status === "draft" ? "Draft" : ((ot as any).status || "Available")
         };
       }));
     } catch (err: any) {
@@ -257,6 +261,9 @@ export default function AdminJourneysPage() {
   const [cjExclusions, setCjExclusions] = useState<string[]>([]);
   const [cjFAQs, setCjFAQs] = useState<JourneyFAQ[]>([]);
   const [cjGallery, setCjGallery] = useState<string[]>([]);
+  const [cjStatus, setCjStatus] = useState<"Available" | "Closed" | "Draft" | "active" | "draft" | "inactive" | "AVAILABLE" | "CLOSED" | "DRAFT">("Available");
+  const [cjRemainingSeats, setCjRemainingSeats] = useState<number | "">("");
+  const [cjMaxSeats, setCjMaxSeats] = useState<number | "">("");
 
   // ==========================================
   // FORM FIELDS: OPEN TRIP (TourPackageDetail)
@@ -272,9 +279,16 @@ export default function AdminJourneysPage() {
   const [otDurationEN, setOtDurationEN] = useState("");
   const [otPriceID, setOtPriceID] = useState("");
   const [otPriceEN, setOtPriceEN] = useState("");
+  const [otDepartureDateID, setOtDepartureDateID] = useState("");
+  const [otDepartureDateEN, setOtDepartureDateEN] = useState("");
+  const [otDepartureDateFrom, setOtDepartureDateFrom] = useState("");
+  const [otDepartureDateTo, setOtDepartureDateTo] = useState("");
   const [otHotelRatingID, setOtHotelRatingID] = useState("");
   const [otHotelRatingEN, setOtHotelRatingEN] = useState("");
   const [otFeaturedImage, setOtFeaturedImage] = useState("");
+  const [otStatus, setOtStatus] = useState<"Available" | "Closed" | "Draft" | "active" | "draft" | "inactive" | "AVAILABLE" | "CLOSED" | "DRAFT">("Available");
+  const [otRemainingSeats, setOtRemainingSeats] = useState<number | "">("");
+  const [otMaxSeats, setOtMaxSeats] = useState<number | "">("");
 
   // Lists managers
   const [otHighlightsID, setOtHighlightsID] = useState<string[]>([]);
@@ -329,6 +343,26 @@ export default function AdminJourneysPage() {
     }
   };
 
+  useEffect(() => {
+    if (otDepartureDateFrom && otDepartureDateTo) {
+      const formatDateStr = (dateStr: string) => {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return { id: dateStr, en: dateStr };
+        const day = d.getDate().toString().padStart(2, "0");
+        const monthsId = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+        const monthsEn = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        return {
+          id: `${day} ${monthsId[d.getMonth()]} ${d.getFullYear()}`,
+          en: `${day} ${monthsEn[d.getMonth()]} ${d.getFullYear()}`
+        };
+      };
+      const fromFmt = formatDateStr(otDepartureDateFrom);
+      const toFmt = formatDateStr(otDepartureDateTo);
+      setOtDepartureDateID(`${fromFmt.id} - ${toFmt.id}`);
+      setOtDepartureDateEN(`${fromFmt.en} - ${toFmt.en}`);
+    }
+  }, [otDepartureDateFrom, otDepartureDateTo]);
+
   const handleAutoTranslateOpenTrip = async () => {
     setIsTranslating(true);
     try {
@@ -337,6 +371,7 @@ export default function AdminJourneysPage() {
         if (otTaglineID.trim()) setOtTaglineEN(await translateText(otTaglineID, "id", "en"));
         if (otDurationID.trim()) setOtDurationEN(await translateText(otDurationID, "id", "en"));
         if (otPriceID.trim()) setOtPriceEN(await translateText(otPriceID, "id", "en"));
+        if (otDepartureDateID.trim()) setOtDepartureDateEN(await translateText(otDepartureDateID, "id", "en"));
         if (otHotelRatingID.trim()) setOtHotelRatingEN(await translateText(otHotelRatingID, "id", "en"));
 
         // Translate arrays
@@ -363,6 +398,7 @@ export default function AdminJourneysPage() {
         if (otTaglineEN.trim()) setOtTaglineID(await translateText(otTaglineEN, "en", "id"));
         if (otDurationEN.trim()) setOtDurationID(await translateText(otDurationEN, "en", "id"));
         if (otPriceEN.trim()) setOtPriceID(await translateText(otPriceEN, "en", "id"));
+        if (otDepartureDateEN.trim()) setOtDepartureDateID(await translateText(otDepartureDateEN, "en", "id"));
         if (otHotelRatingEN.trim()) setOtHotelRatingID(await translateText(otHotelRatingEN, "en", "id"));
 
         // Translate arrays
@@ -424,9 +460,11 @@ export default function AdminJourneysPage() {
     setCjExclusions([]);
     setCjFAQs([]);
     setCjGallery([]);
+    setCjStatus("Available");
     setIsEditingCurated(false);
     setEditCuratedId(null);
     setFormLang("id");
+    setViewMode("list");
   };
 
   const handleEditCurated = (j: Journey) => {
@@ -467,8 +505,11 @@ export default function AdminJourneysPage() {
     setCjInclusions(cId.inclusions || j.inclusions || []);
     setCjExclusions(cId.exclusions || j.exclusions || []);
     setCjFAQs(cId.faqs || j.faqs || []);
-    setCjGallery(raw.gallery || []);
+    const rawStatus = j.status || (raw as any).status || "Available";
+    const mappedStatus = rawStatus === "active" ? "Available" : rawStatus === "inactive" ? "Closed" : rawStatus === "draft" ? "Draft" : rawStatus;
+    setCjStatus(mappedStatus as any);
     setFormLang("id");
+    setViewMode("form");
   };
 
   const handleDeleteCurated = async (id: string) => {
@@ -480,6 +521,19 @@ export default function AdminJourneysPage() {
       } catch (err: any) {
         setToast({ message: err.message || "Gagal menghapus paket perjalanan.", type: "error" });
       }
+    }
+  };
+
+  const handleUpdateCuratedStatus = async (id: string, newStatus: string) => {
+    try {
+      await apiFetch(`/admin/journeys/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: newStatus }),
+      });
+      setToast({ message: locale === "id" ? "Status perjalanan berhasil diperbarui!" : "Curated journey status updated successfully!", type: "success" });
+      fetchAllData();
+    } catch (err: any) {
+      setToast({ message: err.message || "Gagal memperbarui status perjalanan.", type: "error" });
     }
   };
 
@@ -543,6 +597,7 @@ export default function AdminJourneysPage() {
       image: cjImage,
       imageGradient: "from-[#38BDF8] to-[#0369A1]",
       gallery: cjGallery,
+      status: cjStatus,
       contentId,
       contentEn,
     };
@@ -583,9 +638,13 @@ export default function AdminJourneysPage() {
     setOtDurationEN("");
     setOtPriceID("");
     setOtPriceEN("");
+    setOtDepartureDateID("");
+    setOtDepartureDateEN("");
+    setOtDepartureDateFrom("");
+    setOtDepartureDateTo("");
     setOtHotelRatingID("");
     setOtHotelRatingEN("");
-    setOtFeaturedImage("");
+    setOtStatus("Available");
     setOtHighlightsID([]);
     setOtHighlightsEN([]);
     setOtInclusionsID([]);
@@ -607,6 +666,7 @@ export default function AdminJourneysPage() {
     setIsEditingOpenTrip(false);
     setEditOpenTripId(null);
     setFormLang("id");
+    setViewMode("list");
   };
 
   const handleEditOpenTrip = (pkg: TourPackageDetail & { id?: string }) => {
@@ -629,9 +689,16 @@ export default function AdminJourneysPage() {
     setOtDurationEN(cEn.duration || cId.duration || pkg.duration);
     setOtPriceID(cId.price || pkg.price);
     setOtPriceEN(cEn.price || cId.price || pkg.price);
+    setOtDepartureDateID(cId.departureDate || pkg.departureDate || "");
+    setOtDepartureDateEN(cEn.departureDate || cId.departureDate || pkg.departureDate || "");
+    setOtDepartureDateFrom(cId.departureDateFrom || pkg.departureDateFrom || "");
+    setOtDepartureDateTo(cId.departureDateTo || pkg.departureDateTo || "");
     setOtHotelRatingID(cId.hotelRating || pkg.hotelRating);
     setOtHotelRatingEN(cEn.hotelRating || cId.hotelRating || pkg.hotelRating);
     setOtFeaturedImage(raw.featuredImage);
+    const rawStatus = pkg.status || (raw as any).status || "Available";
+    const mappedStatus = rawStatus === "active" ? "Available" : rawStatus === "inactive" ? "Closed" : rawStatus === "draft" ? "Draft" : rawStatus;
+    setOtStatus(mappedStatus as any);
     setOtHighlightsID(cId.highlights || pkg.highlights || []);
     setOtHighlightsEN(cEn.highlights || cId.highlights || pkg.highlights || []);
     setOtInclusionsID(cId.inclusions || pkg.inclusions || []);
@@ -641,6 +708,7 @@ export default function AdminJourneysPage() {
     setOtItinerary(cId.itinerary || pkg.itinerary || []);
     setNewOtItDay(((cId.itinerary || pkg.itinerary)?.length || 0) + 1);
     setFormLang("id");
+    setViewMode("form");
   };
 
   const handleDeleteOpenTrip = async (id: string) => {
@@ -652,6 +720,19 @@ export default function AdminJourneysPage() {
       } catch (err: any) {
         setToast({ message: err.message || "Gagal menghapus Open Trip.", type: "error" });
       }
+    }
+  };
+
+  const handleUpdateOpenTripStatus = async (id: string, newStatus: string) => {
+    try {
+      await apiFetch(`/admin/open-trips/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: newStatus }),
+      });
+      setToast({ message: locale === "id" ? "Status open trip berhasil diperbarui!" : "Open trip status updated successfully!", type: "success" });
+      fetchAllData();
+    } catch (err: any) {
+      setToast({ message: err.message || "Gagal memperbarui status open trip.", type: "error" });
     }
   };
 
@@ -670,11 +751,14 @@ export default function AdminJourneysPage() {
       tagline: otTaglineID,
       duration: otDurationID,
       price: otPriceID,
+      departureDate: otDepartureDateID,
+      departureDateFrom: otDepartureDateFrom,
+      departureDateTo: otDepartureDateTo,
       hotelRating: otHotelRatingID,
       highlights: otHighlightsID,
       inclusions: otInclusionsID,
       exclusions: otExclusionsID,
-      itinerary: otItinerary
+      itinerary: otItinerary,
     };
 
     const contentEn = {
@@ -684,16 +768,20 @@ export default function AdminJourneysPage() {
       tagline: otTaglineEN || otTaglineID,
       duration: otDurationEN || otDurationID,
       price: otPriceEN || otPriceID,
+      departureDate: otDepartureDateEN || otDepartureDateID,
+      departureDateFrom: otDepartureDateFrom,
+      departureDateTo: otDepartureDateTo,
       hotelRating: otHotelRatingEN || otHotelRatingID,
       highlights: otHighlightsEN || otHighlightsID,
       inclusions: otInclusionsEN || otInclusionsID,
       exclusions: otExclusionsEN || otExclusionsID,
-      itinerary: otItinerary
+      itinerary: otItinerary,
     };
 
     const payload = {
       slug: otSlug.trim().toLowerCase(),
       featuredImage: otFeaturedImage || "https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?q=80&w=1200",
+      status: otStatus,
       contentId,
       contentEn
     };
@@ -798,57 +886,113 @@ export default function AdminJourneysPage() {
 
     const targetIdx = direction === "up" ? index - 1 : index + 1;
     const copy = [...otItinerary];
-    
+
     const temp = copy[index];
     copy[index] = copy[targetIdx];
     copy[targetIdx] = temp;
-
     const updated = copy.map((day, idx) => ({ ...day, day: idx + 1 }));
     setOtItinerary(updated);
   };
 
-  return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#A89053] font-bold block mb-1">
-            Product Management
-          </span>
-          <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#0F2C59]">
-            {locale === "id" ? "Paket Perjalanan & Open Trip" : "Tour Packages & Open Trips"}
-          </h1>
-          <p className="text-xs text-slate-500 font-sans mt-0.5">
-            Kelola katalog Curated Journeys dan Open Trips / Paket Wisata dengan API Backend.
-          </p>
-        </div>
+  // Filter lists based on search query
+  const filteredCurated = curatedList.filter(item => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      item.title.toLowerCase().includes(q) ||
+      item.slug.toLowerCase().includes(q) ||
+      (item.destination || "").toLowerCase().includes(q)
+    );
+  });
 
-        {/* Tab Switcher */}
-        <div className="flex bg-slate-200/70 p-1.5 rounded-2xl gap-1 font-sans text-xs font-bold shrink-0">
-          <button
-            onClick={() => setActiveTab("curated")}
-            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === "curated"
-                ? "bg-[#0F2C59] text-white shadow-md"
-                : "text-slate-600 hover:text-[#0F2C59]"
-            }`}
-          >
-            <Compass size={15} />
-            <span>Curated Journeys ({curatedList.length})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("open")}
-            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === "open"
-                ? "bg-[#0F2C59] text-white shadow-md"
-                : "text-slate-600 hover:text-[#0F2C59]"
-            }`}
-          >
-            <Calendar size={15} />
-            <span>Open Trips ({openTripsList.length})</span>
-          </button>
+  const filteredOpenTrips = openTripsList.filter(item => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      item.name.toLowerCase().includes(q) ||
+      item.slug.toLowerCase().includes(q) ||
+      (item.regionSlug || "").toLowerCase().includes(q) ||
+      (item.subSlug || "").toLowerCase().includes(q)
+    );
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      {viewMode === "list" ? (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#A89053] font-bold block mb-1">
+              Product Management
+            </span>
+            <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#0F2C59]">
+              {locale === "id" ? "Paket Perjalanan & Open Trip" : "Tour Packages & Open Trips"}
+            </h1>
+            <p className="text-xs text-slate-500 font-sans mt-0.5">
+              Kelola katalog Curated Journeys dan Open Trips / Paket Wisata dengan API Backend.
+            </p>
+          </div>
+
+          {/* Tab Switcher */}
+          <div className="flex bg-slate-200/70 p-1.5 rounded-2xl gap-1 font-sans text-xs font-bold shrink-0 w-full sm:w-auto">
+            <button
+              onClick={() => {
+                setActiveTab("curated");
+                setSearchQuery("");
+              }}
+              className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "curated"
+                  ? "bg-[#0F2C59] text-white shadow-md"
+                  : "text-slate-600 hover:text-[#0F2C59]"
+                }`}
+            >
+              <Compass size={15} />
+              <span>Curated Journeys ({curatedList.length})</span>
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab("open");
+                setSearchQuery("");
+              }}
+              className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "open"
+                  ? "bg-[#0F2C59] text-white shadow-md"
+                  : "text-slate-600 hover:text-[#0F2C59]"
+                }`}
+            >
+              <Calendar size={15} />
+              <span>Open Trips ({openTripsList.length})</span>
+            </button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+          <button
+            onClick={() => {
+              if (activeTab === "curated") {
+                resetCuratedForm();
+              } else {
+                resetOpenTripForm();
+              }
+            }}
+            className="inline-flex items-center gap-2 text-slate-600 hover:text-[#0F2C59] font-sans font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
+          >
+            <ArrowLeft size={16} />
+            <span>
+              Kembali ke Daftar {activeTab === "curated" ? "Curated Journeys" : "Open Trips"}
+            </span>
+          </button>
+          <div>
+            <span className="text-[10px] font-mono bg-[#A89053]/15 text-[#A89053] px-2 py-0.5 rounded font-bold uppercase block text-center">
+              {activeTab === "curated"
+                ? isEditingCurated
+                  ? `Edit Curated ID: ${editCuratedId}`
+                  : "Curated Baru"
+                : isEditingOpenTrip
+                  ? `Edit Open Trip ID: ${editOpenTripId}`
+                  : "Open Trip Baru"}
+            </span>
+          </div>
+        </div>
+      )}
 
       {errorMsg && (
         <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-sans">
@@ -858,9 +1002,8 @@ export default function AdminJourneysPage() {
 
       {/* CURATED JOURNEY SECTION */}
       {activeTab === "curated" && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Form */}
-          <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-6">
+        viewMode === "form" ? (
+          <div className="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/80 shadow-sm space-y-6">
             <h2 className="text-base font-serif font-bold text-[#0F2C59] pb-3 border-b border-slate-100 flex items-center justify-between">
               <span>{isEditingCurated ? "Edit Curated Journey" : "Tambah Curated Journey Baru"}</span>
               {isSaving && <Loader2 size={16} className="animate-spin text-[#A89053]" />}
@@ -920,6 +1063,43 @@ export default function AdminJourneysPage() {
                     onChange={(e) => setCjDurationDays(Number(e.target.value))}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053]"
                   />
+                </div>
+              </div>
+
+              {/* Status Radio Buttons */}
+              <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100 space-y-2.5">
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold">
+                  Status Paket Curated Journey *
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    { value: "Available", label: "Available", desc: "Tersedia / Buka Pendaftaran" },
+                    { value: "Closed", label: "Closed", desc: "Ditutup / Fully Booked" },
+                    { value: "Draft", label: "Draft", desc: "Simpan sebagai draft" }
+                  ].map((opt) => (
+                    <label
+                      key={opt.value}
+                      className={`relative flex items-center justify-between gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer ${cjStatus === opt.value
+                          ? "border-[#A89053] bg-[#A89053]/5 shadow-sm"
+                          : "border-slate-200 hover:border-slate-300 bg-white"
+                        }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <input
+                          type="radio"
+                          name="cj-status"
+                          value={opt.value}
+                          checked={cjStatus === opt.value}
+                          onChange={() => setCjStatus(opt.value as any)}
+                          className="w-4 h-4 text-[#A89053] border-slate-300 focus:ring-[#A89053]"
+                        />
+                        <div className="text-left">
+                          <span className="block text-xs font-bold text-slate-800">{opt.label}</span>
+                          <span className="block text-[10px] text-slate-400 font-light">{opt.desc}</span>
+                        </div>
+                      </div>
+                    </label>
+                  ))}
                 </div>
               </div>
 
@@ -984,22 +1164,20 @@ export default function AdminJourneysPage() {
                 <button
                   type="button"
                   onClick={() => setFormLang("id")}
-                  className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
-                    formLang === "id" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
-                  }`}
+                  className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${formLang === "id" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
+                    }`}
                 >
                   🇮🇩 Indonesia
                 </button>
                 <button
                   type="button"
                   onClick={() => setFormLang("en")}
-                  className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
-                    formLang === "en" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
-                  }`}
+                  className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${formLang === "en" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
+                    }`}
                 >
                   🇬🇧 English
                 </button>
-                
+
                 <div className="ml-auto">
                   <button
                     type="button"
@@ -1060,52 +1238,143 @@ export default function AdminJourneysPage() {
               </div>
             </form>
           </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Search Filter and Add Button Row */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between font-sans">
+              <div className="relative w-full sm:max-w-md">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                <input
+                  type="text"
+                  placeholder="Cari curated journey berdasarkan judul, slug, destinasi..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-2.5 text-xs focus:outline-none focus:border-[#A89053] focus:bg-white transition-all text-slate-800"
+                />
+              </div>
+              <button
+                onClick={() => {
+                  resetCuratedForm();
+                  setViewMode("form");
+                }}
+                className="inline-flex items-center justify-center gap-2 bg-[#0F2C59] hover:bg-[#0F2C59]/90 text-white font-bold py-3 px-5 rounded-xl text-xs uppercase tracking-wider transition-colors shadow-sm cursor-pointer shrink-0 w-full sm:w-auto font-sans"
+              >
+                <Plus size={14} />
+                <span>Tambah Curated Journey</span>
+              </button>
+            </div>
 
-          {/* List */}
-          <div className="lg:col-span-5 space-y-4">
-            <h2 className="text-base font-serif font-bold text-[#0F2C59]">
-              Daftar Curated Journeys ({curatedList.length})
-            </h2>
-
-            {curatedList.length === 0 ? (
-              <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-500 text-xs">
-                Belum ada data Curated Journeys di server.
+            {/* List */}
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-slate-200">
+                <Loader2 className="animate-spin text-[#A89053] mb-3" size={32} />
+                <span className="text-xs text-slate-500 font-sans font-bold">Memuat data curated journeys...</span>
+              </div>
+            ) : filteredCurated.length === 0 ? (
+              <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center text-slate-500 text-xs font-sans">
+                Tidak ada data Curated Journeys yang ditemukan.
               </div>
             ) : (
-              <div className="space-y-3">
-                {curatedList.map(item => (
-                  <div key={item.id} className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      {item.image && (
-                        <img src={item.image} alt={item.title} className="w-14 h-14 rounded-xl object-cover shrink-0 border border-slate-200" />
-                      )}
-                      <div className="truncate">
-                        <h3 className="font-serif font-bold text-sm text-[#0F2C59] truncate">{item.title}</h3>
-                        <p className="text-[11px] text-slate-500 font-mono">Slug: {item.slug} • {item.durationDays} Hari</p>
-                        <p className="text-xs text-[#A89053] font-bold font-mono">Rp {item.priceRaw.toLocaleString("id-ID")}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-sans">
+                {filteredCurated.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden group"
+                  >
+                    {/* Header Image */}
+                    <div className="h-36 w-full relative overflow-hidden bg-slate-100 border-b border-slate-100">
+                      <img
+                        src={item.image || "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=600"}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
+                      <div className="absolute top-3 right-3 z-10 flex bg-slate-900/85 backdrop-blur-md px-1.5 py-0.5 rounded-lg border border-white/10 items-center gap-1 shadow-md" onClick={(e) => e.stopPropagation()}>
+                        {[
+                          { label: "Aktif", value: "active", activeClass: "bg-emerald-500 text-white shadow-sm border border-emerald-400/20" },
+                          { label: "Draft", value: "draft", activeClass: "bg-amber-500 text-white shadow-sm border border-amber-400/20" },
+                          { label: "Off", value: "inactive", activeClass: "bg-slate-500 text-white shadow-sm border border-slate-400/20" },
+                        ].map((opt) => {
+                          const currentStatus = item.status || "active";
+                          const isChecked =
+                            currentStatus.toLowerCase() === opt.value.toLowerCase() ||
+                            (opt.value === "active" && currentStatus.toLowerCase() === "available") ||
+                            (opt.value === "inactive" && currentStatus.toLowerCase() === "closed");
+                          return (
+                            <label
+                              key={opt.value}
+                              className={`flex items-center gap-1 text-[8px] font-bold uppercase cursor-pointer px-1.5 py-0.5 rounded-md transition-all select-none ${isChecked
+                                  ? opt.activeClass
+                                  : "text-slate-400 hover:text-white"
+                                }`}
+                            >
+                              <input
+                                type="radio"
+                                name={`curated-status-${item.id}`}
+                                value={opt.value}
+                                checked={isChecked}
+                                onChange={() => handleUpdateCuratedStatus(item.id, opt.value)}
+                                className="hidden"
+                              />
+                              <span>{opt.label === "Off" ? "Off" : opt.label}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
+                        <span className="font-mono text-[9px] uppercase font-bold px-2 py-0.5 rounded bg-white/20 text-white backdrop-blur-md border border-white/20">
+                          {item.durationDays} Hari
+                        </span>
+                        <span className="font-mono text-[9px] uppercase font-bold px-2 py-0.5 rounded bg-[#A89053] text-white">
+                          {item.destination}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button onClick={() => handleEditCurated(item)} className="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200">
-                        <Edit3 size={14} />
-                      </button>
-                      <button onClick={() => handleDeleteCurated(item.id)} className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">
-                        <Trash2 size={14} />
-                      </button>
+
+                    {/* Card Content */}
+                    <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                      <div className="space-y-2">
+                        <h3 className="font-serif font-bold text-sm text-[#0F2C59] line-clamp-1 leading-snug">
+                          {item.title}
+                        </h3>
+                        <p className="text-[11px] text-slate-500 font-mono truncate">
+                          Slug: {item.slug}
+                        </p>
+                        <p className="text-xs text-[#A89053] font-bold font-mono">
+                          Rp {item.priceRaw.toLocaleString("id-ID")}
+                        </p>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleEditCurated(item)}
+                          className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-3 py-2 rounded-lg bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-[#0F2C59] transition-all cursor-pointer font-sans"
+                        >
+                          <Edit3 size={12} />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCurated(item.id)}
+                          className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-3 py-2 rounded-lg bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-all cursor-pointer font-sans"
+                        >
+                          <Trash2 size={12} />
+                          <span>Delete</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
-        </div>
+        )
       )}
 
       {/* OPEN TRIPS SECTION */}
       {activeTab === "open" && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Form */}
-          <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-6">
+        viewMode === "form" ? (
+          <div className="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/80 shadow-sm space-y-6">
             <h2 className="text-base font-serif font-bold text-[#0F2C59] pb-3 border-b border-slate-100 flex items-center justify-between">
               <span>{isEditingOpenTrip ? "Edit Open Trip" : "Tambah Open Trip / Paket Wisata Baru"}</span>
               {isSaving && <Loader2 size={16} className="animate-spin text-[#A89053]" />}
@@ -1194,27 +1463,87 @@ export default function AdminJourneysPage() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                    Tanggal Mulai Keberangkatan (From)
+                  </label>
+                  <input
+                    type="date"
+                    value={otDepartureDateFrom}
+                    onChange={(e) => setOtDepartureDateFrom(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                    Tanggal Selesai Keberangkatan (To)
+                  </label>
+                  <input
+                    type="date"
+                    value={otDepartureDateTo}
+                    onChange={(e) => setOtDepartureDateTo(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053]"
+                  />
+                </div>
+              </div>
+
+              {/* Status Radio Buttons */}
+              <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100 space-y-2.5">
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold">
+                  Status Paket Open Trip *
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    { value: "Available", label: "Available", desc: "Tersedia / Buka Pendaftaran" },
+                    { value: "Closed", label: "Closed", desc: "Ditutup / Fully Booked" },
+                    { value: "Draft", label: "Draft", desc: "Simpan sebagai draft" }
+                  ].map((opt) => (
+                    <label
+                      key={opt.value}
+                      className={`relative flex items-center justify-between gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer ${otStatus === opt.value
+                          ? "border-[#A89053] bg-[#A89053]/5 shadow-sm"
+                          : "border-slate-200 hover:border-slate-300 bg-white"
+                        }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <input
+                          type="radio"
+                          name="ot-status"
+                          value={opt.value}
+                          checked={otStatus === opt.value}
+                          onChange={() => setOtStatus(opt.value as any)}
+                          className="w-4 h-4 text-[#A89053] border-slate-300 focus:ring-[#A89053]"
+                        />
+                        <div className="text-left">
+                          <span className="block text-xs font-bold text-slate-800">{opt.label}</span>
+                          <span className="block text-[10px] text-slate-400 font-light">{opt.desc}</span>
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               {/* Language Switcher */}
               <div className="flex border-b border-slate-200 pb-1.5 gap-4 items-center">
                 <button
                   type="button"
                   onClick={() => setFormLang("id")}
-                  className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
-                    formLang === "id" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
-                  }`}
+                  className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${formLang === "id" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
+                    }`}
                 >
                   🇮🇩 Indonesia
                 </button>
                 <button
                   type="button"
                   onClick={() => setFormLang("en")}
-                  className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
-                    formLang === "en" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
-                  }`}
+                  className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${formLang === "en" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
+                    }`}
                 >
                   🇬🇧 English
                 </button>
-                
+
                 <div className="ml-auto">
                   <button
                     type="button"
@@ -1239,7 +1568,7 @@ export default function AdminJourneysPage() {
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Tagline (ID)</label>
                     <input type="text" value={otTaglineID} onChange={e => setOtTaglineID(e.target.value)} placeholder="e.g. Simfoni Teknologi Modern..." className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Durasi (ID)</label>
                       <input type="text" value={otDurationID} onChange={e => setOtDurationID(e.target.value)} placeholder="5 Hari 4 Malam" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A89053]" />
@@ -1247,6 +1576,10 @@ export default function AdminJourneysPage() {
                     <div>
                       <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Harga (ID)</label>
                       <input type="text" value={otPriceID} onChange={e => setOtPriceID(e.target.value)} placeholder="Mulai Rp 16.800.000 / pax" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A89053]" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Tgl Keberangkatan / Tour</label>
+                      <input type="text" value={otDepartureDateID} onChange={e => setOtDepartureDateID(e.target.value)} placeholder="15 - 20 Okt 2026" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A89053]" />
                     </div>
                     <div>
                       <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Hotel (ID)</label>
@@ -1294,7 +1627,7 @@ export default function AdminJourneysPage() {
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Tagline (EN)</label>
                     <input type="text" value={otTaglineEN} onChange={e => setOtTaglineEN(e.target.value)} placeholder="e.g. Symphony of Modern Technology..." className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Duration (EN)</label>
                       <input type="text" value={otDurationEN} onChange={e => setOtDurationEN(e.target.value)} placeholder="5 Days 4 Nights" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A89053]" />
@@ -1302,6 +1635,10 @@ export default function AdminJourneysPage() {
                     <div>
                       <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Price (EN)</label>
                       <input type="text" value={otPriceEN} onChange={e => setOtPriceEN(e.target.value)} placeholder="From IDR 16,800,000 / pax" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A89053]" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Departure / Tour Date (EN)</label>
+                      <input type="text" value={otDepartureDateEN} onChange={e => setOtDepartureDateEN(e.target.value)} placeholder="15 - 20 Oct 2026" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A89053]" />
                     </div>
                     <div>
                       <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Hotel (EN)</label>
@@ -1569,46 +1906,153 @@ export default function AdminJourneysPage() {
               </div>
             </form>
           </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Search Filter and Add Button Row */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between font-sans">
+              <div className="relative w-full sm:max-w-md">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                <input
+                  type="text"
+                  placeholder="Cari open trip berdasarkan nama, slug, wilayah..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-2.5 text-xs focus:outline-none focus:border-[#A89053] focus:bg-white transition-all text-slate-800"
+                />
+              </div>
+              <button
+                onClick={() => {
+                  resetOpenTripForm();
+                  setViewMode("form");
+                }}
+                className="inline-flex items-center justify-center gap-2 bg-[#0F2C59] hover:bg-[#0F2C59]/90 text-white font-bold py-3 px-5 rounded-xl text-xs uppercase tracking-wider transition-colors shadow-sm cursor-pointer shrink-0 w-full sm:w-auto font-sans"
+              >
+                <Plus size={14} />
+                <span>Tambah Open Trip / Paket</span>
+              </button>
+            </div>
 
-          {/* List */}
-          <div className="lg:col-span-5 space-y-4">
-            <h2 className="text-base font-serif font-bold text-[#0F2C59]">
-              Daftar Open Trips ({openTripsList.length})
-            </h2>
-
-            {openTripsList.length === 0 ? (
-              <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-500 text-xs">
-                Belum ada data Open Trip di server.
+            {/* List */}
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-slate-200">
+                <Loader2 className="animate-spin text-[#A89053] mb-3" size={32} />
+                <span className="text-xs text-slate-500 font-sans font-bold">Memuat data open trips...</span>
+              </div>
+            ) : filteredOpenTrips.length === 0 ? (
+              <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center text-slate-500 text-xs font-sans">
+                Tidak ada data Open Trips yang ditemukan.
               </div>
             ) : (
-              <div className="space-y-3">
-                {openTripsList.map(item => (
-                  <div key={item.id || item.slug} className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      {item.featuredImage && (
-                        <img src={item.featuredImage} alt={item.name} className="w-14 h-14 rounded-xl object-cover shrink-0 border border-slate-200" />
-                      )}
-                      <div className="truncate">
-                        <h3 className="font-serif font-bold text-sm text-[#0F2C59] truncate">{item.name}</h3>
-                        <p className="text-[11px] text-slate-500 font-mono">Slug: {item.slug} • {item.duration}</p>
-                        <p className="text-xs text-[#A89053] font-bold font-mono">{item.price}</p>
-                        <p className="text-[10px] text-slate-400 font-mono">Region: {item.regionSlug} / {item.subSlug}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-sans">
+                {filteredOpenTrips.map((item) => (
+                  <div
+                    key={item.id || item.slug}
+                    className="bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden group"
+                  >
+                    {/* Header Image */}
+                    <div className="h-36 w-full relative overflow-hidden bg-slate-100 border-b border-slate-100">
+                      <img
+                        src={item.featuredImage || "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=600"}
+                        alt={item.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
+                      <div className="absolute top-3 right-3 z-10 flex bg-slate-900/85 backdrop-blur-md px-1.5 py-0.5 rounded-lg border border-white/10 items-center gap-1 shadow-md" onClick={(e) => e.stopPropagation()}>
+                        {[
+                          { label: "Aktif", value: "active", activeClass: "bg-emerald-500 text-white shadow-sm border border-emerald-400/20" },
+                          { label: "Draft", value: "draft", activeClass: "bg-amber-500 text-white shadow-sm border border-amber-400/20" },
+                          { label: "Off", value: "inactive", activeClass: "bg-slate-500 text-white shadow-sm border border-slate-400/20" },
+                        ].map((opt) => {
+                          const currentStatus = item.status || "active";
+                          const isChecked =
+                            currentStatus.toLowerCase() === opt.value.toLowerCase() ||
+                            (opt.value === "active" && currentStatus.toLowerCase() === "available") ||
+                            (opt.value === "inactive" && currentStatus.toLowerCase() === "closed");
+                          return (
+                            <label
+                              key={opt.value}
+                              className={`flex items-center gap-1 text-[8px] font-bold uppercase cursor-pointer px-1.5 py-0.5 rounded-md transition-all select-none ${isChecked
+                                  ? opt.activeClass
+                                  : "text-slate-400 hover:text-white"
+                                }`}
+                            >
+                              <input
+                                type="radio"
+                                name={`open-trip-status-${item.id}`}
+                                value={opt.value}
+                                checked={isChecked}
+                                onChange={() => item.id && handleUpdateOpenTripStatus(item.id, opt.value)}
+                                className="hidden"
+                              />
+                              <span>{opt.label === "Off" ? "Off" : opt.label}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
+                        <span className="font-mono text-[9px] uppercase font-bold px-2 py-0.5 rounded bg-white/20 text-white backdrop-blur-md border border-white/20">
+                          {item.duration}
+                        </span>
+                        <span className="font-mono text-[9px] uppercase font-bold px-2 py-0.5 rounded bg-[#A89053] text-white">
+                          {item.regionSlug}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button onClick={() => handleEditOpenTrip(item)} className="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200">
-                        <Edit3 size={14} />
-                      </button>
-                      <button onClick={() => item.id && handleDeleteOpenTrip(item.id)} className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">
-                        <Trash2 size={14} />
-                      </button>
+
+                    {/* Card Content */}
+                    <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                      <div className="space-y-2">
+                        <h3 className="font-serif font-bold text-sm text-[#0F2C59] line-clamp-1 leading-snug">
+                          {item.name}
+                        </h3>
+                        <p className="text-[11px] text-slate-500 font-mono truncate">
+                          Slug: {item.slug} {item.subSlug && `• ${item.subSlug}`}
+                        </p>
+                        <p className="text-xs text-[#A89053] font-bold font-mono">
+                          {item.price}
+                        </p>
+                        {item.departureDate && (
+                          <div className="flex items-center gap-1.5 text-[11px] text-[#0284C7] font-semibold bg-sky-50 px-2.5 py-1 rounded-lg w-fit border border-sky-100/80">
+                            <Calendar size={12} className="shrink-0 text-[#0284C7]" />
+                            <span>Tgl Tour: {item.departureDate}</span>
+                          </div>
+                        )}
+                        {item.status && (
+                          <div className={`flex items-center gap-1.5 text-[11px] font-mono font-bold uppercase px-2.5 py-1 rounded-lg w-fit border ${item.status === "Closed" || item.status === "inactive"
+                              ? "bg-rose-50 text-rose-600 border-rose-200"
+                              : item.status === "Draft" || item.status === "draft"
+                                ? "bg-slate-100 text-slate-600 border-slate-200"
+                                : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            }`}>
+                            <span>Status: {item.status}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleEditOpenTrip(item)}
+                          className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-3 py-2 rounded-lg bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-[#0F2C59] transition-all cursor-pointer font-sans"
+                        >
+                          <Edit3 size={12} />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={() => item.id && handleDeleteOpenTrip(item.id)}
+                          className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-3 py-2 rounded-lg bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-all cursor-pointer font-sans"
+                        >
+                          <Trash2 size={12} />
+                          <span>Delete</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
-        </div>
+        )
       )}
       {toast && (
         <Toast

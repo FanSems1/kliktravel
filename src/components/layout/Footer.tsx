@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Heart } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 export function Footer() {
@@ -87,9 +87,9 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-white/70 hover:text-white transition-colors">
+                <a href="https://wa.me/6281230011027" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-white transition-colors">
                   Contact
-                </Link>
+                </a>
               </li>
               <li>
                 <Link href="/faq" className="text-white/70 hover:text-white transition-colors">
@@ -142,9 +142,22 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/10 text-[10px] font-mono tracking-widest text-white/40 uppercase">
-          <div className="mb-4 md:mb-0">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t border-white/10 text-[10px] font-mono tracking-widest text-white/40 uppercase">
+          <div className="text-center md:text-left">
             &copy; 2026 Klik Travel ID. {t("footer_rights")}
+          </div>
+          <div className="text-center flex items-center justify-center gap-1.5">
+            <span>crafted with</span>
+            <Heart size={11} className="text-rose-500 fill-rose-500" />
+            <span>by</span>
+            <a 
+              href="https://zellio.id/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-white/60 hover:text-white underline transition-colors font-bold"
+            >
+              ZELLIO
+            </a>
           </div>
           <div className="flex space-x-6">
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>

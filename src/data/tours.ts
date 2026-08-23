@@ -34,6 +34,13 @@ export interface TourPackageDetail {
   inclusionsEN?: string[];
   exclusions: string[];
   exclusionsEN?: string[];
+  departureDate?: string;
+  departureDateEN?: string;
+  departureDateFrom?: string;
+  departureDateTo?: string;
+  status?: "Available" | "Closed" | "Draft" | "active" | "draft" | "inactive" | "AVAILABLE" | "CLOSED" | "DRAFT";
+  remainingSeats?: number;
+  maxSeats?: number;
 }
 
 export const localizedTourPackages: Record<"id" | "en", Record<string, TourPackageDetail>> = {
@@ -74,9 +81,9 @@ export const localizedTourPackages: Record<"id" | "en", Record<string, TourPacka
         },
         {
           day: 4,
-          title: "Budaya Pop Harajuku & Kemewahan Ginza",
-          activities: ["Takeshita Street", "Meiji Shrine", "Ginza Shopping District", "Premium Sushi Dinner"],
-          description: "Menjelajahi distrik fashion dan budaya anak muda di Harajuku. Anda akan menyusuri Takeshita Street yang penuh warna, kostum cosplay, dan crepe manis. Sebagai penyeimbang, kita akan mampir ke Meiji Shrine yang asri. Siang hari bergeser ke Ginza untuk menikmati suasana jalan raya berbatu bata yang dikelilingi butik kelas dunia. Perjalanan hari ini ditutup dengan makan malam Sushi premium yang tak terlupakan.",
+          title: "Budaya Pop Harajuku & Keindahan Ginza",
+          activities: ["Takeshita Street", "Meiji Shrine", "Ginza Shopping District", "Special Sushi Dinner"],
+          description: "Menjelajahi distrik fashion dan budaya anak muda di Harajuku. Anda akan menyusuri Takeshita Street yang penuh warna, kostum cosplay, dan crepe manis. Sebagai penyeimbang, kita akan mampir ke Meiji Shrine yang asri. Siang hari bergeser ke Ginza untuk menikmati suasana jalan raya berbatu bata yang dikelilingi butik kelas dunia. Perjalanan hari ini ditutup dengan makan malam Sushi lezat yang tak terlupakan.",
           hotel: "Shinjuku Washington Hotel / Setara",
           image: "https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?q=80&w=800"
         },

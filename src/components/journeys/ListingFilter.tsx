@@ -11,6 +11,9 @@ interface ListingFilterProps {
   setSelectedStyle: (val: string) => void;
   selectedMonth: string;
   setSelectedMonth: (val: string) => void;
+  destinationsList: string[];
+  stylesList: string[];
+  monthsList: string[];
   totalCount: number;
 }
 
@@ -21,6 +24,9 @@ export function ListingFilter({
   setSelectedStyle,
   selectedMonth,
   setSelectedMonth,
+  destinationsList = [],
+  stylesList = [],
+  monthsList = [],
   totalCount
 }: ListingFilterProps) {
   const { locale } = useLanguage();
@@ -38,46 +44,19 @@ export function ListingFilter({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const destinations = locale === "id" ? [
-    { value: "all", label: "Semua Destinasi" },
-    { value: "komodo", label: "Komodo" },
-    { value: "java", label: "Jawa" },
-    { value: "bali", label: "Bali" },
-    { value: "sumatra", label: "Sumatra" }
-  ] : [
-    { value: "all", label: "All Destinations" },
-    { value: "komodo", label: "Komodo" },
-    { value: "java", label: "Java" },
-    { value: "bali", label: "Bali" },
-    { value: "sumatra", label: "Sumatra" }
+  const destinations = [
+    { value: "all", label: locale === "id" ? "Semua Destinasi" : "All Destinations" },
+    ...destinationsList.map((d) => ({ value: d, label: d }))
   ];
 
-  const styles = locale === "id" ? [
-    { value: "all", label: "Semua Gaya" },
-    { value: "marine", label: "Petualangan Bahari" },
-    { value: "cultural", label: "Penemuan Budaya" },
-    { value: "wellness", label: "Eskapisme Wellness" },
-    { value: "active", label: "Petualangan Aktif" }
-  ] : [
-    { value: "all", label: "All Styles" },
-    { value: "marine", label: "Marine Adventure" },
-    { value: "cultural", label: "Cultural Discovery" },
-    { value: "wellness", label: "Wellness Escape" },
-    { value: "active", label: "Active Adventure" }
+  const styles = [
+    { value: "all", label: locale === "id" ? "Semua Gaya" : "All Styles" },
+    ...stylesList.map((s) => ({ value: s, label: s }))
   ];
 
-  const months = locale === "id" ? [
-    { value: "all", label: "Semua Waktu" },
-    { value: "jul", label: "Juli 2026" },
-    { value: "aug", label: "Agustus 2026" },
-    { value: "nov", label: "November 2026" },
-    { value: "dec", label: "Desember 2026" }
-  ] : [
-    { value: "all", label: "All Months" },
-    { value: "jul", label: "July 2026" },
-    { value: "aug", label: "August 2026" },
-    { value: "nov", label: "November 2026" },
-    { value: "dec", label: "December 2026" }
+  const months = [
+    { value: "all", label: locale === "id" ? "Semua Waktu" : "All Months" },
+    ...monthsList.map((m) => ({ value: m, label: m }))
   ];
 
   const handleSelect = (type: "destination" | "style" | "month", value: string) => {

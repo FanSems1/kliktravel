@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, Edit3, MapPin, Globe, Sparkles, Loader2, Save, X, Image as ImageIcon, Upload } from "lucide-react";
+import { Plus, Trash2, Edit3, MapPin, Globe, Sparkles, Loader2, Save, X, Image as ImageIcon, Upload, ArrowLeft, Search } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { RegionDestination } from "@/data/destinations";
 import { translateText } from "@/utils/translator";
@@ -15,6 +15,10 @@ export default function AdminDestinationsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  // View state separating List vs Form
+  const [viewMode, setViewMode] = useState<"list" | "form">("list");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Upload loading states
   const [isUploadingRegion, setIsUploadingRegion] = useState(false);
@@ -31,6 +35,7 @@ export default function AdminDestinationsPage() {
   const [subtitleENField, setSubtitleENField] = useState("");
   const [gradientField, setGradientField] = useState("from-[#E0F2FE] to-[#7DD3FC]");
   const [regionImageField, setRegionImageField] = useState("");
+  const [statusField, setStatusField] = useState<"active" | "draft" | "inactive">("active");
 
   // Sub-destinations state list
   const [subDestinationsList, setSubDestinationsList] = useState<{
@@ -89,7 +94,8 @@ export default function AdminDestinationsPage() {
         }
 
         return {
-          id: r.key,
+          id: r.id,
+          key: r.key || r.slug || r.id,
           name: activeName.includes("||") ? activeName.split("||")[0] : activeName,
           nameEN: cleanedNameEn,
           slug: r.slug,
@@ -97,6 +103,7 @@ export default function AdminDestinationsPage() {
           subtitleEN: r.subtitleEn || r.subtitleId,
           featuredImageGradient: gradient,
           image: image,
+          status: r.status || "active",
           subDestinations: subDestinations,
         };
       });
@@ -176,6 +183,7 @@ export default function AdminDestinationsPage() {
     setSubtitleENField("");
     setGradientField("from-[#E0F2FE] to-[#7DD3FC]");
     setRegionImageField("");
+    setStatusField("active");
     setSubDestinationsList([]);
     setNewSubNameID("");
     setNewSubNameEN("");
@@ -184,6 +192,7 @@ export default function AdminDestinationsPage() {
     setIsEditing(false);
     setEditRegionId(null);
     setFormLang("id");
+    setViewMode("list");
   };
 
   const handleAddSubDest = () => {
@@ -214,7 +223,7 @@ export default function AdminDestinationsPage() {
   const handleEdit = (region: RegionDestination) => {
     setIsEditing(true);
     setEditRegionId(region.id);
-    setIdField(region.id);
+    setIdField(region.key || region.slug || region.id);
     setSlugField(region.slug);
     setNameIDField(region.name);
     setNameENField(region.nameEN || region.name);
@@ -222,6 +231,7 @@ export default function AdminDestinationsPage() {
     setSubtitleENField(region.subtitleEN || region.subtitle);
     setGradientField(region.featuredImageGradient || "from-[#E0F2FE] to-[#7DD3FC]");
     setRegionImageField(region.image || "");
+    setStatusField(region.status || "active");
     setSubDestinationsList(
       region.subDestinations.map((s) => ({
         name: s.name,
@@ -231,6 +241,7 @@ export default function AdminDestinationsPage() {
       }))
     );
     setFormLang("id");
+    setViewMode("form");
   };
 
   const handleDelete = async (id: string) => {
@@ -242,6 +253,19 @@ export default function AdminDestinationsPage() {
       } catch (err: any) {
         setToast({ message: err.message || "Gagal menghapus wilayah.", type: "error" });
       }
+    }
+  };
+
+  const handleUpdateStatus = async (id: string, newStatus: string) => {
+    try {
+      await apiFetch(`/admin/destinations/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: newStatus }),
+      });
+      setToast({ message: "Status wilayah berhasil diperbarui!", type: "success" });
+      fetchRegions();
+    } catch (err: any) {
+      setToast({ message: err.message || "Gagal memperbarui status wilayah.", type: "error" });
     }
   };
 
@@ -265,6 +289,7 @@ export default function AdminDestinationsPage() {
       nameEn: nameENField || nameIDField,
       subtitleId: subtitleIDField,
       subtitleEn: subtitleENField || subtitleIDField,
+      status: statusField,
       subDestinations: subDestinationsList.map((sub, idx) => {
         const subNameEn = sub.nameEN || sub.name;
         const encodedNameEn = sub.image?.trim()
@@ -303,405 +328,531 @@ export default function AdminDestinationsPage() {
     }
   };
 
+  const filteredRegions = regions.filter((r) => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      r.id.toLowerCase().includes(q) ||
+      (r.slug || "").toLowerCase().includes(q) ||
+      (r.name || "").toLowerCase().includes(q) ||
+      (r.nameEN || "").toLowerCase().includes(q)
+    );
+  });
+
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#A89053] font-bold block mb-1">
-            Master Data
-          </span>
-          <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#0F2C59]">
-            {locale === "id" ? "Manajemen Wilayah & Destinasi" : "Region & Destination Management"}
-          </h1>
-          <p className="text-xs text-slate-500 font-sans mt-0.5">
-            Kelola wilayah negara, sub-destinasi, dan gambar sampul utama.
-          </p>
-        </div>
-      </div>
-
-      {errorMsg && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-sans">
-          {errorMsg}
-        </div>
-      )}
-
-      {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Form Container */}
-        <div className="lg:col-span-6 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-6">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <h2 className="text-base font-serif font-bold text-[#0F2C59]">
-              {isEditing ? "Edit Wilayah" : "Tambah Wilayah Baru"}
-            </h2>
-            {isEditing && (
-              <span className="text-[10px] font-mono bg-[#A89053]/15 text-[#A89053] px-2 py-0.5 rounded font-bold uppercase">
-                ID: {editRegionId}
-              </span>
-            )}
-          </div>
-
-          <form onSubmit={handleSave} className="space-y-5 font-sans text-xs">
-            {/* Key & Slug */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                  Region Key / ID *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={idField}
-                  disabled={isEditing}
-                  onChange={(e) => setIdField(e.target.value.toLowerCase())}
-                  placeholder="e.g. indonesia, japan"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] disabled:opacity-50 text-slate-800"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                  Slug (URL)
-                </label>
-                <input
-                  type="text"
-                  value={slugField}
-                  onChange={(e) => setSlugField(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}
-                  placeholder="e.g. indonesia"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
-                />
-              </div>
-            </div>
-
-            {/* Region Cover Image Upload */}
+    <div className="space-y-6">
+      {/* View Mode: List View */}
+      {viewMode === "list" && (
+        <>
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                Gambar Sampul Wilayah (URL / Upload Lokal)
-              </label>
-              <div className="flex gap-2 items-center">
-                <input
-                  type="text"
-                  value={regionImageField}
-                  onChange={(e) => setRegionImageField(e.target.value)}
-                  placeholder="https://..."
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-slate-800"
-                />
-                <label className="inline-flex items-center gap-1 px-3 py-2.5 rounded-xl bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 font-bold uppercase tracking-wider text-[9px] cursor-pointer shrink-0">
-                  {isUploadingRegion ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                  <span>{isUploadingRegion ? "Uploading..." : "Upload"}</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    disabled={isUploadingRegion}
-                    onChange={(e) => handleImageFileUpload(e, setRegionImageField, setIsUploadingRegion)}
-                  />
-                </label>
-              </div>
-              {regionImageField && (
-                <div className="mt-2 h-24 rounded-xl overflow-hidden border border-slate-200">
-                  <img src={regionImageField} alt="Region Cover Preview" className="w-full h-full object-cover" />
-                </div>
-              )}
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#A89053] font-bold block mb-1">
+                Master Data
+              </span>
+              <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#0F2C59]">
+                {locale === "id" ? "Manajemen Wilayah & Destinasi" : "Region & Destination Management"}
+              </h1>
+              <p className="text-xs text-slate-500 font-sans mt-0.5">
+                Kelola wilayah negara, sub-destinasi, dan gambar sampul utama.
+              </p>
             </div>
-
-            {/* Gradient Styling */}
-            {/* <div>
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                Tailwind Gradient Fallback
-              </label>
-              <input 
-                type="text" 
-                value={gradientField}
-                onChange={(e) => setGradientField(e.target.value)}
-                placeholder="from-[#E0F2FE] to-[#7DD3FC]"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
-              />
-            </div> */}
-
-            {/* Language Tab Switcher */}
-            <div className="flex border-b border-slate-200 pb-1.5 gap-4 items-center">
-              <button
-                type="button"
-                onClick={() => setFormLang("id")}
-                className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${formLang === "id" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
-                  }`}
-              >
-                🇮🇩 Indonesia
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormLang("en")}
-                className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${formLang === "en" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
-                  }`}
-              >
-                🇬🇧 English
-              </button>
-
-              <div className="ml-auto">
-                <button
-                  type="button"
-                  onClick={handleAutoTranslate}
-                  disabled={isTranslating || (formLang === "id" ? !nameIDField.trim() : !nameENField.trim())}
-                  className="inline-flex items-center gap-1 text-[9px] font-mono uppercase bg-[#A89053] text-white px-2.5 py-1 rounded-lg hover:bg-[#0F2C59] transition-colors disabled:opacity-50 cursor-pointer font-bold"
-                >
-                  {isTranslating ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
-                  <span>Auto Translate</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Language Dependent Content */}
-            {formLang === "id" ? (
-              <div className="space-y-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-                <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                    Nama Wilayah (ID) *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={nameIDField}
-                    onChange={(e) => setNameIDField(e.target.value)}
-                    placeholder="e.g. Indonesia"
-                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-slate-800"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                    Deskripsi Singkat (ID)
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={subtitleIDField}
-                    onChange={(e) => setSubtitleIDField(e.target.value)}
-                    placeholder="Deskripsi singkat wilayah..."
-                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-slate-800 resize-none"
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-                <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                    Region Name (EN)
-                  </label>
-                  <input
-                    type="text"
-                    value={nameENField}
-                    onChange={(e) => setNameENField(e.target.value)}
-                    placeholder="e.g. Indonesia"
-                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-slate-800"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                    Subtitle (EN)
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={subtitleENField}
-                    onChange={(e) => setSubtitleENField(e.target.value)}
-                    placeholder="Short region subtitle in English..."
-                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-slate-800 resize-none"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Sub-Destinations List */}
-            <div className="space-y-3 pt-2">
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold">
-                Daftar Sub-Destinasi ({subDestinationsList.length})
-              </label>
-
-              {/* Added Sub-destinations Chips */}
-              <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-slate-50 rounded-xl border border-slate-200/80">
-                {subDestinationsList.length === 0 ? (
-                  <span className="text-slate-400 italic text-[11px]">Belum ada sub-destinasi ditambahkan.</span>
-                ) : (
-                  subDestinationsList.map((sub, idx) => (
-                    <div key={idx} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm text-xs text-slate-700 font-semibold">
-                      {sub.image ? (
-                        <img src={sub.image} alt={sub.name} className="w-5 h-5 rounded-full object-cover shrink-0" />
-                      ) : (
-                        <MapPin size={12} className="text-[#A89053]" />
-                      )}
-                      <span>{sub.name}</span>
-                      {sub.nameEN && sub.nameEN !== sub.name && (
-                        <span className="text-[10px] text-slate-400">({sub.nameEN})</span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveSubDest(idx)}
-                        className="hover:text-red-500 transition-colors ml-1"
-                      >
-                        <X size={12} />
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Add New Sub-Destination Form */}
-              <div className="p-3.5 bg-slate-100/60 rounded-xl border border-slate-200 space-y-3">
-                <span className="text-[10px] font-mono uppercase font-bold text-slate-600 block">Tambah Sub-Destinasi</span>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="text"
-                    value={newSubNameID}
-                    onChange={(e) => setNewSubNameID(e.target.value)}
-                    placeholder="Nama (ID) e.g. Bali"
-                    className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
-                  />
-                  <input
-                    type="text"
-                    value={newSubNameEN}
-                    onChange={(e) => setNewSubNameEN(e.target.value)}
-                    placeholder="Nama (EN) e.g. Bali"
-                    className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="text"
-                    value={newSubSlug}
-                    onChange={(e) => setNewSubSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}
-                    placeholder="Slug (e.g. bali)"
-                    className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
-                  />
-
-                  {/* Sub-destination Cover Upload */}
-                  <div className="flex gap-1 items-center">
-                    <input
-                      type="text"
-                      value={newSubImage}
-                      onChange={(e) => setNewSubImage(e.target.value)}
-                      placeholder="Gambar Sub (URL)"
-                      className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
-                    />
-                    <label className="p-2 rounded-lg bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 cursor-pointer shrink-0 flex items-center justify-center min-w-[28px]">
-                      {isUploadingSub ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        disabled={isUploadingSub}
-                        onChange={(e) => handleImageFileUpload(e, setNewSubImage, setIsUploadingSub)}
-                      />
-                    </label>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleAddSubDest}
-                  disabled={!newSubNameID.trim()}
-                  className="w-full bg-[#0F2C59] text-white py-2 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:bg-[#0F2C59]/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-1"
-                >
-                  <Plus size={12} />
-                  <span>Tambah Sub-Destinasi</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Form Action Buttons */}
-            <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="flex-1 bg-[#A89053] hover:bg-[#967F47] text-white font-bold py-3 px-4 rounded-xl text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
-              >
-                {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                <span>{isEditing ? "Update Wilayah" : "Simpan Wilayah Baru"}</span>
-              </button>
-              {isEditing && (
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="px-4 py-3 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors"
-                >
-                  Batal
-                </button>
-              )}
-            </div>
-          </form>
-        </div>
-
-        {/* Existing Regions List */}
-        <div className="lg:col-span-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-serif font-bold text-[#0F2C59]">
-              Daftar Wilayah ({regions.length})
-            </h2>
-            {isLoading && <Loader2 size={16} className="animate-spin text-[#A89053]" />}
+            <button
+              onClick={() => {
+                resetForm();
+                setViewMode("form");
+              }}
+              className="inline-flex items-center justify-center gap-2 bg-[#0F2C59] hover:bg-[#0F2C59]/90 text-white font-bold py-3 px-5 rounded-xl text-xs uppercase tracking-wider transition-colors shadow-sm cursor-pointer shrink-0"
+            >
+              <Plus size={14} />
+              <span>Tambah Wilayah Baru</span>
+            </button>
           </div>
 
-          {regions.length === 0 && !isLoading ? (
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-500 text-xs">
-              Belum ada data wilayah di database server.
+          {errorMsg && (
+            <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-sans">
+              {errorMsg}
+            </div>
+          )}
+
+          {/* Search Filter */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div className="relative w-full md:max-w-md">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <input
+                type="text"
+                placeholder="Cari wilayah berdasarkan nama, slug, atau ID..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-2.5 text-xs font-sans focus:outline-none focus:border-[#A89053] focus:bg-white transition-all text-slate-800"
+              />
+            </div>
+            <div className="text-[11px] font-sans text-slate-500 font-medium">
+              Menampilkan {filteredRegions.length} dari {regions.length} Wilayah
+            </div>
+          </div>
+
+          {/* Grid Layout of Regions */}
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-slate-200">
+              <Loader2 className="animate-spin text-[#A89053] mb-3" size={32} />
+              <span className="text-xs text-slate-500 font-sans">Memuat data wilayah...</span>
+            </div>
+          ) : filteredRegions.length === 0 ? (
+            <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center text-slate-500 text-xs font-sans">
+              Tidak ada data wilayah yang ditemukan.
             </div>
           ) : (
-            <div className="space-y-3">
-              {regions.map((region) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredRegions.map((region) => (
                 <div
                   key={region.id}
-                  className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-4"
+                  className="bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden group"
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
-                          {region.id}
-                        </span>
-                        <h3 className="font-serif font-bold text-lg text-[#0F2C59]">{region.name}</h3>
+                  {/* Header Cover Image */}
+                  <div className="h-32 w-full relative overflow-hidden bg-slate-100 border-b border-slate-100">
+                    <img
+                      src={region.image || "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=600"}
+                      alt={region.name}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
+                    <div className="absolute top-3 right-3 z-10 flex bg-slate-900/85 backdrop-blur-md px-1.5 py-0.5 rounded-lg border border-white/10 items-center gap-1 shadow-md" onClick={(e) => e.stopPropagation()}>
+                      {[
+                        { label: "Aktif", value: "active", activeClass: "bg-emerald-500 text-white shadow-sm border border-emerald-400/20" },
+                        { label: "Draft", value: "draft", activeClass: "bg-amber-500 text-white shadow-sm border border-amber-400/20" },
+                        { label: "Off", value: "inactive", activeClass: "bg-slate-500 text-white shadow-sm border border-slate-400/20" },
+                      ].map((opt) => {
+                        const currentStatus = region.status || "active";
+                        const isChecked = currentStatus === opt.value;
+                        return (
+                          <label
+                            key={opt.value}
+                            className={`flex items-center gap-1 text-[8px] font-bold uppercase cursor-pointer px-1.5 py-0.5 rounded-md transition-all select-none ${
+                              isChecked
+                                ? opt.activeClass
+                                : "text-slate-400 hover:text-white"
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name={`status-${region.id}`}
+                              value={opt.value}
+                              checked={isChecked}
+                              onChange={() => handleUpdateStatus(region.id, opt.value)}
+                              className="hidden"
+                            />
+                            <span>{opt.label === "Off" ? "Off" : opt.label}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
+                      <span className="font-mono text-[9px] uppercase font-bold px-2 py-0.5 rounded bg-white/20 text-white backdrop-blur-md border border-white/20">
+                        ID: {region.id}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Card Content */}
+                  <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-serif font-bold text-base text-[#0F2C59]">{region.name}</h3>
                         {region.nameEN && region.nameEN !== region.name && (
                           <span className="text-xs text-slate-400 font-sans">({region.nameEN})</span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-600 font-sans line-clamp-2">{region.subtitle}</p>
+                      <p className="text-xs text-slate-600 font-sans line-clamp-2 leading-relaxed">
+                        {region.subtitle}
+                      </p>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    {/* Subdestinations Tags */}
+                    <div className="pt-3 border-t border-slate-100 space-y-2">
+                      <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">
+                        Sub-destinasi ({region.subDestinations.length}):
+                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {region.subDestinations.length === 0 ? (
+                          <span className="text-[10px] text-slate-400 italic">Tidak ada sub-destinasi</span>
+                        ) : (
+                          region.subDestinations.map((sub, sIdx) => (
+                            <span key={sIdx} className="text-[10px] font-sans px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200 flex items-center gap-1">
+                              {sub.image && (
+                                <img src={sub.image} alt={sub.name} className="w-3.5 h-3.5 rounded-full object-cover" />
+                              )}
+                              <span>{sub.name}</span>
+                            </span>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
                       <button
                         onClick={() => handleEdit(region)}
-                        className="p-2 rounded-xl text-slate-500 hover:text-[#0F2C59] hover:bg-slate-100 transition-colors"
-                        title="Edit"
+                        className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-3 py-2 rounded-lg bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-[#0F2C59] transition-all cursor-pointer"
                       >
-                        <Edit3 size={16} />
+                        <Edit3 size={12} />
+                        <span>Edit</span>
                       </button>
                       <button
                         onClick={() => handleDelete(region.id)}
-                        className="p-2 rounded-xl text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
-                        title="Delete"
+                        className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-3 py-2 rounded-lg bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-all cursor-pointer"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={12} />
+                        <span>Delete</span>
                       </button>
                     </div>
-                  </div>
-
-                  {/* Subdestinations tags */}
-                  <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-1.5">
-                    <span className="text-[10px] font-mono uppercase text-slate-400 font-bold mr-1">Sub-destinasi:</span>
-                    {region.subDestinations.length === 0 ? (
-                      <span className="text-[11px] text-slate-400 italic">Tidak ada</span>
-                    ) : (
-                      region.subDestinations.map((sub, sIdx) => (
-                        <span key={sIdx} className="text-[10px] font-sans px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200 flex items-center gap-1">
-                          {sub.image && (
-                            <img src={sub.image} alt={sub.name} className="w-3.5 h-3.5 rounded-full object-cover" />
-                          )}
-                          <span>{sub.name}</span>
-                        </span>
-                      ))
-                    )}
                   </div>
                 </div>
               ))}
             </div>
           )}
-        </div>
-      </div>
+        </>
+      )}
+
+      {/* View Mode: Form View */}
+      {viewMode === "form" && (
+        <>
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+            <button
+              onClick={resetForm}
+              className="inline-flex items-center gap-2 text-slate-600 hover:text-[#0F2C59] font-sans font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
+            >
+              <ArrowLeft size={16} />
+              <span>Kembali ke Daftar Wilayah</span>
+            </button>
+            <div>
+              <span className="text-[10px] font-mono bg-[#A89053]/15 text-[#A89053] px-2 py-0.5 rounded font-bold uppercase block text-center">
+                {isEditing ? `Edit ID: ${editRegionId}` : "Wilayah Baru"}
+              </span>
+            </div>
+          </div>
+
+          {/* Form Container */}
+          <div className="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/80 shadow-sm space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h2 className="text-base font-serif font-bold text-[#0F2C59]">
+                {isEditing ? "Form Edit Data Wilayah" : "Form Tambah Wilayah Baru"}
+              </h2>
+            </div>
+
+            <form onSubmit={handleSave} className="space-y-6 font-sans text-xs">
+              {/* Key & Slug */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                    Region Key / ID *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={idField}
+                    disabled={isEditing}
+                    onChange={(e) => setIdField(e.target.value.toLowerCase())}
+                    placeholder="e.g. indonesia, japan"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] disabled:opacity-50 text-slate-800"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                    Slug (URL)
+                  </label>
+                  <input
+                    type="text"
+                    value={slugField}
+                    onChange={(e) => setSlugField(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}
+                    placeholder="e.g. indonesia"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] text-slate-800"
+                  />
+                </div>
+              </div>
+
+              {/* Status Radio Buttons */}
+              <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100 space-y-2.5">
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold">
+                  Status Wilayah *
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    { value: "active", label: "Aktif", desc: "Tampil di website" },
+                    { value: "draft", label: "Draft", desc: "Simpan sebagai draft" },
+                    { value: "inactive", label: "Nonaktif", desc: "Sembunyikan wilayah" }
+                  ].map((opt) => (
+                    <label
+                      key={opt.value}
+                      className={`relative flex items-center justify-between gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer ${
+                        statusField === opt.value
+                          ? "border-[#A89053] bg-[#A89053]/5 shadow-sm"
+                          : "border-slate-200 hover:border-slate-300 bg-white"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <input
+                          type="radio"
+                          name="region-status"
+                          value={opt.value}
+                          checked={statusField === opt.value}
+                          onChange={() => setStatusField(opt.value as any)}
+                          className="w-4 h-4 text-[#A89053] border-slate-300 focus:ring-[#A89053]"
+                        />
+                        <div className="text-left">
+                          <span className="block text-xs font-bold text-slate-800">{opt.label}</span>
+                          <span className="block text-[10px] text-slate-400 font-light">{opt.desc}</span>
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Region Cover Image Upload */}
+              <div>
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                  Gambar Sampul Wilayah (URL / Upload Lokal)
+                </label>
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={regionImageField}
+                    onChange={(e) => setRegionImageField(e.target.value)}
+                    placeholder="https://..."
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-slate-800"
+                  />
+                  <label className="inline-flex items-center gap-1 px-3 py-2.5 rounded-xl bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 font-bold uppercase tracking-wider text-[9px] cursor-pointer shrink-0">
+                    {isUploadingRegion ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                    <span>{isUploadingRegion ? "Uploading..." : "Upload"}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={isUploadingRegion}
+                      onChange={(e) => handleImageFileUpload(e, setRegionImageField, setIsUploadingRegion)}
+                    />
+                  </label>
+                </div>
+                {regionImageField && (
+                  <div className="mt-2 h-32 rounded-xl overflow-hidden border border-slate-200 max-w-md">
+                    <img src={regionImageField} alt="Region Cover Preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+
+              {/* Language Tab Switcher */}
+              <div className="flex border-b border-slate-200 pb-1.5 gap-4 items-center">
+                <button
+                  type="button"
+                  onClick={() => setFormLang("id")}
+                  className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
+                    formLang === "id" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  🇮🇩 Indonesia
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormLang("en")}
+                  className={`pb-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
+                    formLang === "en" ? "border-[#A89053] text-[#0F2C59]" : "border-transparent text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  🇬🇧 English
+                </button>
+
+                <div className="ml-auto">
+                  <button
+                    type="button"
+                    onClick={handleAutoTranslate}
+                    disabled={isTranslating || (formLang === "id" ? !nameIDField.trim() : !nameENField.trim())}
+                    className="inline-flex items-center gap-1 text-[9px] font-mono uppercase bg-[#A89053] text-white px-2.5 py-1 rounded-lg hover:bg-[#0F2C59] transition-colors disabled:opacity-50 cursor-pointer font-bold"
+                  >
+                    {isTranslating ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
+                    <span>Auto Translate</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Language Dependent Content */}
+              {formLang === "id" ? (
+                <div className="space-y-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                      Nama Wilayah (ID) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={nameIDField}
+                      onChange={(e) => setNameIDField(e.target.value)}
+                      placeholder="e.g. Indonesia"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-slate-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                      Deskripsi Singkat (ID)
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={subtitleIDField}
+                      onChange={(e) => setSubtitleIDField(e.target.value)}
+                      placeholder="Deskripsi singkat wilayah..."
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-slate-800 resize-none"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                      Region Name (EN)
+                    </label>
+                    <input
+                      type="text"
+                      value={nameENField}
+                      onChange={(e) => setNameENField(e.target.value)}
+                      placeholder="e.g. Indonesia"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-slate-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                      Subtitle (EN)
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={subtitleENField}
+                      onChange={(e) => setSubtitleENField(e.target.value)}
+                      placeholder="Short region subtitle in English..."
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-slate-800 resize-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Sub-Destinations List */}
+              <div className="space-y-3 pt-2">
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold">
+                  Daftar Sub-Destinasi ({subDestinationsList.length})
+                </label>
+
+                {/* Added Sub-destinations Chips */}
+                <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-slate-50 rounded-xl border border-slate-200/80">
+                  {subDestinationsList.length === 0 ? (
+                    <span className="text-slate-400 italic text-[11px]">Belum ada sub-destinasi ditambahkan.</span>
+                  ) : (
+                    subDestinationsList.map((sub, idx) => (
+                      <div key={idx} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm text-xs text-slate-700 font-semibold">
+                        {sub.image ? (
+                          <img src={sub.image} alt={sub.name} className="w-5 h-5 rounded-full object-cover shrink-0" />
+                        ) : (
+                          <MapPin size={12} className="text-[#A89053]" />
+                        )}
+                        <span>{sub.name}</span>
+                        {sub.nameEN && sub.nameEN !== sub.name && (
+                          <span className="text-[10px] text-slate-400">({sub.nameEN})</span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSubDest(idx)}
+                          className="hover:text-red-500 transition-colors ml-1"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Add New Sub-Destination Form */}
+                <div className="p-4 bg-slate-100/60 rounded-xl border border-slate-200 space-y-3">
+                  <span className="text-[10px] font-mono uppercase font-bold text-slate-600 block">Tambah Sub-Destinasi</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      value={newSubNameID}
+                      onChange={(e) => setNewSubNameID(e.target.value)}
+                      placeholder="Nama (ID) e.g. Bali"
+                      className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                    />
+                    <input
+                      type="text"
+                      value={newSubNameEN}
+                      onChange={(e) => setNewSubNameEN(e.target.value)}
+                      placeholder="Nama (EN) e.g. Bali"
+                      className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      value={newSubSlug}
+                      onChange={(e) => setNewSubSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}
+                      placeholder="Slug (e.g. bali)"
+                      className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                    />
+
+                    {/* Sub-destination Cover Upload */}
+                    <div className="flex gap-1 items-center">
+                      <input
+                        type="text"
+                        value={newSubImage}
+                        onChange={(e) => setNewSubImage(e.target.value)}
+                        placeholder="Gambar Sub (URL)"
+                        className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                      />
+                      <label className="p-2 rounded-lg bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 cursor-pointer shrink-0 flex items-center justify-center min-w-[28px]">
+                        {isUploadingSub ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={isUploadingSub}
+                          onChange={(e) => handleImageFileUpload(e, setNewSubImage, setIsUploadingSub)}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleAddSubDest}
+                    disabled={!newSubNameID.trim()}
+                    className="w-full bg-[#0F2C59] text-white py-2.5 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:bg-[#0F2C59]/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <Plus size={12} />
+                    <span>Tambah Sub-Destinasi</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Form Action Buttons */}
+              <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="flex-1 bg-[#A89053] hover:bg-[#967F47] text-white font-bold py-3 px-4 rounded-xl text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
+                >
+                  {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                  <span>{isEditing ? "Update Wilayah" : "Simpan Wilayah Baru"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="px-6 py-3 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
+
       {toast && (
         <Toast
           message={toast.message}

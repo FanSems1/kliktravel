@@ -8,6 +8,7 @@ import { Menu, X, Search, ChevronDown, Globe, ArrowRight } from "lucide-react";
 import { localizedRegions, RegionDestination } from "@/data/destinations";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiFetch } from "@/lib/api";
+import { SearchModal } from "@/components/search/SearchModal";
 
 const regionHeroImages: Record<string, string> = {
   indonesia: "https://images.unsplash.com/photo-1501179691627-eeaa65ea017c?q=80&w=800",
@@ -35,9 +36,10 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDestinationsHovered, setIsDestinationsHovered] = useState(false);
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // Dynamic Regions state
-  const [regions, setRegions] = useState<RegionDestination[]>(localizedRegions[locale] || []);
+  const [regions, setRegions] = useState<RegionDestination[]>([]);
 
   useEffect(() => {
     async function loadRegions() {
@@ -92,7 +94,7 @@ export function Header() {
       } catch (err) {
         console.error("Header: Failed to load regions", err);
       }
-      setRegions(localizedRegions[locale] || []);
+      setRegions([]);
     }
 
     loadRegions();
@@ -113,13 +115,13 @@ export function Header() {
     }
   };
 
-  const isLightPage = 
-    (pathname === "/journal" ? isScrolled : false) ||
-    pathname?.startsWith("/journal/") ||
-    (pathname === "/journeys" ? isScrolled : false) ||
-    pathname?.startsWith("/journeys/") ||
-    pathname === "/destinations" ||
-    (pathname === "/private-trip" ? isScrolled : false);
+  const isSingleDestinationPage = pathname?.startsWith("/destinations/") && pathname.split("/").filter(Boolean).length === 2;
+  const isHomePage = pathname === "/";
+  const isPrivateTripPage = pathname === "/private-trip";
+  const isJournalPage = pathname?.startsWith("/journal");
+  const isJourneysPage = pathname?.startsWith("/journeys");
+
+  const isLightPage = !isHomePage && !isSingleDestinationPage && !isPrivateTripPage && !isJournalPage && !isJourneysPage;
 
   const showDarkHeader = isScrolled || isLightPage;
 
@@ -160,7 +162,7 @@ export function Header() {
             <img 
               src="/kliktravelid.png" 
               alt="Klik Travel ID" 
-              className="h-12 md:h-14 lg:h-16 w-auto object-contain transition-all duration-300"
+              className="h-9 md:h-14 lg:h-16 w-auto object-contain transition-all duration-300"
             />
           </Link>
           
@@ -191,20 +193,33 @@ export function Header() {
               }`} />
             </Link>
 
+            <Link 
+              href="/private-trip"
+              className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${
+                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white font-semibold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-white/90"
+              }`}
+            >
+              {t("nav_experiences")}
+              <span className={`absolute bottom-0 left-0 w-full h-[1px] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left ${
+                showDarkHeader ? "bg-[#0284C7]" : "bg-white"
+              }`} />
+            </Link>
+
             {/* Destinations / OPEN TRIP Hover Item */}
             <div 
               className="relative py-2"
               onMouseEnter={() => setIsDestinationsHovered(true)}
               onMouseLeave={() => setIsDestinationsHovered(false)}
             >
-              <button
+              <Link
+                href="/destinations"
                 className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 flex items-center space-x-1 cursor-pointer ${
                   showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white font-semibold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-white/90"
                 }`}
               >
                 <span>{t("nav_destinations")}</span>
                 <ChevronDown size={10} className={`transition-transform duration-300 ${isDestinationsHovered ? "rotate-180" : ""}`} />
-              </button>
+              </Link>
               <span className={`absolute bottom-0 left-0 w-full h-[1px] transform scale-x-0 ${isDestinationsHovered ? "scale-x-100" : "group-hover:scale-x-100"} transition-transform duration-300 origin-left ${
                 showDarkHeader ? "bg-[#0284C7]" : "bg-white"
               }`} />
@@ -240,7 +255,7 @@ export function Header() {
                         <img 
                           src={activeHoveredObj?.image || activeHoveredObj?.featuredImageGradient || regionHeroImages[activeHoveredObj?.slug || ""] || defaultFeaturedImage} 
                           alt="Featured Destination"
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#0F2C59]/80 via-transparent to-transparent opacity-80" />
                         <div className="absolute bottom-4 left-4 right-4 font-sans font-medium text-xs tracking-wide text-white uppercase">
@@ -289,7 +304,6 @@ export function Header() {
             </div>
 
             {[
-              { key: "nav_experiences", href: "/private-trip" },
               { key: "nav_about", href: "/about" },
               { key: "nav_journal", href: "/journal" }
             ].map((item) => (
@@ -323,6 +337,7 @@ export function Header() {
               </span>
             </button>
             <button 
+              onClick={() => setIsSearchOpen(true)}
               className={`transition-colors p-1 cursor-pointer ${
                 showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-white/90"
               }`} 
@@ -343,26 +358,47 @@ export function Header() {
           </div>
 
           {/* Mobile Actions */}
-          <div className="flex md:hidden items-center space-x-5 sm:space-x-6">
+          <div className="flex md:hidden items-center space-x-3.5">
             <Link 
-              href="/destinations"
-              className={`font-sans text-[8px] uppercase tracking-[0.1em] font-bold transition-colors ${
-                showDarkHeader ? "text-[#0F2C59] hover:text-[#0284C7]" : "text-white hover:text-white/80"
+              href="/journeys"
+              className={`font-sans text-[10px] uppercase tracking-wider transition-all duration-300 font-bold shrink-0 ${
+                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)] hover:text-white/90"
               }`}
             >
-              {t("nav_destinations")}
+              Open Trip
             </Link>
             <Link 
               href="/private-trip"
-              className={`font-sans text-[8px] uppercase tracking-[0.1em] font-bold transition-colors ${
-                showDarkHeader ? "text-[#0F2C59] hover:text-[#0284C7]" : "text-white hover:text-white/80"
+              className={`font-sans text-[10px] uppercase tracking-wider transition-all duration-300 font-bold shrink-0 ${
+                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)] hover:text-white/90"
               }`}
             >
-              {t("nav_experiences")}
+              Private Trip
             </Link>
             <button 
+              onClick={() => setIsSearchOpen(true)}
+              className={`transition-colors p-1 cursor-pointer ${
+                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white hover:text-white/90"
+              }`} 
+              aria-label="Search"
+            >
+              <Search size={13} />
+            </button>
+            <button 
+              onClick={toggleLanguage}
+              className={`flex items-center space-x-0.5 transition-colors p-1 cursor-pointer ${
+                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white hover:text-white/90"
+              }`}
+              aria-label="Toggle Language"
+            >
+              <Globe size={12} className="opacity-80" />
+              <span className="font-mono text-[9px] tracking-widest uppercase font-semibold">
+                {locale === "id" ? "ID" : "EN"}
+              </span>
+            </button>
+            <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`focus:outline-none p-1 ml-2 z-50 relative transition-colors cursor-pointer ${
+              className={`focus:outline-none p-1 ml-1 z-50 relative transition-colors cursor-pointer ${
                 isMobileMenuOpen 
                   ? "text-[#0F2C59]" 
                   : showDarkHeader ? "text-[#0F2C59] hover:text-[#0284C7]" : "text-white hover:text-white/80"
@@ -383,31 +419,40 @@ export function Header() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 z-40 bg-ivory flex flex-col justify-between p-8 pt-32 overflow-y-auto"
+            className="fixed inset-0 z-40 bg-ivory flex flex-col justify-between p-6 pt-24 overflow-y-auto"
           >
             <div className="absolute inset-0 image-texture opacity-10 pointer-events-none" />
 
-            <div className="flex flex-col space-y-6 text-left max-w-md mx-auto w-full z-10">
+            <div className="flex flex-col space-y-3.5 text-left max-w-md mx-auto w-full z-10">
               <Link 
                 href="/"
                 onClick={handleMobileHomeClick}
-                className="font-serif text-4xl tracking-wide text-foreground hover:text-[#0284C7] transition-colors block py-2"
+                className="font-serif text-lg tracking-wider text-foreground/90 hover:text-[#0284C7] transition-colors block py-1"
               >
                 {t("nav_home")}
               </Link>
 
+
               <Link 
                 href="/journeys"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="font-serif text-4xl tracking-wide text-foreground hover:text-[#0284C7] transition-colors block py-2"
+                className="font-serif text-lg tracking-wider text-foreground/90 hover:text-[#0284C7] transition-colors block py-1"
               >
                 {t("nav_journeys")}
               </Link>
 
               <Link 
+                href="/private-trip"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="font-serif text-lg tracking-wider text-foreground/90 hover:text-[#0284C7] transition-colors block py-1"
+              >
+                {t("nav_experiences")}
+              </Link>
+
+              <Link 
                 href="/destinations"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="font-serif text-4xl tracking-wide text-foreground hover:text-[#0284C7] transition-colors block py-2"
+                className="font-serif text-lg tracking-wider text-foreground/90 hover:text-[#0284C7] transition-colors block py-1"
               >
                 {t("nav_destinations")}
               </Link>
@@ -420,24 +465,24 @@ export function Header() {
                   key={item.href} 
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="font-serif text-4xl tracking-wide text-foreground hover:text-[#0284C7] transition-colors block py-2"
+                  className="font-serif text-lg tracking-wider text-foreground/90 hover:text-[#0284C7] transition-colors block py-1"
                 >
                   {t(item.key as keyof typeof import("@/data/translations").translations["id"])}
                 </Link>
               ))}
               
-              <div className="pt-6">
+              <div className="pt-4">
                 <Link 
                   href="/inquire"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="inline-block bg-charcoal text-white text-xs uppercase tracking-[0.25em] py-4 px-8 rounded-full shadow-lg"
+                  className="inline-block bg-charcoal text-[10px] text-white uppercase tracking-[0.25em] py-3 px-6 rounded-full shadow-lg"
                 >
                   {t("nav_plan_journey")}
                 </Link>
               </div>
             </div>
 
-            <div className="max-w-md mx-auto w-full border-t border-foreground/10 pt-8 z-10 flex justify-between items-center text-[10px] tracking-widest uppercase font-mono text-foreground mt-8">
+            <div className="max-w-md mx-auto w-full border-t border-foreground/10 pt-4 z-10 flex justify-between items-center text-[10px] tracking-widest uppercase font-mono text-foreground mt-6">
               <div className="flex space-x-4 items-center">
                 <span>Klik Travel ID</span>
                 <span className="opacity-30">|</span>
@@ -454,6 +499,7 @@ export function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   );
 }

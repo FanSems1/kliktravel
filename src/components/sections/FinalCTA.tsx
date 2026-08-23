@@ -82,15 +82,15 @@ export function FinalCTA() {
     target: sectionRef,
     offset: ["start end", "end start"]
   });
-  
+
   const bgScale = useTransform(scrollYProgress, [0, 1], [0.8, 1.2]);
   const bgOpacity = useTransform(scrollYProgress, [0, 0.5], [0, 0.4]);
 
   return (
     <section ref={sectionRef} className="relative bg-ivory overflow-hidden z-10">
-      
+
       {/* Background Graphic with Parallax */}
-      <motion.div 
+      <motion.div
         style={{ scale: bgScale, opacity: bgOpacity }}
         className="absolute inset-0 z-0 flex items-center justify-end pointer-events-none"
       >
@@ -98,9 +98,9 @@ export function FinalCTA() {
       </motion.div>
 
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-16 pt-32 md:pt-40 pb-20 relative z-10 flex flex-col">
-        
+
         {/* Gallery Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -114,26 +114,26 @@ export function FinalCTA() {
             <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl text-charcoal uppercase tracking-[0.15em] font-normal">
               {locale === "id" ? (
                 <>
-                  Kebersamaan <br className="hidden md:block"/> Perjalanan Kami
+                  Momen <br className="hidden md:block" /> Bersama Kami
                 </>
               ) : (
                 <>
-                  Our Journeys <br className="hidden md:block"/> Together
+                  Our Moments <br className="hidden md:block" /> Together
                 </>
               )}
             </h2>
           </div>
           {/* Navigation Arrows */}
           <div className="flex items-center gap-4">
-            <button 
-              onClick={scrollLeft} 
+            <button
+              onClick={scrollLeft}
               aria-label="Scroll left"
               className="w-12 h-12 rounded-full border border-charcoal/20 flex items-center justify-center text-charcoal hover:bg-charcoal hover:text-white transition-colors group cursor-pointer"
             >
               <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" strokeWidth={1.5} />
             </button>
-            <button 
-              onClick={scrollRight} 
+            <button
+              onClick={scrollRight}
               aria-label="Scroll right"
               className="w-12 h-12 rounded-full border border-charcoal/20 flex items-center justify-center text-charcoal hover:bg-charcoal hover:text-white transition-colors group cursor-pointer"
             >
@@ -143,7 +143,7 @@ export function FinalCTA() {
         </motion.div>
 
         {/* Carousel Section */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -152,19 +152,19 @@ export function FinalCTA() {
           className="flex overflow-x-auto gap-6 sm:gap-8 pb-12 snap-x snap-mandatory scrollbar-none no-scrollbar -mx-6 px-6 md:mx-0 md:px-0 scroll-smooth"
         >
           {moments.map((moment, idx) => (
-            <div 
+            <div
               key={idx}
               className="snap-start shrink-0 w-[85vw] sm:w-[60vw] md:w-[45vw] lg:w-[35vw] xl:w-[28vw] flex-none bg-[#F4F4F0] border border-charcoal/10 p-5 md:p-7 shadow-sm group cursor-pointer"
             >
               {/* Framed Image Container */}
               <div className="relative w-full aspect-square overflow-hidden bg-charcoal shadow-inner">
-                <img 
-                  src={moment.image} 
-                  alt={locale === "id" ? moment.titleID : moment.titleEN} 
+                <img
+                  src={moment.image}
+                  alt={locale === "id" ? moment.titleID : moment.titleEN}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-500" />
-                
+
                 {/* Centered Text Overlay */}
                 <div className="absolute inset-0 flex items-center justify-center p-8 text-center">
                   <h3 className="text-white font-sans text-sm md:text-base lg:text-lg tracking-[0.15em] uppercase font-light leading-relaxed drop-shadow-md">
@@ -207,12 +207,14 @@ export function FinalCTA() {
             >
               {locale === "id" ? "Jelajahi Perjalanan" : "Explore Journeys"}
             </Link>
-            <Link
-              href="/contact"
-              className="border border-charcoal/20 hover:border-charcoal hover:bg-charcoal/5 text-charcoal text-xs uppercase tracking-[0.25em] font-sans py-4 px-10 rounded-full transition-all duration-300"
+            <a
+              href="https://wa.me/6281230011027"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-charcoal/20 hover:border-charcoal hover:bg-charcoal/5 text-charcoal text-xs uppercase tracking-[0.25em] font-sans py-4 px-10 rounded-full transition-all duration-300 text-center"
             >
               {locale === "id" ? "Hubungi Travel Expert Kami" : "Talk to Our Travel Expert"}
-            </Link>
+            </a>
           </div>
         </motion.div>
 

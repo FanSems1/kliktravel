@@ -24,10 +24,21 @@ export function JourneyCard({ journey, index }: JourneyCardProps) {
   // Common inner content details
   const details = (
     <div className="flex flex-col space-y-3">
-      <div className="flex justify-between items-start">
+      <div className="flex justify-between items-center gap-2">
         <span className="font-mono text-[9px] tracking-[0.25em] text-charcoal/60 uppercase font-semibold">
           {journey.durationLabel} • {journey.dates}
         </span>
+        {journey.status && (
+          <span className={`font-mono text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded shrink-0 ${
+            journey.status === "Closed" || journey.status === "inactive" || journey.status === "CLOSED"
+              ? "bg-rose-50 text-rose-600 border border-rose-200"
+              : journey.status === "Draft" || journey.status === "draft" || journey.status === "DRAFT"
+                ? "bg-slate-100 text-slate-500 border border-slate-200"
+                : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+          }`}>
+            {journey.status}
+          </span>
+        )}
       </div>
       
       <h3 className="font-serif text-3xl md:text-4xl text-foreground font-normal tracking-wide group-hover:text-[#0284C7] transition-colors duration-300 flex items-center justify-between">

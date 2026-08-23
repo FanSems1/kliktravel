@@ -18,8 +18,9 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Premium Travel & Tours",
-  description: "An international luxury travel editorial experience.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://kliktravel.id"),
+  title: "Klik Travel ID | Agent Travel Terpercaya, Paket Wisata & Open Trip",
+  description: "Agen travel pilihan untuk paket wisata Indonesia dan luar negeri. Nikmati open trip seru, private tour keluarga, dan petualangan santai ke Bali, Labuan Bajo, Jepang, Korea, hingga Eropa.",
   icons: {
     icon: "/kliktravelid.png",
     shortcut: "/kliktravelid.png",
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="id" className="scroll-smooth">
+    <html lang="id" className="scroll-smooth" data-scroll-behavior="smooth">
       <body
         className={`${outfit.variable} ${playfair.variable} font-sans min-h-screen bg-ivory text-foreground antialiased flex flex-col selection:bg-[#A89053] selection:text-white`}
       >
