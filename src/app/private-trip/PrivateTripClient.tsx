@@ -216,7 +216,7 @@ export function PrivateTripClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.8 }}
-            className="font-mono text-[10px] sm:text-xs md:text-sm tracking-[0.18em] sm:tracking-[0.3em] md:tracking-[0.4em] uppercase text-sky-300 font-semibold mb-4 md:mb-6 block max-w-full leading-relaxed"
+            className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-sky-300 mb-4 md:mb-6 block max-w-full leading-relaxed"
           >
             {t("private_trip_tag")}
           </motion.span>
@@ -305,13 +305,13 @@ export function PrivateTripClient() {
       {isLoadingDestinations ? (
         <section className="max-w-7xl mx-auto px-6 pt-24 md:pt-32 mb-32">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-[#0284C7] font-bold block mb-4">
+            <span className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-[#0284C7] block mb-3">
               {t("private_trip_inspiration_tag")}
             </span>
-            <h2 className="font-serif text-4xl md:text-5xl text-[#0F2C59] font-normal tracking-wide mb-6">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-[#0F2C59] tracking-tight mb-6">
               {t("private_trip_inspiration_title")}
             </h2>
-            <p className="font-sans text-gray-500 text-sm md:text-base font-light leading-relaxed">
+            <p className="font-sans text-base md:text-lg text-[#0F2C59]/80 font-light leading-relaxed">
               {locale === "id" ? "Pilihan terfavorit pelanggan kami untuk inspirasi perjalanan berharga Anda." : "Our guest favorites to inspire your next extraordinary journey."}
             </p>
           </div>
@@ -334,13 +334,13 @@ export function PrivateTripClient() {
       ) : popularPrivateDestinations.length > 0 ? (
         <section className="max-w-7xl mx-auto px-6 pt-24 md:pt-32 mb-32">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-[#0284C7] font-bold block mb-4">
+            <span className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-[#0284C7] block mb-3">
               {t("private_trip_inspiration_tag")}
             </span>
-            <h2 className="font-serif text-4xl md:text-5xl text-[#0F2C59] font-normal tracking-wide mb-6">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-[#0F2C59] tracking-tight mb-6">
               {t("private_trip_inspiration_title")}
             </h2>
-            <p className="font-sans text-gray-500 text-sm md:text-base font-light leading-relaxed">
+            <p className="font-sans text-base md:text-lg text-[#0F2C59]/80 font-light leading-relaxed">
               {locale === "id" ? "Pilihan terfavorit pelanggan kami untuk inspirasi perjalanan berharga Anda." : "Our guest favorites to inspire your next extraordinary journey."}
             </p>
           </div>
@@ -597,10 +597,10 @@ export function PrivateTripClient() {
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
               <div>
-                <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-[#0284C7] font-bold block mb-4">
+                <span className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-[#0284C7] block mb-3">
                   {t("private_trip_testimonial_tag")}
                 </span>
-                <h2 className="font-serif text-4xl md:text-5xl text-[#0F2C59] font-normal tracking-wide">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-[#0F2C59] tracking-tight leading-tight">
                   {t("private_trip_testimonial_title")}
                 </h2>
               </div>

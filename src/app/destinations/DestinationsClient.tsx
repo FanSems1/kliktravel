@@ -136,13 +136,13 @@ export function DestinationsClient() {
       <main className="pt-32 pb-24 relative z-10 flex-1 flex flex-col justify-center">
         {/* Intro Banner */}
         <section className="max-w-7xl mx-auto px-6 text-center mb-10 shrink-0">
-          <span className="font-mono text-[9px] md:text-[10px] tracking-[0.4em] uppercase text-charcoal/60 font-semibold block mb-2">
-            Nusantara Terkurnasi
+          <span className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-[#0284C7] block mb-3">
+            Nusantara Terkurasi
           </span>
-          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-normal text-[#0F2C59] tracking-wider mb-3">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-[#0F2C59] tracking-tight mb-6">
             DESTINASI
           </h1>
-          <p className="font-serif italic text-sm md:text-base text-foreground/60 max-w-xl mx-auto leading-relaxed px-4">
+          <p className="font-sans italic text-base md:text-lg text-[#0F2C59]/80 font-light leading-relaxed max-w-xl mx-auto px-4">
             &ldquo;Indonesia bukanlah satu destinasi. Ini adalah ribuan cara untuk mengembara.&rdquo;
           </p>
         </section>

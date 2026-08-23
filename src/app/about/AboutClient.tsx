@@ -78,7 +78,7 @@ export function AboutClient() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#A89053]/10 border border-[#A89053]/30 text-[#A89053] text-[10px] font-mono tracking-widest uppercase mb-6 backdrop-blur-sm"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#A89053]/10 border border-[#A89053]/30 text-[#A89053] text-xs font-mono tracking-[0.3em] font-semibold uppercase mb-6 backdrop-blur-sm"
             >
               <Compass className="w-3.5 h-3.5 animate-spin-slow" />
               <span>{locale === "id" ? "Tentang Klik Travel ID" : "About Klik Travel ID"}</span>
@@ -230,12 +230,12 @@ export function AboutClient() {
               transition={{ duration: 0.9 }}
               className="lg:col-span-6 flex flex-col justify-center"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0F2C59]/5 text-[#0F2C59] text-xs font-mono tracking-widest uppercase mb-6 border border-[#0F2C59]/10 w-fit">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0F2C59]/5 text-[#0F2C59] text-xs font-mono tracking-[0.3em] font-semibold uppercase mb-6 border border-[#0F2C59]/10 w-fit">
                 <Compass className="w-3.5 h-3.5" />
                 <span>{locale === "id" ? "Filosofi Layanan" : "Service Philosophy"}</span>
               </div>
 
-              <h2 className="text-3xl md:text-5xl font-serif text-[#0F2C59] mb-6 leading-tight">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-[#0F2C59] tracking-tight mb-6 leading-tight">
                 {locale === "id" ? (
                   <>
                     Komitmen Kami Terhadap <br />

@@ -54,7 +54,7 @@ export function WhyChooseUsSection() {
 
   return (
     <section className="py-16 md:py-20 bg-[#F8FAFC] text-foreground relative overflow-hidden">
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-[1550px] mx-auto px-6 md:px-12 lg:px-20">
         
         {/* Header */}
         <motion.div 
@@ -64,10 +64,10 @@ export function WhyChooseUsSection() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
           className="text-center max-w-2xl mx-auto mb-16"
         >
-          <span className="font-mono text-xs uppercase tracking-[0.3em] text-[#0284C7] block mb-3">
+          <span className="font-mono text-[10px] tracking-[0.4em] uppercase font-semibold text-[#0284C7] block mb-4">
             {t("why_tag")}
           </span>
-          <h2 className="text-3xl md:text-4xl font-serif text-[#0F2C59] tracking-tight">
+          <h2 className="text-2xl md:text-3xl font-serif text-[#0F2C59] tracking-tight">
             {t("why_title")}
           </h2>
         </motion.div>
@@ -92,8 +92,8 @@ export function WhyChooseUsSection() {
               </div>
               
               {/* Text Info */}
-              <h4 className="font-serif text-lg font-medium text-[#0F2C59] mb-2">{item.title}</h4>
-              <p className="font-sans text-xs text-foreground/70 font-light leading-relaxed px-1">
+              <h4 className="font-serif text-lg md:text-xl font-medium text-[#0F2C59] mb-3">{item.title}</h4>
+              <p className="font-sans text-base md:text-lg text-[#0F2C59]/80 font-light leading-relaxed px-1">
                 {item.description}
               </p>
             </motion.div>

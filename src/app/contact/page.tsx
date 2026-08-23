@@ -27,7 +27,7 @@ export default function ContactPage() {
           <MessageCircle className="w-10 h-10" />
         </div>
 
-        <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[#A89053] font-bold block mb-2">
+        <span className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-[#0284C7] block mb-3">
           KLIK TRAVEL ID CONTACT
         </span>
 

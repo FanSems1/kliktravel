@@ -79,13 +79,13 @@ export function AboutUsSection() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
             className="max-w-3xl relative z-10"
           >
-            <span className="font-mono text-xs uppercase tracking-[0.3em] text-[#0284C7] block mb-3">
+            <span className="font-mono text-[10px] tracking-[0.4em] uppercase font-semibold text-[#0284C7] block mb-4">
               {t("about_tag")}
             </span>
-            <h2 className="text-3xl md:text-4xl font-serif tracking-tight mb-6 text-[#0F2C59]">
+            <h2 className="text-2xl md:text-3xl font-serif text-[#0F2C59] tracking-tight mb-6">
               {t("about_title")}
             </h2>
-            <div className="space-y-6 text-[#0F2C59]/80 font-sans text-sm md:text-base font-light leading-relaxed">
+            <div className="space-y-6 text-[#0F2C59]/80 font-sans text-base md:text-lg font-light leading-relaxed">
               <p>
                 {locale === "id" ? (
                   <>
@@ -137,9 +137,14 @@ export function AboutUsSection() {
         >
           {/* Header + Tabs Row */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-10">
-            <h3 className="font-serif text-2xl md:text-3xl text-[#0F2C59] tracking-tight">
-              {t("vision_title")}
-            </h3>
+            <div>
+              <span className="font-mono text-[10px] tracking-[0.4em] uppercase font-semibold text-[#0284C7] block mb-4">
+                {t("vision_tag")}
+              </span>
+              <h3 className="text-2xl md:text-3xl font-serif text-[#0F2C59] tracking-tight">
+                {t("vision_title")}
+              </h3>
+            </div>
 
             {/* Tab switcher */}
             <div className="flex bg-[#F8FAFC] border border-[#0F2C59]/10 rounded-full p-1 shadow-sm">
@@ -195,10 +200,10 @@ export function AboutUsSection() {
                     <div className="bg-[#0F2C59] p-8 md:p-10 flex flex-col justify-center relative">
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(2,132,199,0.15),transparent_60%)]" />
                       <div className="relative z-10">
-                        <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-[#38BDF8] block mb-3">
+                        <span className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-[#38BDF8] block mb-3">
                           {t("vision_tab_vision")}
                         </span>
-                        <p className="font-serif text-base md:text-lg text-white/95 leading-relaxed">
+                        <p className="font-sans text-base md:text-lg text-white/95 leading-relaxed font-light">
                           {locale === "id"
                             ? "Menjadi perusahaan tour & travel terpercaya di Indonesia yang menghadirkan pengalaman perjalanan berkualitas, aman, dan berkesan bagi setiap pelanggan."
                             : "To become the most trusted tour & travel company in Indonesia, delivering high-quality, secure, and memorable journeys for every client."}
@@ -249,7 +254,7 @@ export function AboutUsSection() {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/20 to-transparent" />
                             {/* Number badge */}
-                            <div className="absolute bottom-4 left-4 md:bottom-auto md:top-4 md:left-4 bg-[#0F2C59] text-white font-mono text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-lg">
+                            <div className="absolute bottom-4 left-4 md:bottom-auto md:top-4 md:left-4 bg-[#0F2C59] text-white font-mono text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg">
                               {m.number} / 05
                             </div>
                           </div>
@@ -259,7 +264,7 @@ export function AboutUsSection() {
                             <h4 className="font-sans font-bold text-base md:text-lg text-[#0F2C59] mb-2">
                               {locale === "id" ? m.titleID : m.titleEN}
                             </h4>
-                            <p className="font-sans text-xs md:text-sm text-[#0F2C59]/70 font-light leading-relaxed">
+                            <p className="font-sans text-sm md:text-base text-[#0F2C59]/80 font-light leading-relaxed">
                               {locale === "id" ? m.textID : m.textEN}
                             </p>
 

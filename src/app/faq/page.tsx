@@ -152,13 +152,13 @@ export default function FAQPage() {
         
         {/* Header Hero Section */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="font-mono text-[10px] tracking-[0.35em] text-[#A89053] font-bold uppercase block mb-3">
+          <span className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-[#0284C7] block mb-3">
             {isIndo ? "PUSAT BANTUAN" : "HELP CENTER"}
           </span>
-          <h1 className="font-serif text-4xl md:text-5xl font-normal text-[#0F2C59] leading-tight mb-4">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-[#0F2C59] tracking-tight leading-tight mb-6">
             {isIndo ? "Pertanyaan Umum" : "Frequently Asked Questions"}
           </h1>
-          <p className="font-sans text-sm md:text-base text-[#0F2C59]/70 leading-relaxed font-light">
+          <p className="font-sans text-base md:text-lg text-[#0F2C59]/80 leading-relaxed font-light">
             {isIndo
               ? "Temukan jawaban cepat seputar pemesanan, pembayaran, jenis perjalanan, dan kebijakan Klik Travel ID."
               : "Find quick answers regarding bookings, payments, travel categories, and Klik Travel ID policies."}

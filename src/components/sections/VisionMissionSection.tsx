@@ -78,9 +78,14 @@ export function VisionMissionSection() {
 
         {/* Header + Tabs in one row */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-10">
-          <h2 className="font-serif text-2xl md:text-3xl text-[#0F2C59] tracking-tight">
-            {t("vision_title")}
-          </h2>
+          <div>
+            <span className="font-mono text-[10px] tracking-[0.4em] uppercase font-semibold text-[#0284C7] block mb-4">
+              {t("vision_tag")}
+            </span>
+            <h2 className="text-2xl md:text-3xl font-serif text-[#0F2C59] tracking-tight">
+              {t("vision_title")}
+            </h2>
+          </div>
 
           {/* Tab switcher */}
           <div className="flex bg-white border border-gray-200 rounded-full p-1 shadow-sm">
@@ -136,10 +141,10 @@ export function VisionMissionSection() {
                 <div className="bg-[#0F2C59] p-8 md:p-10 flex flex-col justify-center relative">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(2,132,199,0.15),transparent_60%)]" />
                   <div className="relative z-10">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#38BDF8] block mb-4">
+                    <span className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-[#38BDF8] block mb-4">
                       {t("vision_tab_vision")}
                     </span>
-                    <p className="font-serif text-lg md:text-xl text-white/95 leading-relaxed">
+                    <p className="font-sans text-base md:text-lg text-white/95 leading-relaxed font-light">
                       {locale === "id"
                         ? "Menjadi perusahaan tour & travel terpercaya di Indonesia yang menghadirkan pengalaman perjalanan berkualitas, aman, dan berkesan bagi setiap pelanggan."
                         : "To become the most trusted tour & travel company in Indonesia, rendering high-quality, secure, and memorable journeys for every single client."}
@@ -198,10 +203,10 @@ export function VisionMissionSection() {
 
                       {/* Text */}
                       <div className="p-6 md:p-8 md:col-span-3 flex flex-col justify-center">
-                        <h3 className="font-sans font-bold text-lg md:text-xl text-[#0F2C59] mb-2">
+                        <h3 className="font-sans font-bold text-base md:text-lg text-[#0F2C59] mb-2">
                           {locale === "id" ? m.titleID : m.titleEN}
                         </h3>
-                        <p className="font-sans text-sm md:text-base text-[#0F2C59]/70 font-light leading-relaxed">
+                        <p className="font-sans text-sm md:text-base text-[#0F2C59]/80 font-light leading-relaxed">
                           {locale === "id" ? m.textID : m.textEN}
                         </p>
 
