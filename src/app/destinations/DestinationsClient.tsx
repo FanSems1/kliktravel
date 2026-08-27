@@ -1,0 +1,291 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { localizedRegions, RegionDestination } from "@/data/destinations";
+import { useLanguage } from "@/context/LanguageContext";
+import { apiFetch } from "@/lib/api";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight, ArrowRight, MapPin, Compass } from "lucide-react";
+
+const regionHeroImages: Record<string, string> = {
+  indonesia: "https://images.unsplash.com/photo-1501179691627-eeaa65ea017c?q=80&w=2000",
+  thailand: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2000",
+  tailen: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2000",
+  vietnam: "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=2000",
+  korea: "https://images.unsplash.com/photo-1517154421773-0529f29ea451?q=80&w=2000",
+  japan: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2000",
+  china: "https://images.unsplash.com/photo-1547989453-11e67ffb3885?q=80&w=2000",
+  hongkong: "https://images.unsplash.com/photo-1506970845246-18f21d533b20?q=80&w=2000",
+  swiss: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?q=80&w=2000",
+  switzerland: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?q=80&w=2000",
+  india: "https://images.unsplash.com/photo-1564507592333-c60657eea523?q=80&w=2000",
+  others: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=2000",
+};
+
+const defaultFeaturedImage = "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=2000";
+
+export function DestinationsClient() {
+  const { t, locale } = useLanguage();
+  const [regions, setRegions] = useState<RegionDestination[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
+
+  const isIndo = locale === "id";
+
+  useEffect(() => {
+    async function loadRegions() {
+      setIsLoading(true);
+      const fallbacks = localizedRegions[locale === "en" ? "en" : "id"] || localizedRegions.id;
+      
+      try {
+        const data = await apiFetch<any[]>(`/destinations?locale=${locale}`).catch(() => null);
+        if (data && Array.isArray(data) && data.length > 0) {
+          const mapped: RegionDestination[] = data.map((r) => {
+            let gradient = r.featuredImageGradient || "from-[#E0F2FE] to-[#7DD3FC]";
+            let image = "";
+            if (gradient.includes("||")) {
+              const parts = gradient.split("||");
+              gradient = parts[0];
+              image = parts[1];
+            }
+
+            const subDestinations = (r.subDestinations || []).map((s: any) => {
+              let subName = s.name || s.nameId || s.nameEn || "";
+              if (subName.includes("||")) {
+                subName = subName.split("||")[0];
+              }
+              return {
+                name: subName,
+                slug: s.slug
+              };
+            });
+
+            return {
+              id: r.id || r.key || r.slug,
+              name: r.name ? r.name.split("||")[0] : r.slug,
+              slug: r.slug,
+              subtitle: r.subtitle || "",
+              featuredImageGradient: gradient,
+              image: image || regionHeroImages[r.slug?.toLowerCase()] || regionHeroImages[r.key?.toLowerCase()] || defaultFeaturedImage,
+              subDestinations
+            };
+          });
+          setRegions(mapped);
+        } else {
+          // Use fallback localized regions if API returns empty
+          const mappedFallbacks = fallbacks.map(f => ({
+            ...f,
+            image: f.image || regionHeroImages[f.slug?.toLowerCase()] || defaultFeaturedImage
+          }));
+          setRegions(mappedFallbacks);
+        }
+      } catch (err) {
+        console.error("DestinationsClient: Failed to load regions", err);
+        const mappedFallbacks = fallbacks.map(f => ({
+          ...f,
+          image: f.image || regionHeroImages[f.slug?.toLowerCase()] || defaultFeaturedImage
+        }));
+        setRegions(mappedFallbacks);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadRegions();
+  }, [locale]);
+
+  // Pagination Calculations
+  const totalPages = Math.max(1, Math.ceil(regions.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentRegions = regions.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 300, behavior: "smooth" });
+    }
+  };
+
+  return (
+    <div className="bg-white text-slate-800 min-h-screen font-sans flex flex-col justify-between selection:bg-[#0284C7] selection:text-white">
+      <Header />
+
+      <main className="pt-32 pb-24 flex-1">
+        {/* Hero Section */}
+        <section className="max-w-7xl mx-auto px-6 text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0284C7]/10 text-[#0284C7] text-xs font-mono font-semibold uppercase tracking-[0.2em] mb-4">
+            <Compass size={14} />
+            <span>{isIndo ? "Jelajahi Dunia Bersama Kami" : "Explore The World With Us"}</span>
+          </div>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-[#0F2C59] tracking-tight mb-6 font-bold">
+            {isIndo ? "DESTINASI WISATA PILIHAN" : "CURATED DESTINATIONS"}
+          </h1>
+          <p className="font-sans text-slate-600 text-base md:text-lg max-w-2xl mx-auto font-light leading-relaxed">
+            {isIndo 
+              ? "Temukan keindahan tak terbatas dari berbagai belahan nusantara hingga destinasi internasional impian Anda." 
+              : "Discover infinite beauty from exotic archipelago gems to your dream international getaways."}
+          </p>
+        </section>
+
+        {/* Content Container */}
+        <section className="max-w-7xl mx-auto px-6">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-20 space-y-4">
+              <div className="w-10 h-10 border-4 border-[#0284C7] border-t-transparent rounded-full animate-spin" />
+              <p className="font-mono text-xs text-slate-500 uppercase tracking-widest">
+                {isIndo ? "Memuat Destinasi..." : "Loading Destinations..."}
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* 3-Column Responsive Grid */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentPage}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4 }}
+                  className="grid grid-cols-1 md:grid-cols-3 gap-8"
+                >
+                  {currentRegions.map((region) => (
+                    <div
+                      key={region.id}
+                      className="group bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col justify-between"
+                    >
+                      {/* Image Thumbnail Header */}
+                      <div className="relative h-64 overflow-hidden bg-slate-100">
+                        <img
+                          src={region.image || defaultFeaturedImage}
+                          alt={region.name}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                        
+                        {/* Sub-destinations Badge */}
+                        {region.subDestinations && region.subDestinations.length > 0 && (
+                          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full border border-white/40 shadow-sm flex items-center gap-1.5">
+                            <MapPin size={12} className="text-[#0284C7]" />
+                            <span className="font-mono text-[10px] font-bold text-slate-800 uppercase tracking-wider">
+                              {region.subDestinations.length} {isIndo ? "Lokasi" : "Spots"}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="absolute bottom-4 left-6 right-6">
+                          <h2 className="text-2xl md:text-3xl font-serif font-bold text-white tracking-wide uppercase drop-shadow-md">
+                            {region.name}
+                          </h2>
+                        </div>
+                      </div>
+
+                      {/* Card Body */}
+                      <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                        <p className="text-slate-600 text-xs md:text-sm font-normal line-clamp-3 leading-relaxed">
+                          {region.subtitle}
+                        </p>
+
+                        {/* Sub-destinations Pills */}
+                        {region.subDestinations && region.subDestinations.length > 0 && (
+                          <div className="space-y-2 pt-2 border-t border-slate-100">
+                            <span className="font-mono text-[9px] uppercase tracking-wider text-slate-400 font-bold block">
+                              {isIndo ? "Sorotan Destinasi:" : "Destination Highlights:"}
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {region.subDestinations.slice(0, 4).map((sub, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-2.5 py-1 bg-slate-50 border border-slate-200/80 rounded-lg text-[10px] font-sans text-slate-700 font-medium"
+                                >
+                                  {sub.name}
+                                </span>
+                              ))}
+                              {region.subDestinations.length > 4 && (
+                                <span className="px-2 py-1 text-[10px] font-mono text-slate-400 font-bold">
+                                  +{region.subDestinations.length - 4}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Card CTA Link */}
+                        <div className="pt-4 border-t border-slate-100">
+                          <Link
+                            href={`/destinations/${region.slug}`}
+                            className="inline-flex items-center justify-between w-full px-4 py-3 rounded-2xl bg-slate-50 hover:bg-[#0284C7] text-slate-700 hover:text-white font-mono text-xs uppercase tracking-wider font-bold transition-all group/btn"
+                          >
+                            <span>{isIndo ? "Jelajahi Perjalanan" : "Explore Journeys"}</span>
+                            <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Sleek Pagination Bar */}
+              {totalPages > 1 && (
+                <div className="mt-16 pt-8 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  {/* Item counter */}
+                  <span className="font-mono text-xs text-slate-500 font-medium">
+                    {isIndo 
+                      ? `Menampilkan ${startIndex + 1}–${Math.min(startIndex + itemsPerPage, regions.length)} dari ${regions.length} Destinasi`
+                      : `Showing ${startIndex + 1}–${Math.min(startIndex + itemsPerPage, regions.length)} of ${regions.length} Destinations`}
+                  </span>
+
+                  {/* Page Controls */}
+                  <div className="flex items-center gap-2">
+                    {/* Previous Button */}
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                      title={isIndo ? "Sebelumnya" : "Previous"}
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center gap-1.5">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`w-9 h-9 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
+                            pageNum === currentPage
+                              ? "bg-[#0284C7] text-white shadow-md shadow-[#0284C7]/20"
+                              : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Next Button */}
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                      title={isIndo ? "Selanjutnya" : "Next"}
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}

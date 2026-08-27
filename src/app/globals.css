@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FFFFFF; /* Bright white primary background */
+  --foreground: #0F2C59; /* Deep ocean navy text for contrast */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ivory: #F4FAFF; /* Very soft, airy sky-white tint */
+  --color-charcoal: #0F2C59; /* Deep navy/charcoal text color for rich contrast */
+  --color-earth: #38BDF8; /* Bright soft sky blue (accent/highlight) */
+  --color-earth-dark: #0284C7; /* Darker sky blue */
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .image-texture {
+    background-color: transparent;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E");
+  }
+}
