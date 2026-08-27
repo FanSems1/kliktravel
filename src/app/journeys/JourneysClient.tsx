@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { ListingFilter } from "@/components/journeys/ListingFilter";
 import { JourneyCard } from "@/components/journeys/JourneyCard";
 import { localizedJourneys } from "@/data/journeys";
@@ -19,7 +20,13 @@ export function JourneysClient() {
       try {
         const data = await apiFetch<any[]>("/admin/journeys").catch(() => []);
         if (data && Array.isArray(data) && data.length > 0) {
-          const filtered = data.filter((item: any) => item.isPublished !== false && item.status !== "Draft" && item.status !== "draft");
+          const filtered = data.filter((item: any) => {
+            const statusLower = (item.status || "").toLowerCase();
+            if (statusLower) {
+              return statusLower !== "draft";
+            }
+            return item.isPublished !== false;
+          });
           const formatted = filtered.map((item: any) => {
             const content = locale === "id" ? (item.contentId || item.contentID) : (item.contentEn || item.contentEN);
             const fallbackContent = item.contentId || item.contentID || item.contentEn || item.contentEN || {};
@@ -52,7 +59,7 @@ export function JourneysClient() {
               image: item.image || "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=1200",
               introHeading: activeContent.introHeading || "",
               introDescription: activeContent.introDescription || "",
-              isPublished: item.isPublished !== false,
+              isPublished: true,
             };
           });
           setJourneys(formatted);
@@ -196,14 +203,17 @@ export function JourneysClient() {
         {/* Load More Continuation */}
         {!isLoading && filteredJourneys.length > 0 && (
           <div className="mt-32 pt-16 border-t border-charcoal/10 flex justify-center">
-            <button className="group flex flex-col items-center space-y-4 text-charcoal hover:text-[#0284C7] transition-colors duration-300">
+            <Link 
+              href="/destinations" 
+              className="group flex flex-col items-center space-y-4 text-charcoal hover:text-[#0284C7] transition-colors duration-300"
+            >
               <span className="font-mono text-[10px] tracking-[0.3em] uppercase font-semibold">
                 {t("journeys_load_more")}
               </span>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="group-hover:translate-y-2 transition-transform duration-300">
                 <path d="M12 5V19M12 19L5 12M12 19L19 12" />
               </svg>
-            </button>
+            </Link>
           </div>
         )}
       </section>

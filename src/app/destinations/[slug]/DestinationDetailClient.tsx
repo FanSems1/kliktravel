@@ -59,13 +59,48 @@ interface DestinationDetailClientProps {
   slug: string;
 }
 
+const parseMonthsFromDateStr = (dateStr: string, isIndo: boolean): string[] => {
+  if (!dateStr) return [];
+  const lower = dateStr.toLowerCase();
+  const months: string[] = [];
+
+  const monthDefinitions = [
+    { keys: ["jan", "januari", "january"], id: "Januari", en: "January" },
+    { keys: ["feb", "februari", "february"], id: "Februari", en: "February" },
+    { keys: ["mar", "maret", "march"], id: "Maret", en: "March" },
+    { keys: ["apr", "april"], id: "April", en: "April" },
+    { keys: ["mei", "may"], id: "Mei", en: "May" },
+    { keys: ["jun", "juni", "june"], id: "Juni", en: "June" },
+    { keys: ["jul", "juli", "july"], id: "Juli", en: "July" },
+    { keys: ["agu", "aug", "agustus", "august"], id: "Agustus", en: "August" },
+    { keys: ["sep", "september"], id: "September", en: "September" },
+    { keys: ["okt", "oct", "oktober", "october"], id: "Oktober", en: "October" },
+    { keys: ["nov", "november"], id: "November", en: "November" },
+    { keys: ["des", "dec", "desember", "december"], id: "Desember", en: "December" },
+  ];
+
+  const yearMatch = dateStr.match(/\b(20\d{2})\b/);
+  const yearSuffix = yearMatch ? ` ${yearMatch[1]}` : "";
+
+  monthDefinitions.forEach((m) => {
+    const hasMatch = m.keys.some((key) => lower.includes(key));
+    if (hasMatch) {
+      const label = isIndo ? m.id : m.en;
+      months.push(`${label}${yearSuffix}`);
+    }
+  });
+
+  return months;
+};
+
 export function DestinationDetailClient({ slug }: DestinationDetailClientProps) {
   const { locale } = useLanguage();
   const [region, setRegion] = useState<RegionDestination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [openTripsMap, setOpenTripsMap] = useState<Record<string, { status?: string; price?: string; duration?: string; image?: string }>>({});
+  const [openTripsMap, setOpenTripsMap] = useState<Record<string, { status?: string; price?: string; duration?: string; image?: string; departureDate?: string }>>({});
   const [minPriceInput, setMinPriceInput] = useState<string>("");
   const [maxPriceInput, setMaxPriceInput] = useState<string>("");
+  const [selectedMonthFilter, setSelectedMonthFilter] = useState<string>("");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const formatRupiah = (value: string): string => {
@@ -88,9 +123,50 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
     return isNaN(val) ? null : val;
   };
 
+  const availableMonths = React.useMemo(() => {
+    if (!region) return [];
+    const monthsSet = new Set<string>();
+    region.subDestinations.forEach((sub) => {
+      const otInfo = openTripsMap[sub.slug.toLowerCase()];
+      if (otInfo?.departureDate) {
+        const parsed = parseMonthsFromDateStr(otInfo.departureDate, locale === "id");
+        parsed.forEach((m) => monthsSet.add(m));
+      }
+    });
+    return Array.from(monthsSet).sort((a, b) => {
+      const getMonthVal = (str: string) => {
+        const lower = str.toLowerCase();
+        if (lower.includes("jan")) return 1;
+        if (lower.includes("feb")) return 2;
+        if (lower.includes("mar")) return 3;
+        if (lower.includes("apr")) return 4;
+        if (lower.includes("mei") || lower.includes("may")) return 5;
+        if (lower.includes("jun")) return 6;
+        if (lower.includes("jul")) return 7;
+        if (lower.includes("agu") || lower.includes("aug")) return 8;
+        if (lower.includes("sep")) return 9;
+        if (lower.includes("okt") || lower.includes("oct")) return 10;
+        if (lower.includes("nov")) return 11;
+        if (lower.includes("des") || lower.includes("dec")) return 12;
+        return 99;
+      };
+      const yearA = parseInt(a.match(/\b(20\d{2})\b/)?.[1] || "0", 10);
+      const yearB = parseInt(b.match(/\b(20\d{2})\b/)?.[1] || "0", 10);
+      if (yearA !== yearB) return yearA - yearB;
+      return getMonthVal(a) - getMonthVal(b);
+    });
+  }, [region, openTripsMap, locale]);
+
   const filteredSubDestinations = region
     ? region.subDestinations.filter((sub) => {
         const otInfo = openTripsMap[sub.slug.toLowerCase()];
+        
+        // Filter out if open trip status is "off" or "OFF" or if the subdestination has status === "off" or isActive === false
+        const otStatus = (otInfo?.status || "").toLowerCase();
+        if (otStatus === "off" || (sub as any).status === "off" || (sub as any).isActive === false) {
+          return false;
+        }
+
         const priceNum = parseNumericPrice(otInfo?.price);
 
         if (minPriceInput) {
@@ -107,6 +183,14 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
           }
         }
 
+        if (selectedMonthFilter) {
+          if (!otInfo?.departureDate) return false;
+          const parsed = parseMonthsFromDateStr(otInfo.departureDate, locale === "id");
+          if (!parsed.includes(selectedMonthFilter)) {
+            return false;
+          }
+        }
+
         return true;
       })
     : [];
@@ -114,7 +198,29 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
   useEffect(() => {
     async function loadRegion() {
       try {
-        const data = await apiFetch<any>(`/destinations/${slug}?locale=${locale}`).catch(() => null);
+        // 1. Fetch admin destinations to check isActive and status
+        const adminDestinations = await apiFetch<any[]>("/admin/destinations").catch(() => null);
+        let adminDest: any = null;
+        if (adminDestinations && Array.isArray(adminDestinations)) {
+          adminDest = adminDestinations.find((d: any) => d.slug === slug || d.key === slug);
+        }
+
+        // If the entire region has status "off" or isActive === false
+        if (adminDest && (adminDest.status === "off" || adminDest.isActive === false)) {
+          setRegion({
+            id: adminDest.id || adminDest.key || slug,
+            name: adminDest.nameId || adminDest.name || slug,
+            slug: adminDest.slug || slug,
+            subtitle: adminDest.subtitleId || "",
+            featuredImageGradient: adminDest.featuredImageGradient || "from-[#E0F2FE] to-[#7DD3FC]",
+            image: "",
+            subDestinations: [] // Do not show subdestinations if status is off!
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        const data = await apiFetch<any>(`/destinations/${slug}?locale=${locale}`).catch(() => null) || adminDest;
         if (data) {
           let gradient = data.featuredImageGradient || "from-[#E0F2FE] to-[#7DD3FC]";
           let image = "";
@@ -124,34 +230,60 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
             image = parts[1];
           }
 
-          const subDestinations = (data.subDestinations || []).map((s: any) => {
-            let subName = s.name || s.nameId || s.nameEn || "";
-            let subImage = "";
-            if (subName.includes("||")) {
-              const parts = subName.split("||");
-              subName = parts[0];
-              subImage = parts[1];
-            }
-            return {
-              name: subName,
-              slug: s.slug,
-              image: subImage
-            };
-          });
+          const rawSubs = data.subDestinations || [];
+          const subDestinations = rawSubs
+            .filter((s: any) => s.status !== "off" && s.isActive !== false)
+            .map((s: any) => {
+              let subName = "";
+              let subImage = "";
+              
+              const nameFields = [s.name, s.nameId, s.nameEn].filter(Boolean);
+              const fieldWithImage = nameFields.find(n => n.includes("||"));
+              if (fieldWithImage) {
+                const parts = fieldWithImage.split("||");
+                subImage = parts[1];
+              }
 
-          // Fetch open trips to match seat capacity
-          const openTrips = await apiFetch<any[]>(`/open-trips?locale=${locale}`).catch(() => []);
+              const localeName = locale === "en" ? (s.nameEn || s.nameId || s.name || "") : (s.nameId || s.nameEn || s.name || "");
+              subName = localeName.split("||")[0].trim();
+
+              return {
+                name: subName,
+                slug: s.slug,
+                image: subImage || s.image || "",
+                status: s.status,
+                isActive: s.isActive
+              };
+            });
+
+          // Fetch open trips from admin to get all statuses (Available, Closed, Draft, off)
+          const openTrips = await apiFetch<any[]>("/admin/open-trips").catch(() => null) || 
+                            await apiFetch<any[]>(`/open-trips?locale=${locale}`).catch(() => []);
+
           if (Array.isArray(openTrips)) {
             const map: Record<string, any> = {};
             openTrips.forEach((ot) => {
-              const c = locale === "en" ? ot.contentEn : ot.contentId;
-              const otSubSlug = (c?.subSlug || ot.subSlug || ot.slug || "").toLowerCase();
+              const cId = ot.contentId || ot.contentID || {};
+              const cEn = ot.contentEn || ot.contentEN || {};
+              const c = locale === "en" ? (Object.keys(cEn).length > 0 ? cEn : cId) : (Object.keys(cId).length > 0 ? cId : cEn);
+              
+              const otSubSlug = (ot.subSlug || c?.subSlug || cId?.subSlug || cEn?.subSlug || ot.slug || "").toLowerCase();
+              
+              const rawStatus = ot.status || c?.status || "Available";
+              const mappedStatus = rawStatus === "active" ? "Available" : rawStatus === "inactive" ? "Closed" : rawStatus === "draft" ? "Draft" : rawStatus;
+
+              const otPrice = c?.price || ot.price || cId?.price || cEn?.price || "";
+              const otDuration = c?.duration || ot.duration || cId?.duration || cEn?.duration || "";
+              const otImage = ot.featuredImage || ot.image || c?.featuredImage || c?.image || cId?.featuredImage || cEn?.featuredImage || "";
+              const otDate = ot.departureDate || ot.dates || ot.departureDates || c?.departureDate || c?.dates || "";
+
               if (otSubSlug) {
                 map[otSubSlug] = {
-                  status: c?.status || ot.status || "Available",
-                  price: c?.price || ot.price,
-                  duration: c?.duration || ot.duration,
-                  image: ot.featuredImage || ot.image || c?.featuredImage || c?.image,
+                  status: mappedStatus,
+                  price: otPrice,
+                  duration: otDuration,
+                  image: otImage,
+                  departureDate: otDate,
                 };
               }
             });
@@ -289,11 +421,38 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                 />
               </div>
 
-              {(minPriceInput || maxPriceInput) && (
+              {/* Date Filter Selector */}
+              <div className="hidden sm:block w-px h-6 bg-[#0F2C59]/15 mx-1" />
+
+              <span className="font-sans text-xs font-bold uppercase tracking-wider text-[#0F2C59] flex items-center gap-2 mr-1">
+                <Clock size={16} className="text-[#0284C7]" />
+                {locale === "id" ? "Filter Tanggal:" : "Filter Date:"}
+              </span>
+
+              <div className="relative">
+                <select
+                  value={selectedMonthFilter}
+                  onChange={(e) => setSelectedMonthFilter(e.target.value)}
+                  className="bg-white border border-[#0F2C59]/15 rounded-xl px-4 py-2.5 text-[#0F2C59] font-sans text-xs focus:outline-none focus:border-[#0284C7] focus:ring-1 focus:ring-[#0284C7] w-48 transition-all shadow-sm cursor-pointer appearance-none pr-8"
+                >
+                  <option value="">{locale === "id" ? "Semua Bulan / Tanggal" : "All Months / Dates"}</option>
+                  {availableMonths.map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-[#0F2C59]/60">
+                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                  </svg>
+                </div>
+              </div>
+
+              {(minPriceInput || maxPriceInput || selectedMonthFilter) && (
                 <button
                   onClick={() => {
                     setMinPriceInput("");
                     setMaxPriceInput("");
+                    setSelectedMonthFilter("");
                   }}
                   className="font-sans font-bold text-[11px] uppercase tracking-widest text-rose-600 hover:text-rose-700 transition-colors py-2.5 px-4 rounded-xl border border-rose-200 hover:bg-rose-50 cursor-pointer flex items-center justify-center shrink-0"
                 >
@@ -310,7 +469,7 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
           <div className="max-w-[1600px] mx-auto relative">
             
             {/* Left/Right Buttons */}
-            {filteredSubDestinations.length > 2 && (
+            {filteredSubDestinations.length > 3 && (
               <div className="absolute left-2 md:left-8 top-[35%] -translate-y-1/2 z-20 pointer-events-none w-full max-w-[1600px] flex justify-between px-2 md:px-0">
                 <button 
                   onClick={scrollLeft}
@@ -331,13 +490,14 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
               <div className="max-w-md mx-auto text-center py-16 px-6 bg-white border border-[#0F2C59]/10 rounded-3xl shadow-sm">
                 <p className="font-sans text-[#0F2C59]/60 text-sm mb-6 leading-relaxed">
                   {locale === "id"
-                    ? "Tidak ada paket tour yang sesuai dengan filter harga Anda."
-                    : "No tour packages found matching your price criteria."}
+                    ? "Tidak ada paket tour yang sesuai dengan filter Anda."
+                    : "No tour packages found matching your filter criteria."}
                 </p>
                 <button
                   onClick={() => {
                     setMinPriceInput("");
                     setMaxPriceInput("");
+                    setSelectedMonthFilter("");
                   }}
                   className="bg-[#0F2C59] hover:bg-[#0284C7] text-white font-sans text-xs uppercase tracking-widest font-bold py-3.5 px-8 rounded-full shadow-md transition-all cursor-pointer inline-block"
                 >
@@ -349,8 +509,8 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
               <div 
                 ref={scrollContainerRef}
                 className={
-                  filteredSubDestinations.length <= 2
-                    ? "flex flex-wrap justify-start gap-6 md:gap-8 pb-8 px-6 md:px-12 max-w-7xl mx-auto"
+                  filteredSubDestinations.length <= 3
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 pb-8 px-6 md:px-12 max-w-7xl mx-auto"
                     : "grid grid-rows-2 grid-flow-col auto-cols-[85vw] sm:auto-cols-[50vw] md:auto-cols-[35vw] lg:auto-cols-[25vw] overflow-x-auto gap-6 md:gap-8 pb-8 snap-x snap-mandatory scrollbar-none no-scrollbar scroll-smooth px-6 md:px-12 max-w-7xl mx-auto"
                 }
               >
@@ -369,7 +529,7 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                       href={`/destinations/${region.slug}/${sub.slug}`}
                       key={sub.slug || idx} 
                       className={`snap-start shrink-0 flex flex-col group cursor-pointer ${
-                        filteredSubDestinations.length <= 2 ? "w-full max-w-sm" : "w-full"
+                        filteredSubDestinations.length <= 3 ? "w-full max-w-sm mx-auto" : "w-full"
                       }`}
                     >
                       {/* Card Image */}
@@ -387,16 +547,18 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
 
                         {otInfo?.status && (
                           <div className={`absolute top-3 right-3 backdrop-blur-md border text-[10px] font-mono font-bold uppercase px-2.5 py-1 rounded-lg shadow-md flex items-center gap-1.5 ${
-                            otInfo.status === "Closed" || otInfo.status === "inactive"
+                            otInfo.status === "Closed" || otInfo.status === "inactive" || otInfo.status === "FULL" || otInfo.status === "Draft" || otInfo.status === "draft"
                               ? "bg-rose-950/80 text-rose-200 border-rose-500/30"
-                              : otInfo.status === "Draft" || otInfo.status === "draft"
-                              ? "bg-slate-900/80 text-slate-300 border-slate-700"
                               : "bg-emerald-950/80 text-emerald-300 border-emerald-500/30"
                           }`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${
-                              otInfo.status === "Closed" || otInfo.status === "inactive" ? "bg-rose-400" : "bg-emerald-400"
+                              otInfo.status === "Closed" || otInfo.status === "inactive" || otInfo.status === "FULL" || otInfo.status === "Draft" || otInfo.status === "draft" ? "bg-rose-400" : "bg-emerald-400"
                             }`} />
-                            <span>{otInfo.status.toUpperCase()}</span>
+                            <span>
+                              {otInfo.status === "Closed" || otInfo.status === "inactive" || otInfo.status === "FULL" || otInfo.status === "Draft" || otInfo.status === "draft"
+                                ? "FULL"
+                                : otInfo.status.toUpperCase()}
+                            </span>
                           </div>
                         )}
                       </div>
@@ -418,10 +580,27 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                         </p>
                       )}
                       
-                      <div className="flex items-center gap-2 text-[#0F2C59]/80 font-sans text-xs md:text-sm">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#0284C7]" />
-                        <span>{locale === "id" ? "Tersedia beberapa tanggal keberangkatan" : "Multiple departure dates available"}</span>
-                      </div>
+                      {(() => {
+                        const isFull = otInfo?.status === "Closed" || otInfo?.status === "inactive" || otInfo?.status === "FULL" || otInfo?.status === "Draft" || otInfo?.status === "draft";
+                        return (
+                          <div className="flex flex-col gap-1.5 text-[#0F2C59]/80 font-sans text-xs md:text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className={`w-1.5 h-1.5 rounded-full ${isFull ? "bg-rose-500" : "bg-[#0284C7]"}`} />
+                              <span>
+                                {isFull
+                                  ? (locale === "id" ? "Pendaftaran Ditutup / Kuota Penuh" : "Fully Booked / Registration Closed")
+                                  : (locale === "id" ? "Tersedia beberapa tanggal keberangkatan" : "Multiple departure dates available")}
+                              </span>
+                            </div>
+                            {otInfo?.departureDate && (
+                              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono pl-3.5">
+                                <Clock size={13} className="text-[#0284C7] shrink-0" />
+                                <span className="truncate">{otInfo.departureDate}</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </Link>
                   );
                 })}

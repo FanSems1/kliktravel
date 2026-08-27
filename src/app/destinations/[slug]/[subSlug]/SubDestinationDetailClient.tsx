@@ -144,6 +144,7 @@ interface SubDestinationDetailClientProps {
 export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDetailClientProps) {
   const { t, locale } = useLanguage();
   const [activeDay, setActiveDay] = useState(1);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Loaded regions & tour detail states
   const [activeRegions, setActiveRegions] = useState<RegionDestination[]>([]);
@@ -165,212 +166,260 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
   const tourDetail = allMatchingOpenTrips[selectedDateIdx] || allMatchingOpenTrips[0] || null;
 
+  // Format hyphenated name to Title Case with spaces if it looks like a slug
+  const displayTourName = (() => {
+    if (!tourDetail) return "";
+    const name = tourDetail.name || "";
+    if (name.includes("-") && !name.includes(" ")) {
+      return name
+        .split("-")
+        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
+    }
+    return name;
+  })();
+
   useEffect(() => {
     async function loadData() {
-      // 1. Load active regions from API or localStorage or fallback
-      let currentRegions: RegionDestination[] = localizedRegions[locale] || [];
+      setIsLoading(true);
       try {
-        const data = await apiFetch<any[]>(`/destinations?locale=${locale}`).catch(() => null);
-        if (data && Array.isArray(data) && data.length > 0) {
-          currentRegions = data.map((r) => {
-            let gradient = r.featuredImageGradient || "from-[#E0F2FE] to-[#7DD3FC]";
-            let image = "";
-            if (gradient.includes("||")) {
-              const parts = gradient.split("||");
-              gradient = parts[0];
-              image = parts[1];
-            }
-
-            const subDestinations = (r.subDestinations || []).map((s: any) => {
-              let subName = s.name || s.nameId || s.nameEn || "";
-              let subImage = "";
-              if (subName.includes("||")) {
-                const parts = subName.split("||");
-                subName = parts[0];
-                subImage = parts[1];
+        // 1. Load active regions from API or localStorage or fallback
+        let currentRegions: RegionDestination[] = localizedRegions[locale] || [];
+        try {
+          const data = await apiFetch<any[]>(`/destinations?locale=${locale}`).catch(() => null);
+          if (data && Array.isArray(data) && data.length > 0) {
+            currentRegions = data.map((r) => {
+              let gradient = r.featuredImageGradient || "from-[#E0F2FE] to-[#7DD3FC]";
+              let image = "";
+              if (gradient.includes("||")) {
+                const parts = gradient.split("||");
+                gradient = parts[0];
+                image = parts[1];
               }
+
+              const subDestinations = (r.subDestinations || []).map((s: any) => {
+                let subName = s.name || s.nameId || s.nameEn || "";
+                let subImage = "";
+                if (subName.includes("||")) {
+                  const parts = subName.split("||");
+                  subName = parts[0];
+                  subImage = parts[1];
+                }
+                return {
+                  name: subName,
+                  slug: s.slug,
+                  image: subImage
+                };
+              });
+
               return {
-                name: subName,
-                slug: s.slug,
-                image: subImage
+                id: r.id || r.key || r.slug,
+                name: r.name ? r.name.split("||")[0] : r.slug,
+                slug: r.slug,
+                subtitle: r.subtitle || "",
+                featuredImageGradient: gradient,
+                image: image || "",
+                subDestinations
               };
             });
-
-            return {
-              id: r.id || r.key || r.slug,
-              name: r.name ? r.name.split("||")[0] : r.slug,
-              slug: r.slug,
-              subtitle: r.subtitle || "",
-              featuredImageGradient: gradient,
-              image: image || "",
-              subDestinations
-            };
-          });
-        } else {
-          const saved = localStorage.getItem("klik_admin_destinations");
-          if (saved) {
-            currentRegions = JSON.parse(saved);
-          }
-        }
-      } catch (e) {
-        console.error(e);
-      }
-      setActiveRegions(currentRegions);
-
-      const region = currentRegions.find((r) => r.slug === slug);
-      const subDestination = region?.subDestinations.find((s) => s.slug === subSlug);
-
-      // 2. Load tour details (all open-trips matching current destination)
-      let matchingPackages: TourPackageDetail[] = [];
-      let allOpenTripsList: any[] = [];
-      try {
-        const openTrips = await apiFetch<any[]>(`/open-trips?locale=${locale}`).catch(() => null);
-        if (openTrips && Array.isArray(openTrips)) {
-          allOpenTripsList = openTrips;
-          const matches = openTrips.filter(p => p.subSlug === subSlug || p.slug === subSlug);
-          if (matches.length > 0) {
-            matchingPackages = matches.map(match => ({
-              id: match.id,
-              slug: match.slug,
-              regionSlug: match.regionSlug,
-              subSlug: match.subSlug,
-              name: match.name,
-              tagline: match.tagline,
-              duration: match.duration,
-              price: match.price,
-              departureDate: match.departureDate || match.dates || "",
-              departureDateFrom: match.departureDateFrom || "",
-              departureDateTo: match.departureDateTo || "",
-              hotelRating: match.hotelRating || match.hotel || (match.itinerary && match.itinerary[0]?.hotel) || "",
-              featuredImage: match.featuredImage || match.image || subDestination?.image || subDestinationImages[subSlug] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200",
-              highlights: match.highlights || [],
-              inclusions: match.inclusions || [],
-              exclusions: match.exclusions || [],
-              itinerary: (match.itinerary || []).map((d: any) => ({
-                day: d.day,
-                title: d.title,
-                activities: d.activities || [],
-                description: d.description,
-                hotel: d.hotel,
-                image: d.image,
-                images: d.images
-              }))
-            }));
-          }
-        }
-
-        if (matchingPackages.length === 0) {
-          const savedTrips = localStorage.getItem("klik_admin_open_trips");
-          if (savedTrips) {
-            const parsed: any[] = JSON.parse(savedTrips);
-            allOpenTripsList = parsed;
-            const matches = parsed.filter(p => p.subSlug === subSlug || p.slug === subSlug);
-            if (matches.length > 0) {
-              matchingPackages = matches.map(match => ({
-                id: match.id || match.slug,
-                slug: match.slug,
-                regionSlug: match.regionSlug,
-                subSlug: match.subSlug,
-                name: locale === "id" ? match.name : (match.nameEN || match.name),
-                tagline: locale === "id" ? match.tagline : (match.taglineEN || match.tagline),
-                duration: locale === "id" ? match.duration : (match.durationEN || match.duration),
-                price: locale === "id" ? match.price : (match.priceEN || match.price),
-                departureDate: (locale === "id" ? match.departureDate : (match.departureDateEN || match.departureDate)) || match.dates || "",
-                departureDateFrom: match.departureDateFrom || "",
-                departureDateTo: match.departureDateTo || "",
-                hotelRating: (locale === "id" ? match.hotelRating : (match.hotelRatingEN || match.hotelRating)) || match.hotel || (match.itinerary && match.itinerary[0]?.hotel) || "",
-                featuredImage: match.featuredImage || match.image || subDestination?.image || subDestinationImages[subSlug] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200",
-                highlights: (locale === "id" ? match.highlights : (match.highlightsEN || match.highlights)) || [],
-                inclusions: (locale === "id" ? match.inclusions : (match.inclusionsEN || match.inclusions)) || [],
-                exclusions: (locale === "id" ? match.exclusions : (match.exclusionsEN || match.exclusions)) || [],
-                itinerary: (match.itinerary || []).map((d: any) => ({
-                  day: d.day,
-                  title: locale === "id" ? d.title : (d.titleEN || d.title),
-                  activities: (locale === "id" ? d.activities : (d.activitiesEN || d.activities)) || [],
-                  description: locale === "id" ? d.description : (d.descriptionEN || d.description),
-                  hotel: locale === "id" ? d.hotel : (d.hotelEN || d.hotel),
-                  image: d.image,
-                  images: d.images
-                }))
-              }));
+          } else {
+            const saved = localStorage.getItem("klik_admin_destinations");
+            if (saved) {
+              currentRegions = JSON.parse(saved);
             }
           }
+        } catch (e) {
+          console.error(e);
         }
+        setActiveRegions(currentRegions);
 
-        if (matchingPackages.length === 0) {
-          const dict = localizedTourPackages[locale] || {};
-          const staticPackages = Object.values(dict);
-          const matches = staticPackages.filter((p: TourPackageDetail) => p.subSlug === subSlug || p.slug === subSlug);
-          if (matches.length > 0) {
-            matchingPackages = matches;
-          } else if (dict[subSlug] || dict[slug]) {
-            const fallbackPkg = dict[subSlug] || dict[slug];
-            if (fallbackPkg) matchingPackages = [fallbackPkg];
+        const region = currentRegions.find((r) => r.slug === slug);
+        const subDestination = region?.subDestinations.find((s) => s.slug === subSlug);
+
+        // 2. Load tour details (all open-trips matching current destination)
+        let matchingPackages: TourPackageDetail[] = [];
+        let allOpenTripsList: any[] = [];
+        try {
+          const openTrips = await apiFetch<any[]>("/admin/open-trips").catch(() => null) ||
+                            await apiFetch<any[]>(`/open-trips?locale=${locale}`).catch(() => null);
+
+          if (openTrips && Array.isArray(openTrips)) {
+            allOpenTripsList = openTrips;
+            const matches = openTrips.filter(p => {
+              const cId = p.contentId || p.contentID || {};
+              const cEn = p.contentEn || p.contentEN || {};
+              const pSubSlug = (p.subSlug || cId.subSlug || cEn.subSlug || p.slug || "").toLowerCase();
+              const targetSubSlug = subSlug.toLowerCase();
+              return pSubSlug === targetSubSlug || p.slug?.toLowerCase() === targetSubSlug;
+            });
+
+            if (matches.length > 0) {
+              matchingPackages = matches.map(match => {
+                const cId = match.contentId || match.contentID || {};
+                const cEn = match.contentEn || match.contentEN || {};
+                const active = locale === "en" ? (Object.keys(cEn).length > 0 ? cEn : (Object.keys(cId).length > 0 ? cId : match)) : (Object.keys(cId).length > 0 ? cId : match);
+                const itinSource = active.itinerary || match.itinerary || [];
+
+                return {
+                  id: match.id,
+                  slug: match.slug,
+                  regionSlug: match.regionSlug || active.regionSlug || "",
+                  subSlug: match.subSlug || active.subSlug || "",
+                  name: locale === "id" ? (active.name || match.name) : (active.nameEN || active.name || match.nameEN || match.name),
+                  tagline: locale === "id" ? (active.tagline || match.tagline) : (active.taglineEN || active.tagline || match.taglineEN || match.tagline),
+                  duration: locale === "id" ? (active.duration || match.duration) : (active.durationEN || active.duration || match.durationEN || match.duration),
+                  price: locale === "id" ? (active.price || match.price) : (active.priceEN || active.price || match.priceEN || match.price),
+                  departureDate: active.departureDate || match.departureDate || match.dates || "",
+                  departureDateFrom: match.departureDateFrom || "",
+                  departureDateTo: match.departureDateTo || "",
+                  hotelRating: (locale === "id" ? (active.hotelRating || match.hotelRating) : (active.hotelRatingEN || active.hotelRating || match.hotelRatingEN || match.hotelRating)) || match.hotel || (itinSource && itinSource[0]?.hotel) || "",
+                  featuredImage: match.featuredImage || match.image || active.featuredImage || active.image || subDestination?.image || subDestinationImages[subSlug] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200",
+                  highlights: (locale === "id" ? (active.highlights || match.highlights) : (active.highlightsEN || active.highlights || match.highlightsEN || match.highlights)) || [],
+                  inclusions: (locale === "id" ? (active.inclusions || match.inclusions) : (active.inclusionsEN || active.inclusions || match.inclusionsEN || match.inclusions)) || [],
+                  exclusions: (locale === "id" ? (active.exclusions || match.exclusions) : (active.exclusionsEN || active.exclusions || match.exclusionsEN || match.exclusions)) || [],
+                  schedules: match.schedules || active.schedules || [],
+                  batches: match.batches || active.batches || [],
+                  itinerary: (itinSource || []).map((d: any) => ({
+                    day: d.day,
+                    title: locale === "id" ? d.title : (d.titleEN || d.titleEn || d.title),
+                    titleEN: d.titleEN || d.titleEn || d.title,
+                    activities: (locale === "id" ? d.activities : (d.activitiesEN || d.activitiesEn || d.activities)) || [],
+                    activitiesEN: d.activitiesEN || d.activitiesEn || d.activities,
+                    description: locale === "id" ? d.description : (d.descriptionEN || d.descriptionEn || d.description),
+                    descriptionEN: d.descriptionEN || d.descriptionEn || d.description,
+                    hotel: locale === "id" ? d.hotel : (d.hotelEN || d.hotelEn || d.hotel),
+                    hotelEN: d.hotelEN || d.hotelEn || d.hotel,
+                    image: d.image,
+                    images: d.images
+                  }))
+                };
+              });
+            }
           }
+
+          if (matchingPackages.length === 0) {
+            const savedTrips = localStorage.getItem("klik_admin_open_trips");
+            if (savedTrips) {
+              const parsed: any[] = JSON.parse(savedTrips);
+              allOpenTripsList = parsed;
+              const matches = parsed.filter(p => {
+                const cId = p.contentId || p.contentID || {};
+                const cEn = p.contentEn || p.contentEN || {};
+                const pSubSlug = (p.subSlug || cId.subSlug || cEn.subSlug || p.slug || "").toLowerCase();
+                const targetSubSlug = subSlug.toLowerCase();
+                return pSubSlug === targetSubSlug || p.slug?.toLowerCase() === targetSubSlug;
+              });
+              if (matches.length > 0) {
+                matchingPackages = matches.map(match => ({
+                  id: match.id || match.slug,
+                  slug: match.slug,
+                  regionSlug: match.regionSlug,
+                  subSlug: match.subSlug,
+                  name: locale === "id" ? match.name : (match.nameEN || match.name),
+                  tagline: locale === "id" ? match.tagline : (match.taglineEN || match.tagline),
+                  duration: locale === "id" ? match.duration : (match.durationEN || match.duration),
+                  price: locale === "id" ? match.price : (match.priceEN || match.price),
+                  departureDate: (locale === "id" ? match.departureDate : (match.departureDateEN || match.departureDate)) || match.dates || "",
+                  departureDateFrom: match.departureDateFrom || "",
+                  departureDateTo: match.departureDateTo || "",
+                  schedules: match.schedules || [],
+                  batches: match.batches || [],
+                  hotelRating: (locale === "id" ? match.hotelRating : (match.hotelRatingEN || match.hotelRating)) || match.hotel || (match.itinerary && match.itinerary[0]?.hotel) || "",
+                  featuredImage: match.featuredImage || match.image || subDestination?.image || subDestinationImages[subSlug] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200",
+                  highlights: (locale === "id" ? match.highlights : (match.highlightsEN || match.highlights)) || [],
+                  inclusions: (locale === "id" ? match.inclusions : (match.inclusionsEN || match.inclusions)) || [],
+                  exclusions: (locale === "id" ? match.exclusions : (match.exclusionsEN || match.exclusions)) || [],
+                  itinerary: (match.itinerary || []).map((d: any) => ({
+                    day: d.day,
+                    title: locale === "id" ? d.title : (d.titleEN || d.title),
+                    activities: (locale === "id" ? d.activities : (d.activitiesEN || d.activities)) || [],
+                    description: locale === "id" ? d.description : (d.descriptionEN || d.description),
+                    hotel: locale === "id" ? d.hotel : (d.hotelEN || d.hotel),
+                    image: d.image,
+                    images: d.images
+                  }))
+                }));
+              }
+            }
+          }
+
+          if (matchingPackages.length === 0) {
+            const dict = localizedTourPackages[locale] || {};
+            const staticPackages = Object.values(dict);
+            const matches = staticPackages.filter((p: TourPackageDetail) => p.subSlug === subSlug || p.slug === subSlug);
+            if (matches.length > 0) {
+              matchingPackages = matches;
+            } else if (dict[subSlug] || dict[slug]) {
+              const fallbackPkg = dict[subSlug] || dict[slug];
+              if (fallbackPkg) matchingPackages = [fallbackPkg];
+            }
+          }
+        } catch (e) {
+          console.error(e);
         }
-      } catch (e) {
-        console.error(e);
+
+        setAllMatchingOpenTrips(matchingPackages);
+
+        // 4. Generate Featured Tours resolving dynamic images from open trips or keyword dictionary
+        const otherRegions = currentRegions.filter(r => r.slug !== slug);
+        const shuffledRegions = [...otherRegions].sort(() => 0.5 - Math.random());
+        const selectedRegions = shuffledRegions.slice(0, 3);
+        const tours = selectedRegions.map(r => {
+          const randomSub = r.subDestinations[Math.floor(Math.random() * r.subDestinations.length)];
+          const subSlugKey = randomSub?.slug || "bali";
+          
+          // Find dynamic open trip matching this subdestination or region
+          const matchingTrip = allOpenTripsList.find(p => p.subSlug === subSlugKey || p.slug === subSlugKey || p.regionSlug === r.slug);
+          
+          // Fallback keyword search
+          let keywordImage = "";
+          const combined = `${subSlugKey} ${r.slug} ${randomSub?.name || ""}`.toLowerCase();
+          if (combined.includes("hongkong") || combined.includes("hong-kong") || combined.includes("macau") || combined.includes("shenzhen")) {
+            keywordImage = "https://images.unsplash.com/photo-1506970845246-18f21d533b20?q=80&w=1200";
+          } else if (combined.includes("tokyo") || combined.includes("japan") || combined.includes("kyoto") || combined.includes("osaka")) {
+            keywordImage = "https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?q=80&w=1200";
+          } else if (combined.includes("seoul") || combined.includes("korea") || combined.includes("jeju")) {
+            keywordImage = "https://images.unsplash.com/photo-1538678235213-982eb4b7261a?q=80&w=1200";
+          } else if (combined.includes("bangkok") || combined.includes("thailand") || combined.includes("phuket")) {
+            keywordImage = "https://images.unsplash.com/photo-1508009603885-50cf7c579365?q=80&w=1200";
+          } else if (combined.includes("hanoi") || combined.includes("vietnam") || combined.includes("halong")) {
+            keywordImage = "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=1200";
+          } else if (combined.includes("beijing") || combined.includes("china") || combined.includes("shanghai")) {
+            keywordImage = "https://images.unsplash.com/photo-1543872084-c7bd3822856f?q=80&w=1200";
+          } else if (combined.includes("bali")) {
+            keywordImage = "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=1200";
+          } else if (combined.includes("bajo") || combined.includes("komodo")) {
+            keywordImage = "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=1200";
+          }
+
+          const resolvedImage = 
+            matchingTrip?.featuredImage || 
+            matchingTrip?.image || 
+            randomSub?.image || 
+            r.image || 
+            subDestinationImages[subSlugKey] || 
+            subDestinationImages[r.slug] || 
+            keywordImage || 
+            "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200";
+
+          return {
+            regionSlug: r.slug,
+            regionName: r.name,
+            subSlug: subSlugKey,
+            name: randomSub?.name || r.name,
+            image: resolvedImage
+          };
+        });
+        setFeaturedTours(tours);
+      } finally {
+        setIsLoading(false);
       }
-
-      setAllMatchingOpenTrips(matchingPackages);
-
-      // 4. Generate Featured Tours resolving dynamic images from open trips or keyword dictionary
-      const otherRegions = currentRegions.filter(r => r.slug !== slug);
-      const shuffledRegions = [...otherRegions].sort(() => 0.5 - Math.random());
-      const selectedRegions = shuffledRegions.slice(0, 3);
-      const tours = selectedRegions.map(r => {
-        const randomSub = r.subDestinations[Math.floor(Math.random() * r.subDestinations.length)];
-        const subSlugKey = randomSub?.slug || "bali";
-        
-        // Find dynamic open trip matching this subdestination or region
-        const matchingTrip = allOpenTripsList.find(p => p.subSlug === subSlugKey || p.slug === subSlugKey || p.regionSlug === r.slug);
-        
-        // Fallback keyword search
-        let keywordImage = "";
-        const combined = `${subSlugKey} ${r.slug} ${randomSub?.name || ""}`.toLowerCase();
-        if (combined.includes("hongkong") || combined.includes("hong-kong") || combined.includes("macau") || combined.includes("shenzhen")) {
-          keywordImage = "https://images.unsplash.com/photo-1506970845246-18f21d533b20?q=80&w=1200";
-        } else if (combined.includes("tokyo") || combined.includes("japan") || combined.includes("kyoto") || combined.includes("osaka")) {
-          keywordImage = "https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?q=80&w=1200";
-        } else if (combined.includes("seoul") || combined.includes("korea") || combined.includes("jeju")) {
-          keywordImage = "https://images.unsplash.com/photo-1538678235213-982eb4b7261a?q=80&w=1200";
-        } else if (combined.includes("bangkok") || combined.includes("thailand") || combined.includes("phuket")) {
-          keywordImage = "https://images.unsplash.com/photo-1508009603885-50cf7c579365?q=80&w=1200";
-        } else if (combined.includes("hanoi") || combined.includes("vietnam") || combined.includes("halong")) {
-          keywordImage = "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=1200";
-        } else if (combined.includes("beijing") || combined.includes("china") || combined.includes("shanghai")) {
-          keywordImage = "https://images.unsplash.com/photo-1543872084-c7bd3822856f?q=80&w=1200";
-        } else if (combined.includes("bali")) {
-          keywordImage = "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=1200";
-        } else if (combined.includes("bajo") || combined.includes("komodo")) {
-          keywordImage = "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=1200";
-        }
-
-        const resolvedImage = 
-          matchingTrip?.featuredImage || 
-          matchingTrip?.image || 
-          randomSub?.image || 
-          r.image || 
-          subDestinationImages[subSlugKey] || 
-          subDestinationImages[r.slug] || 
-          keywordImage || 
-          "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200";
-
-        return {
-          regionSlug: r.slug,
-          regionName: r.name,
-          subSlug: subSlugKey,
-          name: randomSub?.name || r.name,
-          image: resolvedImage
-        };
-      });
-      setFeaturedTours(tours);
     }
 
     loadData();
   }, [slug, subSlug, locale]);
 
-  if (!tourDetail) {
+  if (isLoading) {
     return (
       <div className="min-h-[85vh] flex flex-col items-center justify-center bg-[#FBFBFB]">
         <div className="relative flex items-center justify-center mb-6">
@@ -387,61 +436,259 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
     );
   }
 
-  // Departure dates list dynamically generated from matching open trips
-  const rawDepartureDatesList = allMatchingOpenTrips.map((item, idx) => {
-    let dayOfWeek = "";
-    let dateLabel = item.departureDate || "";
+  if (!tourDetail) {
+    const destinationTitle = subSlug.replace(/-/g, " ").toUpperCase();
+    const waText = encodeURIComponent(
+      locale === "id"
+        ? `Halo Klik Travel ID, saya tertarik dengan informasi detail tour ke ${destinationTitle} (${slug}/${subSlug}). Apakah ada jadwal rute yang tersedia?`
+        : `Hello Klik Travel ID, I am interested in tour details for ${destinationTitle} (${slug}/${subSlug}). Are there available schedules?`
+    );
 
-    if (item.departureDateFrom) {
-      const dateObj = new Date(item.departureDateFrom);
-      if (!isNaN(dateObj.getTime())) {
-        const daysID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-        const daysEN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        dayOfWeek = locale === "id" ? daysID[dateObj.getDay()] : daysEN[dateObj.getDay()];
+    return (
+      <div className="min-h-screen bg-ivory text-foreground flex flex-col items-center justify-center p-6 text-center pt-28 pb-20">
+        <div className="max-w-xl w-full bg-white border border-[#0F2C59]/10 rounded-3xl p-8 md:p-12 shadow-lg flex flex-col items-center relative overflow-hidden">
+          <div className="absolute -top-12 -right-12 w-40 h-40 bg-sky-500/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-rose-500/10 rounded-full blur-2xl pointer-events-none" />
+          
+          <div className="w-20 h-20 rounded-2xl bg-sky-50 flex items-center justify-center mb-6 text-[#0284C7] shadow-inner">
+            <MapPin className="w-10 h-10 stroke-[1.5]" />
+          </div>
+
+          <span className="font-mono text-[11px] font-bold text-rose-500 uppercase tracking-widest mb-3 px-3 py-1 bg-rose-50 border border-rose-200 rounded-full">
+            404 NOT FOUND
+          </span>
+
+          <h1 className="font-serif text-2xl md:text-4xl text-[#0F2C59] font-normal mb-4 leading-snug">
+            {locale === "id"
+              ? "Belum Ada Tour Detail Pada Tujuan Ini"
+              : "No Tour Details Available For This Destination Yet"}
+          </h1>
+
+          <p className="font-sans text-sm md:text-base text-[#0F2C59]/70 max-w-md mb-8 leading-relaxed">
+            {locale === "id"
+              ? `Tujuan "${subSlug}" belum memiliki rute paket tour detail yang aktif. Silakan hubungi admin kami untuk informasi selengkapnya.`
+              : `The destination "${subSlug}" does not have active tour package details yet. Please contact our admin for details.`}
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+            <a
+              href={`https://wa.me/6281230011027?text=${waText}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-[#25D366] hover:bg-[#128C7E] text-white py-3.5 px-7 rounded-full font-sans font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-md hover:-translate-y-0.5 cursor-pointer"
+            >
+              <Phone className="w-4 h-4 fill-current" />
+              <span>{locale === "id" ? "Hubungi Admin via WhatsApp" : "Contact Admin via WhatsApp"}</span>
+            </a>
+
+            <Link
+              href="/destinations"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#0F2C59] hover:bg-[#0284C7] text-white py-3.5 px-7 rounded-full font-sans font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-md hover:-translate-y-0.5 cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>{locale === "id" ? "Kembali ke Destinasi" : "Back to Destinations"}</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Departure dates list dynamically generated from matching open trips, their schedules array, or multi-schedule batches
+  const departureDatesList = (() => {
+    const primaryTrip = allMatchingOpenTrips[0];
+    if (primaryTrip) {
+      const rawSchedules = (primaryTrip as any).schedules;
+      const rawBatches = (primaryTrip as any).batches;
+
+      if (rawSchedules && Array.isArray(rawSchedules) && rawSchedules.length > 0) {
+        // Filter out closed status schedules ("jika close maka tidak muncul di website")
+        const activeSchedules = rawSchedules.filter((s: any) => s.status !== "close");
+
+        if (activeSchedules.length > 0) {
+          return activeSchedules.map((schedule: any) => {
+            let dayOfWeek = "";
+            const formattedPrice = schedule.price ? `Rp ${schedule.price.toLocaleString("id-ID")}` : "";
+
+            let durID = "5 Hari 4 Malam";
+            let durEN = "5 Days 4 Nights";
+            let dtID = "";
+            let dtEN = "";
+
+            if (schedule.startDate && schedule.endDate) {
+              const start = new Date(schedule.startDate);
+              const end = new Date(schedule.endDate);
+              if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && start <= end) {
+                const daysID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+                const daysEN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                dayOfWeek = locale === "id" ? daysID[start.getDay()] : daysEN[start.getDay()];
+
+                const diffTime = Math.abs(end.getTime() - start.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                const diffNights = diffDays - 1;
+                durID = `${diffDays} Hari ${diffNights > 0 ? `${diffNights} Malam` : ""}`.trim();
+                durEN = `${diffDays} Days ${diffNights > 0 ? `${diffNights} Nights` : ""}`.trim();
+
+                const startDay = start.getDate();
+                const startYear = start.getFullYear();
+                const endDay = end.getDate();
+                const endYear = end.getFullYear();
+
+                const monthsId = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+                const monthsEn = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+                const startMonthID = monthsId[start.getMonth()];
+                const startMonthEN = monthsEn[start.getMonth()];
+                const endMonthID = monthsId[end.getMonth()];
+                const endMonthEN = monthsEn[end.getMonth()];
+
+                if (startYear === endYear) {
+                  if (startMonthID === endMonthID) {
+                    if (startDay === endDay) {
+                      dtID = `${startDay} ${startMonthID} ${startYear}`;
+                      dtEN = `${startDay} ${startMonthEN} ${startYear}`;
+                    } else {
+                      dtID = `${startDay} - ${endDay} ${startMonthID} ${startYear}`;
+                      dtEN = `${startDay} - ${endDay} ${startMonthEN} ${startYear}`;
+                    }
+                  } else {
+                    dtID = `${startDay} ${startMonthID} - ${endDay} ${endMonthID} ${startYear}`;
+                    dtEN = `${startDay} ${startMonthEN} - ${endDay} ${endMonthEN} ${startYear}`;
+                  }
+                } else {
+                  dtID = `${startDay} ${startMonthID} ${startYear} - ${endDay} ${endMonthID} ${endYear}`;
+                  dtEN = `${startDay} ${startMonthEN} ${startYear} - ${endDay} ${endMonthEN} ${endYear}`;
+                }
+              }
+            }
+
+            if (!dayOfWeek) {
+              dayOfWeek = locale === "id" ? "Jumat" : "Fri";
+            }
+
+            const batchObj = {
+              id: `schedule-${schedule.startDate}`,
+              dateStrID: dtID || schedule.startDate || "",
+              dateStrEN: dtEN || schedule.startDate || "",
+              fromDate: schedule.startDate,
+              toDate: schedule.endDate,
+              durationID: durID,
+              durationEN: durEN,
+              priceID: formattedPrice,
+              priceEN: formattedPrice,
+              status: schedule.status === "close" ? "Closed" : "Available",
+              quota: schedule.quota
+            };
+
+            return {
+              day: dayOfWeek,
+              date: (locale === "id" ? dtID : dtEN) || schedule.startDate || "TBA",
+              count: 1,
+              batch: batchObj
+            };
+          });
+        }
+      }
+
+      if (rawBatches && Array.isArray(rawBatches) && rawBatches.length > 0) {
+        return rawBatches.map((batch: any) => {
+          let dayOfWeek = "";
+          const dateLabel = (locale === "id" ? batch.dateStrID : (batch.dateStrEN || batch.dateStrID)) || "";
+
+          if (batch.fromDate) {
+            const dateObj = new Date(batch.fromDate);
+            if (!isNaN(dateObj.getTime())) {
+              const daysID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+              const daysEN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+              dayOfWeek = locale === "id" ? daysID[dateObj.getDay()] : daysEN[dateObj.getDay()];
+            }
+          }
+
+          if (!dayOfWeek && dateLabel) {
+            const lower = dateLabel.toLowerCase();
+            if (lower.includes("senin") || lower.includes("mon")) dayOfWeek = locale === "id" ? "Senin" : "Mon";
+            else if (lower.includes("selasa") || lower.includes("tue")) dayOfWeek = locale === "id" ? "Selasa" : "Tue";
+            else if (lower.includes("rabu") || lower.includes("wed")) dayOfWeek = locale === "id" ? "Rabu" : "Wed";
+            else if (lower.includes("kamis") || lower.includes("thu")) dayOfWeek = locale === "id" ? "Kamis" : "Thu";
+            else if (lower.includes("jumat") || lower.includes("fri")) dayOfWeek = locale === "id" ? "Jumat" : "Fri";
+            else if (lower.includes("sabtu") || lower.includes("sat")) dayOfWeek = locale === "id" ? "Sabtu" : "Sat";
+            else if (lower.includes("minggu") || lower.includes("sun")) dayOfWeek = locale === "id" ? "Minggu" : "Sun";
+          }
+
+          if (!dayOfWeek) {
+            dayOfWeek = locale === "id" ? "Jumat" : "Fri";
+          }
+
+          return {
+            day: dayOfWeek,
+            date: dateLabel || "TBA",
+            count: 1,
+            batch
+          };
+        });
       }
     }
 
-    if (!dayOfWeek && dateLabel) {
-      const lower = dateLabel.toLowerCase();
-      if (lower.includes("senin") || lower.includes("mon")) dayOfWeek = locale === "id" ? "Senin" : "Mon";
-      else if (lower.includes("selasa") || lower.includes("tue")) dayOfWeek = locale === "id" ? "Selasa" : "Tue";
-      else if (lower.includes("rabu") || lower.includes("wed")) dayOfWeek = locale === "id" ? "Rabu" : "Wed";
-      else if (lower.includes("kamis") || lower.includes("thu")) dayOfWeek = locale === "id" ? "Kamis" : "Thu";
-      else if (lower.includes("jumat") || lower.includes("fri")) dayOfWeek = locale === "id" ? "Jumat" : "Fri";
-      else if (lower.includes("sabtu") || lower.includes("sat")) dayOfWeek = locale === "id" ? "Sabtu" : "Sat";
-      else if (lower.includes("minggu") || lower.includes("sun")) dayOfWeek = locale === "id" ? "Minggu" : "Sun";
+    if (allMatchingOpenTrips.length > 0) {
+      return allMatchingOpenTrips.map((item) => {
+        let dayOfWeek = "";
+        let dateLabel = item.departureDate || "";
+
+        if (item.departureDateFrom) {
+          const dateObj = new Date(item.departureDateFrom);
+          if (!isNaN(dateObj.getTime())) {
+            const daysID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+            const daysEN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            dayOfWeek = locale === "id" ? daysID[dateObj.getDay()] : daysEN[dateObj.getDay()];
+          }
+        }
+
+        if (!dayOfWeek && dateLabel) {
+          const lower = dateLabel.toLowerCase();
+          if (lower.includes("senin") || lower.includes("mon")) dayOfWeek = locale === "id" ? "Senin" : "Mon";
+          else if (lower.includes("selasa") || lower.includes("tue")) dayOfWeek = locale === "id" ? "Selasa" : "Tue";
+          else if (lower.includes("rabu") || lower.includes("wed")) dayOfWeek = locale === "id" ? "Rabu" : "Wed";
+          else if (lower.includes("kamis") || lower.includes("thu")) dayOfWeek = locale === "id" ? "Kamis" : "Thu";
+          else if (lower.includes("jumat") || lower.includes("fri")) dayOfWeek = locale === "id" ? "Jumat" : "Fri";
+          else if (lower.includes("sabtu") || lower.includes("sat")) dayOfWeek = locale === "id" ? "Sabtu" : "Sat";
+          else if (lower.includes("minggu") || lower.includes("sun")) dayOfWeek = locale === "id" ? "Minggu" : "Sun";
+        }
+
+        if (!dayOfWeek) {
+          dayOfWeek = locale === "id" ? "Jumat" : "Fri";
+        }
+
+        if (dateLabel.includes(",") && dateLabel.split(",")[1]) {
+          dateLabel = dateLabel.split(",")[1].trim();
+        }
+
+        return {
+          day: dayOfWeek,
+          date: dateLabel || "TBA",
+          count: 1
+        };
+      });
     }
 
-    if (!dayOfWeek) {
-      dayOfWeek = locale === "id" ? "Jumat" : "Fri";
-    }
+    return [
+      { day: locale === "id" ? "Jumat" : "Fri", date: "04 Sep 2026", count: 1 },
+      { day: locale === "id" ? "Jumat" : "Fri", date: "11 Sep 2026", count: 1 },
+      { day: locale === "id" ? "Jumat" : "Fri", date: "18 Sep 2026", count: 1 },
+      { day: locale === "id" ? "Jumat" : "Fri", date: "25 Sep 2026", count: 1 },
+      { day: locale === "id" ? "Rabu" : "Wed", date: "30 Sep 2026", count: 1 },
+    ];
+  })();
 
-    if (dateLabel.includes(",") && dateLabel.split(",")[1]) {
-      dateLabel = dateLabel.split(",")[1].trim();
-    }
-
-    return {
-      day: dayOfWeek,
-      date: dateLabel || "TBA",
-      count: 1
-    };
-  });
-
-  const departureDatesList = rawDepartureDatesList.length > 0 && rawDepartureDatesList[0].date !== "TBA"
-    ? rawDepartureDatesList
-    : [
-        { day: locale === "id" ? "Jumat" : "Fri", date: "04 Sep 2026", count: 1 },
-        { day: locale === "id" ? "Jumat" : "Fri", date: "11 Sep 2026", count: 1 },
-        { day: locale === "id" ? "Jumat" : "Fri", date: "18 Sep 2026", count: 1 },
-        { day: locale === "id" ? "Jumat" : "Fri", date: "25 Sep 2026", count: 1 },
-        { day: locale === "id" ? "Rabu" : "Wed", date: "30 Sep 2026", count: 1 },
-      ];
-
+  const activeBatch = (departureDatesList[selectedDateIdx] as any)?.batch || null;
   const activeDepartureDate = departureDatesList[selectedDateIdx]?.date || "";
+  const displayDuration = activeBatch 
+    ? (locale === "id" ? activeBatch.durationID : (activeBatch.durationEN || activeBatch.durationID)) 
+    : tourDetail.duration;
+
   const whatsappMessage = encodeURIComponent(
     locale === "id"
-      ? `Halo Klik Travel ID, saya tertarik dengan paket tour "${tourDetail.name}" (${tourDetail.duration}) keberangkatan tanggal ${activeDepartureDate}. Mohon informasi ketersediaan jadwal.`
-      : `Hello Klik Travel ID, I am interested in the "${tourDetail.name}" tour package (${tourDetail.duration}) departing on ${activeDepartureDate}. Please provide schedule availability details.`
+      ? `Halo Klik Travel ID, saya tertarik dengan paket tour "${displayTourName}" (${displayDuration}) keberangkatan tanggal ${activeDepartureDate}. Mohon informasi ketersediaan jadwal.`
+      : `Hello Klik Travel ID, I am interested in the "${displayTourName}" tour package (${displayDuration}) departing on ${activeDepartureDate}. Please provide schedule availability details.`
   );
 
   // Format price string cleanly
@@ -450,7 +697,10 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
   const tripBadgeText = `TRIP ${currentRegionName.toUpperCase()}`;
 
   const formattedPrice = (() => {
-    const rawPrice = (tourDetail.price || "").toString().trim();
+    const rawTargetPrice = activeBatch 
+      ? (locale === "id" ? activeBatch.priceID : (activeBatch.priceEN || activeBatch.priceID)) 
+      : tourDetail.price;
+    const rawPrice = (rawTargetPrice || "").toString().trim();
     if (!rawPrice || rawPrice === "-") return "-";
     if (rawPrice.toLowerCase().includes("rp") || rawPrice.toLowerCase().includes("usd") || rawPrice.toLowerCase().includes("idr")) {
       return rawPrice;
@@ -474,7 +724,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
   // Deduplicate tagline if it repeats the title
   const hasDistinctTagline = tourDetail.tagline && 
-    tourDetail.tagline.toLowerCase() !== tourDetail.name.toLowerCase() && 
+    tourDetail.tagline.toLowerCase() !== displayTourName.toLowerCase() && 
     tourDetail.tagline !== "-";
 
   const heroImage = tourDetail.featuredImage || 
@@ -527,7 +777,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
             {currentRegionName || (locale === "id" ? "Destinasi" : "Destination")}
           </Link>
           <span className="text-slate-400">&gt;</span>
-          <span className="font-semibold text-slate-800">{tourDetail.name}</span>
+          <span className="font-semibold text-slate-800">{displayTourName}</span>
         </nav>
       </div>
 
@@ -542,7 +792,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
             <div className="relative flex-1 aspect-[4/3] rounded-2xl overflow-hidden bg-slate-900 shadow-md group border border-slate-200">
               <img 
                 src={displayMainImage} 
-                alt={tourDetail.name} 
+                alt={displayTourName} 
                 className="w-full h-full object-cover transition-all duration-500"
               />
               <div className="absolute inset-0 bg-black/5" />
@@ -595,12 +845,12 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
               {/* Main Title */}
               <h1 className="font-sans font-bold text-2xl md:text-3xl text-slate-900 leading-snug mb-3">
-                {tourDetail.name}
+                {displayTourName}
               </h1>
 
               {/* Sub-info / Departure Count */}
               <div className="text-xs font-sans text-slate-600 mb-4 font-medium">
-                {departureDatesList.length} {locale === "id" ? "Tanggal Keberangkatan" : "Departure Dates"} • {tourDetail.duration}
+                {departureDatesList.length} {locale === "id" ? "Tanggal Keberangkatan" : "Departure Dates"} • {displayDuration}
               </div>
 
               <div className="w-full h-[1px] bg-slate-200 mb-4" />
@@ -671,16 +921,22 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
           {/* Date Pills Horizontal Row */}
           <div className="flex-1 flex items-center gap-3 overflow-x-auto scrollbar-none py-1">
-            {departureDatesList.map((item, idx) => {
+            {departureDatesList.map((item: any, idx: number) => {
               const isSelected = selectedDateIdx === idx;
+              const b = (item as any).batch;
+              const isFull = b?.status === "FULL";
+              const isClosed = b?.status === "Closed";
+
               return (
                 <button
                   key={idx}
                   onClick={() => setSelectedDateIdx(idx)}
-                  className={`shrink-0 px-5 py-2.5 rounded-xl text-center transition-all cursor-pointer border ${
+                  className={`shrink-0 px-5 py-2.5 rounded-xl text-center transition-all cursor-pointer border flex flex-col items-center justify-center ${
                     isSelected 
                       ? "bg-[#0284C7] border-[#0284C7] text-white shadow-sm" 
-                      : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"
+                      : isFull || isClosed
+                        ? "bg-slate-50 border-slate-200 text-slate-400 opacity-70"
+                        : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"
                   }`}
                 >
                   <span className="block text-[10px] uppercase font-medium tracking-wide opacity-80">
@@ -689,9 +945,19 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                   <span className="block text-xs font-bold whitespace-nowrap">
                     {item.date}
                   </span>
-                  <span className="block text-[9px] opacity-75 font-normal">
-                    {item.count} {locale === "id" ? "Keberangkatan" : "Departure"}
+                  <span className="block text-[9px] opacity-80 font-normal mt-0.5 font-mono">
+                    {b 
+                      ? (locale === "id" ? b.priceID : (b.priceEN || b.priceID))
+                      : `${item.count} ${locale === "id" ? "Keberangkatan" : "Departure"}`
+                    }
                   </span>
+                  {b && (isFull || isClosed) && (
+                    <span className={`inline-block mt-1 px-1.5 py-0.2 text-[8px] font-bold text-white uppercase rounded font-mono ${
+                      isFull ? "bg-rose-600" : "bg-amber-600"
+                    }`}>
+                      {isFull ? (locale === "id" ? "Penuh" : "FULL") : (locale === "id" ? "Tutup" : "Closed")}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -806,12 +1072,12 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                         {locale === "id" ? `PROGRAM HARI KE-${day.day}` : `DAY ${day.day} PROGRAM`}
                       </span>
                       <h3 className="font-serif font-bold text-lg md:text-xl text-slate-900 mb-4">
-                        {day.title}
+                        {locale === "id" ? day.title : (day.titleEN || (day as any).titleEn || day.title)}
                       </h3>
                       
                       {/* Activities Pills */}
                       <div className="flex flex-wrap gap-2 mb-5">
-                        {day.activities.map((act, aIdx) => (
+                        {((locale === "id" ? day.activities : ((day.activitiesEN && day.activitiesEN.length > 0 ? day.activitiesEN : (day as any).activitiesEn) || day.activities)) || []).map((act: string, aIdx: number) => (
                           <span key={aIdx} className="bg-slate-50 border border-slate-200/80 text-slate-600 px-3 py-1 rounded-full font-sans text-[10px] font-semibold uppercase tracking-wider">
                             {act}
                           </span>
@@ -819,14 +1085,14 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                       </div>
 
                       <p className="font-sans text-xs md:text-sm text-slate-600 leading-relaxed font-light mb-6">
-                        {day.description}
+                        {locale === "id" ? day.description : (day.descriptionEN || (day as any).descriptionEn || day.description)}
                       </p>
 
                       <div className="flex items-center gap-3.5 bg-slate-50/80 border border-slate-200/60 px-4 py-3 rounded-2xl">
                         <Hotel className="w-5 h-5 text-sky-600" />
                         <div>
                           <span className="block font-mono text-[8px] uppercase tracking-widest text-slate-400 font-bold">{locale === "id" ? "Bermalam di" : "Overnight at"}</span>
-                          <span className="block font-sans text-xs font-bold text-slate-900 mt-0.5">{day.hotel}</span>
+                          <span className="block font-sans text-xs font-bold text-slate-900 mt-0.5">{locale === "id" ? day.hotel : (day.hotelEN || (day as any).hotelEn || day.hotel)}</span>
                         </div>
                       </div>
                     </div>

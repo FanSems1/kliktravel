@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, Edit3, Compass, MapPin, Hotel, Calendar, X, Image as ImageIcon, Upload, Sparkles, Loader2, ChevronUp, ChevronDown, Check, Info, ArrowLeft, Search, Users } from "lucide-react";
+import { Plus, Trash2, Edit3, Compass, MapPin, Hotel, Calendar, Clock, X, Image as ImageIcon, Upload, Sparkles, Loader2, ChevronUp, ChevronDown, Check, Info, ArrowLeft, Search, Users } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { Journey, JourneyChapter, JourneyAccommodation, JourneyItinerary, JourneyFAQ } from "@/data/journeys";
 import { TourPackageDetail, ItineraryDay } from "@/data/tours";
@@ -25,6 +25,29 @@ interface ApiJourney {
   isPublished?: boolean;
 }
 
+export interface DepartureBatch {
+  id: string;
+  dateStrID: string;
+  dateStrEN?: string;
+  fromDate?: string;
+  toDate?: string;
+  durationID: string;
+  durationEN?: string;
+  priceID: string;
+  priceEN?: string;
+  status: "Available" | "Closed" | "FULL" | "Draft";
+  quota?: number;
+}
+
+export interface ApiSchedule {
+  startDate: string;
+  endDate: string;
+  price: number;
+  quota?: number;
+  status: "open" | "close";
+  sortOrder?: number;
+}
+
 interface ApiOpenTrip {
   id: string;
   slug: string;
@@ -32,8 +55,11 @@ interface ApiOpenTrip {
   gallery?: any;
   contentId: any;
   contentEn: any;
+  batches?: DepartureBatch[];
+  schedules?: ApiSchedule[];
   sortOrder?: number;
   isPublished?: boolean;
+  status?: string;
 }
 
 export default function AdminJourneysPage() {
@@ -68,18 +94,55 @@ export default function AdminJourneysPage() {
   };
 
   const handleImportFromOpenTrip = (ot: any) => {
-    setCjSlug(ot.slug);
-    setCjTitleID(ot.nameID || ot.nameEN || "");
-    setCjTitleEN(ot.nameEN || "");
-    setCjDurationDays(parseInt(ot.durationID) || 0);
-    setCjDurationLabel(ot.durationID || "");
-    setCjPrice(ot.priceID || "");
-    setCjPriceRaw(Number(ot.priceRaw) || 0);
-    setCjImage(ot.featuredImage || "");
-    setCjItinerary(ot.itinerary || []);
-    setCjHighlights(ot.highlightsID || ot.highlightsEN || []);
-    setCjInclusions(ot.inclusionsID || ot.inclusionsEN || []);
-    setCjExclusions(ot.exclusionsID || ot.exclusionsEN || []);
+    const raw = rawApiOpenTrips.find(r => r.id === ot.id || r.slug === ot.slug);
+    const cId = raw?.contentId || {};
+    const cEn = raw?.contentEn || {};
+
+    // 1. Slug
+    setCjSlug(ot.slug || raw?.slug || "");
+
+    // 2. Title (ID & EN)
+    const titleId = cId.name || ot.name || ot.nameID || "";
+    const titleEn = cEn.name || ot.nameEN || titleId;
+    setCjTitleID(titleId);
+    setCjTitleEN(titleEn);
+
+    // 3. Subtitle / Tagline (ID & EN)
+    const subtitleId = cId.tagline || ot.tagline || ot.taglineID || "";
+    const subtitleEn = cEn.tagline || ot.taglineEN || subtitleId;
+    setCjSubtitleID(subtitleId);
+    setCjSubtitleEN(subtitleEn);
+
+    // 4. Duration
+    const durationStr = cId.duration || ot.duration || ot.durationID || "5";
+    const durationMatch = durationStr.match(/\d+/);
+    const parsedDuration = durationMatch ? parseInt(durationMatch[0], 10) : 5;
+    setCjDurationDays(parsedDuration);
+    setCjDurationLabel(durationStr.includes("Hari") || durationStr.includes("Days") ? durationStr : `${parsedDuration} Hari`);
+
+    // 5. Price & Price Raw
+    const priceStr = cId.price || ot.price || ot.priceID || "";
+    const rawPriceNum = Number(cId.priceRaw || ot.priceRaw) || (priceStr ? Number(priceStr.replace(/[^0-9]/g, "")) : 0);
+    setCjPrice(priceStr);
+    setCjPriceRaw(rawPriceNum);
+
+    // 6. Status
+    const rawStatus = ot.status || (raw as any)?.status || "Available";
+    const mappedStatus = rawStatus === "active" ? "Available" : rawStatus === "inactive" ? "Closed" : rawStatus === "draft" ? "Draft" : rawStatus;
+    setCjStatus(mappedStatus as any);
+
+    // 7. Image
+    setCjImage(ot.featuredImage || raw?.featuredImage || "");
+
+    // 8. Itinerary
+    const itin = cId.itinerary || ot.itinerary || [];
+    setCjItinerary(itin);
+
+    // 9. Highlights, Inclusions, Exclusions
+    setCjHighlights(cId.highlights || ot.highlights || ot.highlightsID || []);
+    setCjInclusions(cId.inclusions || ot.inclusions || ot.inclusionsID || []);
+    setCjExclusions(cId.exclusions || ot.exclusions || ot.exclusionsID || []);
+
     setToast({ message: "Berhasil mengimpor data dari Open Trip", type: "success" });
   };
 
@@ -290,6 +353,20 @@ export default function AdminJourneysPage() {
   const [otRemainingSeats, setOtRemainingSeats] = useState<number | "">("");
   const [otMaxSeats, setOtMaxSeats] = useState<number | "">("");
 
+  // Multi-Schedule Batches State
+  const [otBatches, setOtBatches] = useState<DepartureBatch[]>([]);
+  const [newBatchDateID, setNewBatchDateID] = useState("");
+  const [newBatchDateEN, setNewBatchDateEN] = useState("");
+  const [newBatchFromDate, setNewBatchFromDate] = useState("");
+  const [newBatchToDate, setNewBatchToDate] = useState("");
+  const [newBatchDurationID, setNewBatchDurationID] = useState("");
+  const [newBatchDurationEN, setNewBatchDurationEN] = useState("");
+  const [newBatchPriceID, setNewBatchPriceID] = useState("");
+  const [newBatchPriceEN, setNewBatchPriceEN] = useState("");
+  const [newBatchStatus, setNewBatchStatus] = useState<"Available" | "Closed" | "FULL" | "Draft">("Available");
+  const [newBatchQuota, setNewBatchQuota] = useState<number>(20);
+  const [editingBatchId, setEditingBatchId] = useState<string | null>(null);
+
   // Lists managers
   const [otHighlightsID, setOtHighlightsID] = useState<string[]>([]);
   const [otHighlightsEN, setOtHighlightsEN] = useState<string[]>([]);
@@ -344,7 +421,7 @@ export default function AdminJourneysPage() {
   };
 
   useEffect(() => {
-    if (otDepartureDateFrom && otDepartureDateTo) {
+    if (otDepartureDateFrom && otDepartureDateTo && otBatches.length === 0) {
       const formatDateStr = (dateStr: string) => {
         const d = new Date(dateStr);
         if (isNaN(d.getTime())) return { id: dateStr, en: dateStr };
@@ -361,7 +438,88 @@ export default function AdminJourneysPage() {
       setOtDepartureDateID(`${fromFmt.id} - ${toFmt.id}`);
       setOtDepartureDateEN(`${fromFmt.en} - ${toFmt.en}`);
     }
-  }, [otDepartureDateFrom, otDepartureDateTo]);
+  }, [otDepartureDateFrom, otDepartureDateTo, otBatches.length]);
+
+  // Auto-sync batches data to primary fields when batches exist
+  useEffect(() => {
+    if (otBatches.length > 0) {
+      const validPricesID = otBatches.map(b => b.priceID).filter(Boolean);
+      const validPricesEN = otBatches.map(b => b.priceEN || b.priceID).filter(Boolean);
+
+      if (validPricesID.length > 0) {
+        const lowestPrice = validPricesID[0];
+        setOtPriceID(lowestPrice.toLowerCase().includes("rp") || lowestPrice.toLowerCase().includes("mulai") ? lowestPrice : `Mulai ${lowestPrice}`);
+      }
+      if (validPricesEN.length > 0) {
+        const lowestPriceEN = validPricesEN[0];
+        setOtPriceEN(lowestPriceEN.toLowerCase().includes("rp") || lowestPriceEN.toLowerCase().includes("from") ? lowestPriceEN : `From ${lowestPriceEN}`);
+      }
+      setOtDurationID(otBatches[0].durationID || "5 Hari 4 Malam");
+      setOtDurationEN(otBatches[0].durationEN || otBatches[0].durationID || "5 Days 4 Nights");
+      setOtDepartureDateID(otBatches.map(b => b.dateStrID).join(", "));
+      setOtDepartureDateEN(otBatches.map(b => b.dateStrEN || b.dateStrID).join(", "));
+      if (otBatches[0].fromDate) setOtDepartureDateFrom(otBatches[0].fromDate);
+      if (otBatches[0].toDate) setOtDepartureDateTo(otBatches[0].toDate);
+    }
+  }, [otBatches]);
+
+  // Auto-calculate batch date range label and duration from datepickers
+  useEffect(() => {
+    if (newBatchFromDate && newBatchToDate) {
+      const start = new Date(newBatchFromDate);
+      const end = new Date(newBatchToDate);
+
+      if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && start <= end) {
+        const diffTime = Math.abs(end.getTime() - start.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        const diffNights = diffDays - 1;
+
+        if (diffDays > 0) {
+          const daysStrID = `${diffDays} Hari ${diffNights > 0 ? `${diffNights} Malam` : ""}`.trim();
+          const daysStrEN = `${diffDays} Days ${diffNights > 0 ? `${diffNights} Nights` : ""}`.trim();
+          setNewBatchDurationID(daysStrID);
+          setNewBatchDurationEN(daysStrEN);
+        }
+
+        const startDay = start.getDate();
+        const startYear = start.getFullYear();
+        const endDay = end.getDate();
+        const endYear = end.getFullYear();
+
+        const monthsId = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+        const monthsEn = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+        const startMonthID = monthsId[start.getMonth()];
+        const startMonthEN = monthsEn[start.getMonth()];
+        const endMonthID = monthsId[end.getMonth()];
+        const endMonthEN = monthsEn[end.getMonth()];
+
+        let formattedID = "";
+        let formattedEN = "";
+
+        if (startYear === endYear) {
+          if (startMonthID === endMonthID) {
+            if (startDay === endDay) {
+              formattedID = `${startDay} ${startMonthID} ${startYear}`;
+              formattedEN = `${startDay} ${startMonthEN} ${startYear}`;
+            } else {
+              formattedID = `${startDay} - ${endDay} ${startMonthID} ${startYear}`;
+              formattedEN = `${startDay} - ${endDay} ${startMonthEN} ${startYear}`;
+            }
+          } else {
+            formattedID = `${startDay} ${startMonthID} - ${endDay} ${endMonthID} ${startYear}`;
+            formattedEN = `${startDay} ${startMonthEN} - ${endDay} ${endMonthEN} ${startYear}`;
+          }
+        } else {
+          formattedID = `${startDay} ${startMonthID} ${startYear} - ${endDay} ${endMonthID} ${endYear}`;
+          formattedEN = `${startDay} ${startMonthEN} ${startYear} - ${endDay} ${endMonthEN} ${endYear}`;
+        }
+
+        setNewBatchDateID(formattedID);
+        setNewBatchDateEN(formattedEN);
+      }
+    }
+  }, [newBatchFromDate, newBatchToDate]);
 
   const handleAutoTranslateOpenTrip = async () => {
     setIsTranslating(true);
@@ -528,7 +686,10 @@ export default function AdminJourneysPage() {
     try {
       await apiFetch(`/admin/journeys/${id}`, {
         method: "PATCH",
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({
+          status: newStatus,
+          isPublished: newStatus !== "Draft" && newStatus !== "draft" && newStatus !== "DRAFT"
+        }),
       });
       setToast({ message: locale === "id" ? "Status perjalanan berhasil diperbarui!" : "Curated journey status updated successfully!", type: "success" });
       fetchAllData();
@@ -598,6 +759,7 @@ export default function AdminJourneysPage() {
       imageGradient: "from-[#38BDF8] to-[#0369A1]",
       gallery: cjGallery,
       status: cjStatus,
+      isPublished: cjStatus !== "Draft" && cjStatus !== "draft" && cjStatus !== "DRAFT",
       contentId,
       contentEn,
     };
@@ -665,6 +827,17 @@ export default function AdminJourneysPage() {
     setEditingItineraryIndex(null);
     setIsEditingOpenTrip(false);
     setEditOpenTripId(null);
+    setOtBatches([]);
+    setNewBatchDateID("");
+    setNewBatchDateEN("");
+    setNewBatchFromDate("");
+    setNewBatchToDate("");
+    setNewBatchDurationID("");
+    setNewBatchDurationEN("");
+    setNewBatchPriceID("");
+    setNewBatchPriceEN("");
+    setNewBatchStatus("Available");
+    setEditingBatchId(null);
     setFormLang("id");
     setViewMode("list");
   };
@@ -706,6 +879,98 @@ export default function AdminJourneysPage() {
     setOtExclusionsID(cId.exclusions || pkg.exclusions || []);
     setOtExclusionsEN(cEn.exclusions || cId.exclusions || pkg.exclusions || []);
     setOtItinerary(cId.itinerary || pkg.itinerary || []);
+    const existingSchedules: ApiSchedule[] = (raw as any).schedules || cId.schedules || cEn.schedules || (pkg as any).schedules || [];
+    let loadedBatches: DepartureBatch[] = [];
+
+    if (existingSchedules && existingSchedules.length > 0) {
+      loadedBatches = existingSchedules.map((s, idx) => {
+        const formattedPrice = s.price ? `Rp ${s.price.toLocaleString("id-ID")}` : "";
+        const statusMap = s.status === "close" ? "Closed" : "Available";
+
+        let durID = "5 Hari 4 Malam";
+        let durEN = "5 Days 4 Nights";
+        let dtID = "";
+        let dtEN = "";
+
+        if (s.startDate && s.endDate) {
+          const start = new Date(s.startDate);
+          const end = new Date(s.endDate);
+          if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && start <= end) {
+            const diffTime = Math.abs(end.getTime() - start.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            const diffNights = diffDays - 1;
+            durID = `${diffDays} Hari ${diffNights > 0 ? `${diffNights} Malam` : ""}`.trim();
+            durEN = `${diffDays} Days ${diffNights > 0 ? `${diffNights} Nights` : ""}`.trim();
+
+            const startDay = start.getDate();
+            const startYear = start.getFullYear();
+            const endDay = end.getDate();
+            const endYear = end.getFullYear();
+
+            const monthsId = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+            const monthsEn = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+            const startMonthID = monthsId[start.getMonth()];
+            const startMonthEN = monthsEn[start.getMonth()];
+            const endMonthID = monthsId[end.getMonth()];
+            const endMonthEN = monthsEn[end.getMonth()];
+
+            if (startYear === endYear) {
+              if (startMonthID === endMonthID) {
+                if (startDay === endDay) {
+                  dtID = `${startDay} ${startMonthID} ${startYear}`;
+                  dtEN = `${startDay} ${startMonthEN} ${startYear}`;
+                } else {
+                  dtID = `${startDay} - ${endDay} ${startMonthID} ${startYear}`;
+                  dtEN = `${startDay} - ${endDay} ${startMonthEN} ${startYear}`;
+                }
+              } else {
+                dtID = `${startDay} ${startMonthID} - ${endDay} ${endMonthID} ${startYear}`;
+                dtEN = `${startDay} ${startMonthEN} - ${endDay} ${endMonthEN} ${startYear}`;
+              }
+            } else {
+              dtID = `${startDay} ${startMonthID} ${startYear} - ${endDay} ${endMonthID} ${endYear}`;
+              dtEN = `${startDay} ${startMonthEN} ${startYear} - ${endDay} ${endMonthEN} ${endYear}`;
+            }
+          }
+        }
+
+        return {
+          id: `batch-${Date.now()}-${idx}`,
+          dateStrID: dtID || s.startDate || "",
+          dateStrEN: dtEN || s.startDate || "",
+          fromDate: s.startDate,
+          toDate: s.endDate,
+          durationID: durID,
+          durationEN: durEN,
+          priceID: formattedPrice,
+          priceEN: formattedPrice,
+          status: statusMap,
+          quota: s.quota || 20
+        };
+      });
+    } else {
+      const existingBatches = raw.batches || cId.batches || cEn.batches || (pkg as any).batches || [];
+      if (existingBatches.length === 0 && (cId.departureDate || pkg.departureDate)) {
+        loadedBatches = [{
+          id: `batch-${Date.now()}`,
+          dateStrID: cId.departureDate || pkg.departureDate || "",
+          dateStrEN: cEn.departureDate || cId.departureDate || pkg.departureDate || "",
+          fromDate: cId.departureDateFrom || pkg.departureDateFrom || "",
+          toDate: cId.departureDateTo || pkg.departureDateTo || "",
+          durationID: cId.duration || pkg.duration || "5 Hari 4 Malam",
+          durationEN: cEn.duration || cId.duration || pkg.duration || "5 Days 4 Nights",
+          priceID: cId.price || pkg.price || "",
+          priceEN: cEn.price || cId.price || pkg.price || "",
+          status: (mappedStatus as any) || "Available",
+          quota: 20
+        }];
+      } else {
+        loadedBatches = existingBatches;
+      }
+    }
+
+    setOtBatches(loadedBatches);
     setNewOtItDay(((cId.itinerary || pkg.itinerary)?.length || 0) + 1);
     setFormLang("id");
     setViewMode("form");
@@ -744,6 +1009,19 @@ export default function AdminJourneysPage() {
     }
 
     setIsSaving(true);
+    const schedules = otBatches.map((b, idx) => {
+      const numericPrice = parseInt(b.priceID.replace(/[^0-9]/g, ""), 10) || 0;
+      const statusMap = (b.status === "Closed" || b.status === "Draft") ? "close" : "open";
+      return {
+        startDate: b.fromDate || "",
+        endDate: b.toDate || "",
+        price: numericPrice,
+        quota: typeof b.quota === "number" ? b.quota : 20,
+        status: statusMap as "open" | "close",
+        sortOrder: idx
+      };
+    });
+
     const contentId = {
       regionSlug: otRegionSlug,
       subSlug: otSubSlug,
@@ -759,6 +1037,7 @@ export default function AdminJourneysPage() {
       inclusions: otInclusionsID,
       exclusions: otExclusionsID,
       itinerary: otItinerary,
+      schedules,
     };
 
     const contentEn = {
@@ -776,12 +1055,14 @@ export default function AdminJourneysPage() {
       inclusions: otInclusionsEN || otInclusionsID,
       exclusions: otExclusionsEN || otExclusionsID,
       itinerary: otItinerary,
+      schedules,
     };
 
     const payload = {
       slug: otSlug.trim().toLowerCase(),
       featuredImage: otFeaturedImage || "https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?q=80&w=1200",
       status: otStatus,
+      schedules,
       contentId,
       contentEn
     };
@@ -806,6 +1087,101 @@ export default function AdminJourneysPage() {
       setToast({ message: err.message || "Gagal menyimpan Open Trip.", type: "error" });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // ==========================================
+  // MULTI-SCHEDULE BATCH HANDLERS
+  // ==========================================
+  const handleAddOrUpdateBatch = () => {
+    if (!newBatchFromDate || !newBatchToDate) {
+      setToast({ message: "Harap pilih Tanggal Mulai dan Selesai Keberangkatan!", type: "error" });
+      return;
+    }
+
+    const bId = editingBatchId || `batch-${Date.now()}`;
+    const batchItem: DepartureBatch = {
+      id: bId,
+      dateStrID: newBatchDateID.trim(),
+      dateStrEN: newBatchDateEN.trim() || newBatchDateID.trim(),
+      fromDate: newBatchFromDate,
+      toDate: newBatchToDate,
+      durationID: newBatchDurationID.trim() || otDurationID || "5 Hari 4 Malam",
+      durationEN: newBatchDurationEN.trim() || otDurationEN || newBatchDurationID.trim() || "5 Days 4 Nights",
+      priceID: newBatchPriceID.trim() || otPriceID || "",
+      priceEN: newBatchPriceEN.trim() || otPriceEN || newBatchPriceID.trim() || "",
+      status: newBatchStatus,
+      quota: newBatchQuota,
+    };
+
+    let updatedBatches: DepartureBatch[];
+    if (editingBatchId) {
+      updatedBatches = otBatches.map(b => b.id === editingBatchId ? batchItem : b);
+    } else {
+      updatedBatches = [...otBatches, batchItem];
+    }
+
+    setOtBatches(updatedBatches);
+
+    // Auto sync price & dates summary if empty or on multi batch creation
+    if (updatedBatches.length > 0) {
+      const validPrices = updatedBatches.map(b => b.priceID).filter(Boolean);
+      if (validPrices.length > 0 && (!otPriceID || otPriceID.startsWith("Mulai"))) {
+        setOtPriceID(`Mulai ${validPrices[0]}`);
+      }
+      if (!otDepartureDateID) {
+        setOtDepartureDateID(updatedBatches.map(b => b.dateStrID).join(", "));
+      }
+      if (!otDurationID && updatedBatches[0].durationID) {
+        setOtDurationID(updatedBatches[0].durationID);
+      }
+    }
+
+    // Reset batch inputs
+    setNewBatchDateID("");
+    setNewBatchDateEN("");
+    setNewBatchFromDate("");
+    setNewBatchToDate("");
+    setNewBatchDurationID("");
+    setNewBatchDurationEN("");
+    setNewBatchPriceID("");
+    setNewBatchPriceEN("");
+    setNewBatchStatus("Available");
+    setNewBatchQuota(20);
+    setEditingBatchId(null);
+  };
+
+  const handleEditBatch = (b: DepartureBatch) => {
+    setEditingBatchId(b.id);
+    setNewBatchDateID(b.dateStrID);
+    setNewBatchDateEN(b.dateStrEN || b.dateStrID);
+    setNewBatchFromDate(b.fromDate || "");
+    setNewBatchToDate(b.toDate || "");
+    setNewBatchDurationID(b.durationID);
+    setNewBatchDurationEN(b.durationEN || b.durationID);
+    setNewBatchPriceID(b.priceID);
+    setNewBatchPriceEN(b.priceEN || b.priceID);
+    setNewBatchStatus(b.status);
+    setNewBatchQuota(typeof b.quota === "number" ? b.quota : 20);
+  };
+
+  const handleDuplicateBatch = (b: DepartureBatch) => {
+    const dup: DepartureBatch = {
+      ...b,
+      id: `batch-${Date.now()}`,
+      dateStrID: `${b.dateStrID} (Copy)`,
+    };
+    setOtBatches([...otBatches, dup]);
+  };
+
+  const handleDeleteBatch = (id: string) => {
+    setOtBatches(otBatches.filter(b => b.id !== id));
+    if (editingBatchId === id) {
+      setEditingBatchId(null);
+      setNewBatchDateID("");
+      setNewBatchDateEN("");
+      setNewBatchDurationID("");
+      setNewBatchPriceID("");
     }
   };
 
@@ -941,8 +1317,8 @@ export default function AdminJourneysPage() {
                 setSearchQuery("");
               }}
               className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "curated"
-                  ? "bg-[#0F2C59] text-white shadow-md"
-                  : "text-slate-600 hover:text-[#0F2C59]"
+                ? "bg-[#0F2C59] text-white shadow-md"
+                : "text-slate-600 hover:text-[#0F2C59]"
                 }`}
             >
               <Compass size={15} />
@@ -954,8 +1330,8 @@ export default function AdminJourneysPage() {
                 setSearchQuery("");
               }}
               className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "open"
-                  ? "bg-[#0F2C59] text-white shadow-md"
-                  : "text-slate-600 hover:text-[#0F2C59]"
+                ? "bg-[#0F2C59] text-white shadow-md"
+                : "text-slate-600 hover:text-[#0F2C59]"
                 }`}
             >
               <Calendar size={15} />
@@ -1080,8 +1456,8 @@ export default function AdminJourneysPage() {
                     <label
                       key={opt.value}
                       className={`relative flex items-center justify-between gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer ${cjStatus === opt.value
-                          ? "border-[#A89053] bg-[#A89053]/5 shadow-sm"
-                          : "border-slate-200 hover:border-slate-300 bg-white"
+                        ? "border-[#A89053] bg-[#A89053]/5 shadow-sm"
+                        : "border-slate-200 hover:border-slate-300 bg-white"
                         }`}
                     >
                       <div className="flex items-center gap-2.5">
@@ -1304,8 +1680,8 @@ export default function AdminJourneysPage() {
                             <label
                               key={opt.value}
                               className={`flex items-center gap-1 text-[8px] font-bold uppercase cursor-pointer px-1.5 py-0.5 rounded-md transition-all select-none ${isChecked
-                                  ? opt.activeClass
-                                  : "text-slate-400 hover:text-white"
+                                ? opt.activeClass
+                                : "text-slate-400 hover:text-white"
                                 }`}
                             >
                               <input
@@ -1463,30 +1839,7 @@ export default function AdminJourneysPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                    Tanggal Mulai Keberangkatan (From)
-                  </label>
-                  <input
-                    type="date"
-                    value={otDepartureDateFrom}
-                    onChange={(e) => setOtDepartureDateFrom(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                    Tanggal Selesai Keberangkatan (To)
-                  </label>
-                  <input
-                    type="date"
-                    value={otDepartureDateTo}
-                    onChange={(e) => setOtDepartureDateTo(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053]"
-                  />
-                </div>
-              </div>
+
 
               {/* Status Radio Buttons */}
               <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100 space-y-2.5">
@@ -1502,8 +1855,8 @@ export default function AdminJourneysPage() {
                     <label
                       key={opt.value}
                       className={`relative flex items-center justify-between gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer ${otStatus === opt.value
-                          ? "border-[#A89053] bg-[#A89053]/5 shadow-sm"
-                          : "border-slate-200 hover:border-slate-300 bg-white"
+                        ? "border-[#A89053] bg-[#A89053]/5 shadow-sm"
+                        : "border-slate-200 hover:border-slate-300 bg-white"
                         }`}
                     >
                       <div className="flex items-center gap-2.5">
@@ -1568,23 +1921,9 @@ export default function AdminJourneysPage() {
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Tagline (ID)</label>
                     <input type="text" value={otTaglineID} onChange={e => setOtTaglineID(e.target.value)} placeholder="e.g. Simfoni Teknologi Modern..." className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Durasi (ID)</label>
-                      <input type="text" value={otDurationID} onChange={e => setOtDurationID(e.target.value)} placeholder="5 Hari 4 Malam" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A89053]" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Harga (ID)</label>
-                      <input type="text" value={otPriceID} onChange={e => setOtPriceID(e.target.value)} placeholder="Mulai Rp 16.800.000 / pax" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A89053]" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Tgl Keberangkatan / Tour</label>
-                      <input type="text" value={otDepartureDateID} onChange={e => setOtDepartureDateID(e.target.value)} placeholder="15 - 20 Okt 2026" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A89053]" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Hotel (ID)</label>
-                      <input type="text" value={otHotelRatingID} onChange={e => setOtHotelRatingID(e.target.value)} placeholder="4★ Shinjuku Hotel" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A89053]" />
-                    </div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Hotel (ID)</label>
+                    <input type="text" value={otHotelRatingID} onChange={e => setOtHotelRatingID(e.target.value)} placeholder="4★ Shinjuku Hotel" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-xs" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Highlights Perjalanan (ID - 1 per baris)</label>
@@ -1627,23 +1966,9 @@ export default function AdminJourneysPage() {
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Tagline (EN)</label>
                     <input type="text" value={otTaglineEN} onChange={e => setOtTaglineEN(e.target.value)} placeholder="e.g. Symphony of Modern Technology..." className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Duration (EN)</label>
-                      <input type="text" value={otDurationEN} onChange={e => setOtDurationEN(e.target.value)} placeholder="5 Days 4 Nights" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A89053]" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Price (EN)</label>
-                      <input type="text" value={otPriceEN} onChange={e => setOtPriceEN(e.target.value)} placeholder="From IDR 16,800,000 / pax" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A89053]" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Departure / Tour Date (EN)</label>
-                      <input type="text" value={otDepartureDateEN} onChange={e => setOtDepartureDateEN(e.target.value)} placeholder="15 - 20 Oct 2026" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A89053]" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Hotel (EN)</label>
-                      <input type="text" value={otHotelRatingEN} onChange={e => setOtHotelRatingEN(e.target.value)} placeholder="4★ Shinjuku Hotel" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#A89053]" />
-                    </div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Hotel (EN)</label>
+                    <input type="text" value={otHotelRatingEN} onChange={e => setOtHotelRatingEN(e.target.value)} placeholder="4★ Shinjuku Hotel" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-xs" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Highlights (EN - 1 per line)</label>
@@ -1677,6 +2002,209 @@ export default function AdminJourneysPage() {
                   </div>
                 </div>
               )}
+
+              {/* Multi-Schedule / Departure Batches Section */}
+              <div className="space-y-4 pt-4 border-t border-slate-200">
+                <div className="flex items-center justify-between">
+                  <span className="font-serif font-bold text-sm text-[#0F2C59] flex items-center gap-2">
+                    <Clock size={16} className="text-[#A89053]" />
+                    <span>Jadwal Keberangkatan & Varian Harga ({otBatches.length} Batch)</span>
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono">
+                    Multi-Schedule & Price Batches
+                  </span>
+                </div>
+
+                <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200/80 space-y-4">
+                  <p className="text-[11px] text-slate-500 font-sans leading-relaxed">
+                    Tambahkan beberapa opsi tanggal keberangkatan, harga per pax, durasi, dan status kuota untuk paket wisata ini. Pilihan ini akan tampil di storefront secara otomatis.
+                  </p>
+
+                  {/* Existing Batches List Table */}
+                  {otBatches.length > 0 && (
+                    <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-sm">
+                      <table className="w-full text-left border-collapse text-xs">
+                        <thead>
+                          <tr className="bg-slate-100/80 border-b border-slate-200 text-[10px] font-mono uppercase text-slate-500 font-bold">
+                            <th className="p-3">Tgl Keberangkatan</th>
+                            <th className="p-3">Durasi</th>
+                            <th className="p-3">Harga (IDR)</th>
+                            <th className="p-3">Status Batch</th>
+                            <th className="p-3 text-right">Aksi</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {otBatches.map((b) => (
+                            <tr key={b.id} className={`hover:bg-slate-50/80 transition-colors ${editingBatchId === b.id ? "bg-[#A89053]/10" : ""}`}>
+                              <td className="p-3 font-semibold text-slate-800">
+                                {b.dateStrID}
+                                {b.dateStrEN && b.dateStrEN !== b.dateStrID && (
+                                  <span className="block text-[10px] text-slate-400 font-normal">EN: {b.dateStrEN}</span>
+                                )}
+                              </td>
+                              <td className="p-3 text-slate-600 font-mono text-[11px]">
+                                {b.durationID}
+                              </td>
+                              <td className="p-3 font-bold text-[#0284C7] font-mono">
+                                {b.priceID || "-"}
+                              </td>
+                              <td className="p-3">
+                                <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${b.status === "Available" ? "bg-emerald-100 text-emerald-700 border border-emerald-200" :
+                                    b.status === "FULL" ? "bg-rose-100 text-rose-700 border border-rose-200" :
+                                      b.status === "Closed" ? "bg-amber-100 text-amber-700 border border-amber-200" :
+                                        "bg-slate-100 text-slate-600 border border-slate-200"
+                                  }`}>
+                                  {b.status === "FULL" ? "Kuota Penuh" : b.status}
+                                </span>
+                              </td>
+                              <td className="p-3 text-right">
+                                <div className="flex items-center justify-end gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEditBatch(b)}
+                                    className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-200 hover:text-slate-800 transition-all"
+                                    title="Edit Batch"
+                                  >
+                                    <Edit3 size={13} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDuplicateBatch(b)}
+                                    className="p-1.5 rounded-lg text-sky-600 hover:bg-sky-50 transition-all"
+                                    title="Duplikat Batch"
+                                  >
+                                    <Plus size={13} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteBatch(b.id)}
+                                    className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-all"
+                                    title="Hapus Batch"
+                                  >
+                                    <Trash2 size={13} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Batch Input Form */}
+                  <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-3">
+                    <span className="text-[10px] font-mono font-bold text-[#0F2C59] uppercase tracking-wider block">
+                      {editingBatchId ? "✏️ Edit Batch Keberangkatan" : "➕ Tambah Batch Keberangkatan Baru"}
+                    </span>
+
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">📅 Tgl Mulai (Start Date) *</label>
+                          <input
+                            type="date"
+                            value={newBatchFromDate}
+                            onChange={(e) => setNewBatchFromDate(e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">📅 Tgl Selesai (End Date) *</label>
+                          <input
+                            type="date"
+                            value={newBatchToDate}
+                            onChange={(e) => setNewBatchToDate(e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Durasi (ID)</label>
+                          <input
+                            type="text"
+                            value={newBatchDurationID}
+                            onChange={(e) => setNewBatchDurationID(e.target.value)}
+                            placeholder="e.g. 5 Hari 4 Malam"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Harga per Pax (IDR) *</label>
+                          <input
+                            type="text"
+                            value={newBatchPriceID}
+                            onChange={(e) => setNewBatchPriceID(e.target.value)}
+                            placeholder="e.g. Rp 16.800.000"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Status Batch</label>
+                          <select
+                            value={newBatchStatus}
+                            onChange={(e) => setNewBatchStatus(e.target.value as any)}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                          >
+                            <option value="Available">Available (Buka)</option>
+                            <option value="FULL">FULL (Kuota Penuh)</option>
+                            <option value="Closed">Closed (Ditutup)</option>
+                            <option value="Draft">Draft</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Display calculated label preview */}
+                      {(newBatchDateID || newBatchDateEN) && (
+                        <div className="text-[10px] text-slate-500 font-mono flex items-center gap-2 pt-1 border-t border-slate-100">
+                          <span>Label Keberangkatan: <strong>{newBatchDateID}</strong></span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const customVal = prompt("Masukkan custom label tanggal:", newBatchDateID);
+                              if (customVal !== null) {
+                                setNewBatchDateID(customVal);
+                              }
+                            }}
+                            className="text-[#0284C7] hover:underline text-[9px]"
+                          >
+                            (Edit Manual)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      {editingBatchId ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingBatchId(null);
+                            setNewBatchDateID("");
+                            setNewBatchDateEN("");
+                            setNewBatchDurationID("");
+                            setNewBatchPriceID("");
+                          }}
+                          className="text-[10px] text-rose-600 font-bold uppercase hover:underline"
+                        >
+                          Batal Edit
+                        </button>
+                      ) : <div />}
+
+                      <button
+                        type="button"
+                        onClick={handleAddOrUpdateBatch}
+                        className="bg-[#0F2C59] hover:bg-[#0284C7] text-white px-4 py-2 rounded-lg font-mono text-[10px] uppercase tracking-wider font-bold transition-all cursor-pointer inline-flex items-center gap-1.5"
+                      >
+                        <Plus size={12} />
+                        <span>{editingBatchId ? "Simpan Perubahan Batch" : "Tambah Batch Ke Tabel"}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Rencana Perjalanan / Itinerary Day Builder */}
               <div className="space-y-4 pt-4 border-t border-slate-200">
@@ -1791,7 +2319,7 @@ export default function AdminJourneysPage() {
                         placeholder="Masukkan URL foto atau Upload..."
                         className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
                       />
-                      <button
+                      {/* <button
                         type="button"
                         onClick={() => {
                           if (newOtItImage.trim() && !newOtItImages.includes(newOtItImage.trim())) {
@@ -1802,7 +2330,7 @@ export default function AdminJourneysPage() {
                         className="px-3 py-2 bg-[#A89053] text-white hover:bg-[#967F47] rounded-xl text-[10px] font-bold uppercase tracking-wider cursor-pointer"
                       >
                         Tambah
-                      </button>
+                      </button> */}
                       <label className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 font-bold uppercase tracking-wider text-[9px] cursor-pointer shrink-0">
                         {isUploadingOtDay ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
                         <span>{isUploadingOtDay ? "Uploading..." : "Upload"}</span>
@@ -1972,8 +2500,8 @@ export default function AdminJourneysPage() {
                             <label
                               key={opt.value}
                               className={`flex items-center gap-1 text-[8px] font-bold uppercase cursor-pointer px-1.5 py-0.5 rounded-md transition-all select-none ${isChecked
-                                  ? opt.activeClass
-                                  : "text-slate-400 hover:text-white"
+                                ? opt.activeClass
+                                : "text-slate-400 hover:text-white"
                                 }`}
                             >
                               <input
@@ -2019,10 +2547,10 @@ export default function AdminJourneysPage() {
                         )}
                         {item.status && (
                           <div className={`flex items-center gap-1.5 text-[11px] font-mono font-bold uppercase px-2.5 py-1 rounded-lg w-fit border ${item.status === "Closed" || item.status === "inactive"
-                              ? "bg-rose-50 text-rose-600 border-rose-200"
-                              : item.status === "Draft" || item.status === "draft"
-                                ? "bg-slate-100 text-slate-600 border-slate-200"
-                                : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            ? "bg-rose-50 text-rose-600 border-rose-200"
+                            : item.status === "Draft" || item.status === "draft"
+                              ? "bg-slate-100 text-slate-600 border-slate-200"
+                              : "bg-emerald-50 text-emerald-700 border-emerald-200"
                             }`}>
                             <span>Status: {item.status}</span>
                           </div>

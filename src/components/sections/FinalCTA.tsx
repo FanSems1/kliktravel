@@ -7,6 +7,7 @@ import { WaveTransition } from "@/components/ui/WaveTransition";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { apiFetch } from "@/lib/api";
 
 const DEFAULT_MOMENTS = [
   {
@@ -43,13 +44,22 @@ export function FinalCTA() {
   const [moments, setMoments] = useState(DEFAULT_MOMENTS);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("klik_admin_gallery_items");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          const ourJourneysItems = parsed
-            .filter((x: any) => x.type === "OUR_JOURNEYS")
+    const loadGallery = async () => {
+      try {
+        let data: any[] | null = null;
+        try {
+          data = await apiFetch<any[]>("/admin/gallery");
+        } catch (err) {
+          try {
+            data = await apiFetch<any[]>("/gallery");
+          } catch (err2) {
+            console.warn("Could not fetch from /gallery endpoint, falling back to localStorage", err2);
+          }
+        }
+
+        if (data && Array.isArray(data)) {
+          const ourJourneysItems = data
+            .filter((x: any) => x.type === "OUR_JOURNEYS" || x.type === "STOREFRONT" || x.type === "MOMENTS")
             .map((x: any) => ({
               titleID: x.titleID,
               titleEN: x.titleEN || x.titleID,
@@ -57,12 +67,38 @@ export function FinalCTA() {
             }));
           if (ourJourneysItems.length > 0) {
             setMoments(ourJourneysItems);
+            return;
           }
         }
+      } catch (err) {
+        console.error("Failed to load gallery items from API", err);
       }
-    } catch (e) {
-      console.error(e);
-    }
+
+      // Local storage fallback
+      try {
+        const saved = localStorage.getItem("klik_admin_gallery_items");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            const ourJourneysItems = parsed
+              .filter((x: any) => x.type === "OUR_JOURNEYS" || x.type === "STOREFRONT" || x.type === "MOMENTS")
+              .map((x: any) => ({
+                titleID: x.titleID,
+                titleEN: x.titleEN || x.titleID,
+                image: x.image
+              }));
+            if (ourJourneysItems.length > 0) {
+              setMoments(ourJourneysItems);
+              return;
+            }
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    loadGallery();
   }, []);
 
   const scrollLeft = () => {

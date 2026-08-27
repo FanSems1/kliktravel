@@ -38,11 +38,11 @@ export default function AdminLoginPage() {
       });
 
       setSuccessMsg(locale === "id" ? "Autentikasi berhasil! Mengalihkan..." : "Authentication successful! Redirecting...");
-      
+
       if (res.accessToken) {
         setStoredToken(res.accessToken);
       }
-      
+
       if (typeof window !== "undefined") {
         localStorage.setItem("kt_admin_logged_in", "true");
         document.cookie = "kt_admin_logged_in=true; path=/; max-age=86400;";
@@ -54,8 +54,8 @@ export default function AdminLoginPage() {
     } catch (err: any) {
       setIsLoading(false);
       setErrorMsg(
-        err.message || (locale === "id" 
-          ? "Email atau kata sandi salah." 
+        err.message || (locale === "id"
+          ? "Email atau kata sandi salah."
           : "Invalid credentials.")
       );
     }
@@ -67,7 +67,7 @@ export default function AdminLoginPage() {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#A89053]/15 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#0284C7]/15 rounded-full blur-[120px] pointer-events-none" />
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -98,24 +98,9 @@ export default function AdminLoginPage() {
             {locale === "id" ? "Masukkan kredensial admin Anda untuk melanjutkan." : "Enter your administrative credentials to continue."}
           </p>
 
-          {/* Quick Demo Helper Pill */}
-          <div className="mb-6 p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2 text-white/80 font-mono text-[11px]">
-              <KeyRound size={14} className="text-[#A89053]" />
-              <span>admin@kliktravel.id / admin123</span>
-            </div>
-            <button 
-              type="button" 
-              onClick={fillDemoCredentials}
-              className="text-[10px] font-sans font-bold uppercase tracking-wider text-[#38BDF8] hover:underline"
-            >
-              Auto Fill
-            </button>
-          </div>
-
           {/* Error Message Alert */}
           {errorMsg && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-6 p-3.5 rounded-xl bg-red-500/20 border border-red-500/30 text-red-200 text-xs font-sans flex items-start gap-2.5"
@@ -127,7 +112,7 @@ export default function AdminLoginPage() {
 
           {/* Success Message Alert */}
           {successMsg && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-6 p-3.5 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-200 text-xs font-sans flex items-center gap-2.5"
@@ -146,8 +131,8 @@ export default function AdminLoginPage() {
               </label>
               <div className="relative">
                 <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/50" />
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -164,16 +149,16 @@ export default function AdminLoginPage() {
               </label>
               <div className="relative">
                 <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/50" />
-                <input 
-                  type={showPassword ? "text" : "password"} 
+                <input
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full bg-white/5 border border-white/15 focus:border-[#A89053] text-white text-xs font-sans rounded-xl pl-10 pr-10 py-3.5 focus:outline-none transition-all placeholder:text-white/30"
                 />
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
                 >
@@ -185,7 +170,7 @@ export default function AdminLoginPage() {
             {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between text-xs pt-1">
               <label className="flex items-center gap-2 cursor-pointer text-white/80 font-sans">
-                <input 
+                <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}

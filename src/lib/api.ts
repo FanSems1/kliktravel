@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://tn01x8vz-3000.asse.devtunnels.ms";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://limegreen-albatross-768813.hostingersite.com";
 
 export const TOKEN_KEY = "kt_admin_jwt_token";
 

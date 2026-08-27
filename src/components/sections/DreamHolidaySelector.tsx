@@ -69,7 +69,7 @@ export function DreamHolidaySelector() {
 
       // 2. Fetch dynamic departures
       try {
-        const openTrips = await apiFetch<any[]>(`/open-trips?locale=${locale}`).catch(() => null);
+        const openTrips = await apiFetch<any[]>("/open-trips").catch(() => null);
         if (openTrips && Array.isArray(openTrips) && openTrips.length > 0) {
           const mapped = openTrips.map((p) => {
             let periodKey: DepartureSchedule["periodKey"] = "all";

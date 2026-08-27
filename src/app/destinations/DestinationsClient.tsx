@@ -8,7 +8,7 @@ import { localizedRegions, RegionDestination } from "@/data/destinations";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiFetch } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, ArrowRight, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight, MapPin, Compass } from "lucide-react";
 
 const regionHeroImages: Record<string, string> = {
   indonesia: "https://images.unsplash.com/photo-1501179691627-eeaa65ea017c?q=80&w=2000",
@@ -18,6 +18,7 @@ const regionHeroImages: Record<string, string> = {
   korea: "https://images.unsplash.com/photo-1517154421773-0529f29ea451?q=80&w=2000",
   japan: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2000",
   china: "https://images.unsplash.com/photo-1547989453-11e67ffb3885?q=80&w=2000",
+  hongkong: "https://images.unsplash.com/photo-1506970845246-18f21d533b20?q=80&w=2000",
   swiss: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?q=80&w=2000",
   switzerland: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?q=80&w=2000",
   india: "https://images.unsplash.com/photo-1564507592333-c60657eea523?q=80&w=2000",
@@ -30,14 +31,16 @@ export function DestinationsClient() {
   const { t, locale } = useLanguage();
   const [regions, setRegions] = useState<RegionDestination[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [direction, setDirection] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
+
+  const isIndo = locale === "id";
 
   useEffect(() => {
     async function loadRegions() {
       setIsLoading(true);
-      setIsError(false);
+      const fallbacks = localizedRegions[locale === "en" ? "en" : "id"] || localizedRegions.id;
+      
       try {
         const data = await apiFetch<any[]>(`/destinations?locale=${locale}`).catch(() => null);
         if (data && Array.isArray(data) && data.length > 0) {
@@ -67,209 +70,222 @@ export function DestinationsClient() {
               slug: r.slug,
               subtitle: r.subtitle || "",
               featuredImageGradient: gradient,
-              image: image || regionHeroImages[r.slug] || regionHeroImages[r.key] || defaultFeaturedImage,
+              image: image || regionHeroImages[r.slug?.toLowerCase()] || regionHeroImages[r.key?.toLowerCase()] || defaultFeaturedImage,
               subDestinations
             };
           });
           setRegions(mapped);
-          setIsLoading(false);
-          return;
         } else {
-          setIsError(true);
+          // Use fallback localized regions if API returns empty
+          const mappedFallbacks = fallbacks.map(f => ({
+            ...f,
+            image: f.image || regionHeroImages[f.slug?.toLowerCase()] || defaultFeaturedImage
+          }));
+          setRegions(mappedFallbacks);
         }
       } catch (err) {
         console.error("DestinationsClient: Failed to load regions", err);
-        setIsError(true);
+        const mappedFallbacks = fallbacks.map(f => ({
+          ...f,
+          image: f.image || regionHeroImages[f.slug?.toLowerCase()] || defaultFeaturedImage
+        }));
+        setRegions(mappedFallbacks);
+      } finally {
+        setIsLoading(false);
       }
-      setRegions([]);
-      setIsLoading(false);
     }
+
     loadRegions();
   }, [locale]);
 
-  const handleNext = () => {
-    setDirection(1);
-    setActiveIndex((prev) => (prev + 1) % regions.length);
-  };
+  // Pagination Calculations
+  const totalPages = Math.max(1, Math.ceil(regions.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentRegions = regions.slice(startIndex, startIndex + itemsPerPage);
 
-  const handlePrev = () => {
-    setDirection(-1);
-    setActiveIndex((prev) => (prev - 1 + regions.length) % regions.length);
-  };
-
-  const currentRegion = regions[activeIndex];
-
-  // Animation variants for the card transition
-  const slideVariants = {
-    enter: (dir: number) => ({
-      x: dir > 0 ? 300 : -300,
-      opacity: 0,
-      scale: 0.85
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-      scale: 1,
-      transition: {
-        x: { type: "spring" as const, stiffness: 300, damping: 30 },
-        opacity: { duration: 0.4 },
-        scale: { duration: 0.4 }
-      }
-    },
-    exit: (dir: number) => ({
-      x: dir < 0 ? 300 : -300,
-      opacity: 0,
-      scale: 0.85,
-      transition: {
-        x: { type: "spring" as const, stiffness: 300, damping: 30 },
-        opacity: { duration: 0.3 }
-      }
-    })
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 300, behavior: "smooth" });
+    }
   };
 
   return (
-    <div className="bg-ivory text-foreground min-h-screen font-sans selection:bg-[#A89053] selection:text-white relative overflow-hidden flex flex-col justify-between">
-      {/* Decorative atmospheric background blurs */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-sky-200/10 rounded-full blur-3xl pointer-events-none z-0" />
-      <div className="absolute top-[40%] right-1/4 w-[600px] h-[600px] bg-amber-100/20 rounded-full blur-3xl pointer-events-none z-0" />
+    <div className="bg-white text-slate-800 min-h-screen font-sans flex flex-col justify-between selection:bg-[#0284C7] selection:text-white">
+      <Header />
 
-      <main className="pt-32 pb-24 relative z-10 flex-1 flex flex-col justify-center">
-        {/* Intro Banner */}
-        <section className="max-w-7xl mx-auto px-6 text-center mb-10 shrink-0">
-          <span className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-[#0284C7] block mb-3">
-            Nusantara Terkurasi
-          </span>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-[#0F2C59] tracking-tight mb-6">
-            DESTINASI
+      <main className="pt-32 pb-24 flex-1">
+        {/* Hero Section */}
+        <section className="max-w-7xl mx-auto px-6 text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0284C7]/10 text-[#0284C7] text-xs font-mono font-semibold uppercase tracking-[0.2em] mb-4">
+            <Compass size={14} />
+            <span>{isIndo ? "Jelajahi Dunia Bersama Kami" : "Explore The World With Us"}</span>
+          </div>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-[#0F2C59] tracking-tight mb-6 font-bold">
+            {isIndo ? "DESTINASI WISATA PILIHAN" : "CURATED DESTINATIONS"}
           </h1>
-          <p className="font-sans italic text-base md:text-lg text-[#0F2C59]/80 font-light leading-relaxed max-w-xl mx-auto px-4">
-            &ldquo;Indonesia bukanlah satu destinasi. Ini adalah ribuan cara untuk mengembara.&rdquo;
+          <p className="font-sans text-slate-600 text-base md:text-lg max-w-2xl mx-auto font-light leading-relaxed">
+            {isIndo 
+              ? "Temukan keindahan tak terbatas dari berbagai belahan nusantara hingga destinasi internasional impian Anda." 
+              : "Discover infinite beauty from exotic archipelago gems to your dream international getaways."}
           </p>
         </section>
 
-        {isLoading ? (
-          <div className="flex-1 flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-4 border-[#0284C7] border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : isError || regions.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center py-20 px-6 max-w-md mx-auto shrink-0">
-            <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mb-6 border border-amber-100 shadow-sm animate-pulse">
-              <AlertTriangle size={32} />
+        {/* Content Container */}
+        <section className="max-w-7xl mx-auto px-6">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-20 space-y-4">
+              <div className="w-10 h-10 border-4 border-[#0284C7] border-t-transparent rounded-full animate-spin" />
+              <p className="font-mono text-xs text-slate-500 uppercase tracking-widest">
+                {isIndo ? "Memuat Destinasi..." : "Loading Destinations..."}
+              </p>
             </div>
-            <h2 className="font-serif text-2xl text-[#0F2C59] mb-3 font-semibold leading-tight">
-              {locale === "id" ? "Layanan Sedang Pemeliharaan" : "Service Under Maintenance"}
-            </h2>
-            <p className="text-slate-500 text-xs md:text-sm leading-relaxed">
-              {locale === "id" 
-                ? "Kami sedang melakukan pemeliharaan sistem berkala untuk meningkatkan kualitas layanan. Silakan coba kembali dalam beberapa saat." 
-                : "We are currently performing scheduled system maintenance to improve our services. Please check back in a few moments."}
-            </p>
-          </div>
-        ) : currentRegion ? (
-          <div className="flex-1 flex flex-col items-center justify-center max-w-5xl mx-auto w-full px-6 space-y-8">
-            
-            {/* Horizontal Slider Area */}
-            <div className="relative w-full flex items-center justify-center">
-              
-              {/* Navigation Left */}
-              <button
-                onClick={handlePrev}
-                className="absolute left-0 md:left-4 z-20 p-3 bg-white/80 hover:bg-white text-slate-700 rounded-full shadow-lg border border-slate-100 hover:scale-105 transition-all cursor-pointer backdrop-blur-sm"
-              >
-                <ChevronLeft size={22} />
-              </button>
-
-              {/* Central Card Wrapper */}
-              <div className="w-full max-w-md aspect-[4/5] sm:aspect-[4/5] rounded-[36px] overflow-hidden relative shadow-2xl border border-charcoal/5 flex items-center justify-center bg-slate-50">
-                <AnimatePresence initial={false} custom={direction} mode="popLayout">
-                  <motion.div
-                    key={activeIndex}
-                    custom={direction}
-                    variants={slideVariants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    className="absolute inset-0 w-full h-full cursor-pointer group"
-                  >
-                    <Link href={`/destinations/${currentRegion.slug}`} className="block w-full h-full">
-                      <img 
-                        src={currentRegion.image || defaultFeaturedImage} 
-                        alt={currentRegion.name} 
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10" />
-                      <div className="absolute inset-0 flex items-center justify-center p-6">
-                        <span className="font-serif text-3xl sm:text-4xl md:text-5xl text-white font-normal tracking-widest drop-shadow-lg text-center uppercase">
-                          {currentRegion.name}
-                        </span>
-                      </div>
-                    </Link>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              {/* Navigation Right */}
-              <button
-                onClick={handleNext}
-                className="absolute right-0 md:right-4 z-20 p-3 bg-white/80 hover:bg-white text-slate-700 rounded-full shadow-lg border border-slate-100 hover:scale-105 transition-all cursor-pointer backdrop-blur-sm"
-              >
-                <ChevronRight size={22} />
-              </button>
-            </div>
-
-            {/* Bottom details dynamically animated */}
-            <div className="text-center space-y-3 max-w-md">
+          ) : (
+            <>
+              {/* 3-Column Responsive Grid */}
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={activeIndex}
-                  initial={{ opacity: 0, y: 10 }}
+                  key={currentPage}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-3"
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4 }}
+                  className="grid grid-cols-1 md:grid-cols-3 gap-8"
                 >
-                  <p className="font-sans text-xs md:text-sm text-foreground/50 tracking-wider uppercase font-medium">
-                    {currentRegion.subtitle}
-                  </p>
-                  
-                  <Link 
-                    href={`/destinations/${currentRegion.slug}`}
-                    className="inline-flex items-center gap-1.5 font-mono text-[10px] md:text-[11px] tracking-[0.2em] uppercase text-[#A89053] hover:text-[#A89053]/85 transition-colors font-bold mt-1 group"
-                  >
-                    <span>JELAJAHI PERJALANAN</span>
-                    <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
-                  </Link>
+                  {currentRegions.map((region) => (
+                    <div
+                      key={region.id}
+                      className="group bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col justify-between"
+                    >
+                      {/* Image Thumbnail Header */}
+                      <div className="relative h-64 overflow-hidden bg-slate-100">
+                        <img
+                          src={region.image || defaultFeaturedImage}
+                          alt={region.name}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                        
+                        {/* Sub-destinations Badge */}
+                        {region.subDestinations && region.subDestinations.length > 0 && (
+                          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full border border-white/40 shadow-sm flex items-center gap-1.5">
+                            <MapPin size={12} className="text-[#0284C7]" />
+                            <span className="font-mono text-[10px] font-bold text-slate-800 uppercase tracking-wider">
+                              {region.subDestinations.length} {isIndo ? "Lokasi" : "Spots"}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="absolute bottom-4 left-6 right-6">
+                          <h2 className="text-2xl md:text-3xl font-serif font-bold text-white tracking-wide uppercase drop-shadow-md">
+                            {region.name}
+                          </h2>
+                        </div>
+                      </div>
+
+                      {/* Card Body */}
+                      <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                        <p className="text-slate-600 text-xs md:text-sm font-normal line-clamp-3 leading-relaxed">
+                          {region.subtitle}
+                        </p>
+
+                        {/* Sub-destinations Pills */}
+                        {region.subDestinations && region.subDestinations.length > 0 && (
+                          <div className="space-y-2 pt-2 border-t border-slate-100">
+                            <span className="font-mono text-[9px] uppercase tracking-wider text-slate-400 font-bold block">
+                              {isIndo ? "Sorotan Destinasi:" : "Destination Highlights:"}
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {region.subDestinations.slice(0, 4).map((sub, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-2.5 py-1 bg-slate-50 border border-slate-200/80 rounded-lg text-[10px] font-sans text-slate-700 font-medium"
+                                >
+                                  {sub.name}
+                                </span>
+                              ))}
+                              {region.subDestinations.length > 4 && (
+                                <span className="px-2 py-1 text-[10px] font-mono text-slate-400 font-bold">
+                                  +{region.subDestinations.length - 4}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Card CTA Link */}
+                        <div className="pt-4 border-t border-slate-100">
+                          <Link
+                            href={`/destinations/${region.slug}`}
+                            className="inline-flex items-center justify-between w-full px-4 py-3 rounded-2xl bg-slate-50 hover:bg-[#0284C7] text-slate-700 hover:text-white font-mono text-xs uppercase tracking-wider font-bold transition-all group/btn"
+                          >
+                            <span>{isIndo ? "Jelajahi Perjalanan" : "Explore Journeys"}</span>
+                            <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </motion.div>
               </AnimatePresence>
-            </div>
 
-            {/* Quick Navigation Dot Ribbon */}
-            <div className="flex items-center gap-2 pt-2">
-              {regions.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    setDirection(idx > activeIndex ? 1 : -1);
-                    setActiveIndex(idx);
-                  }}
-                  className={`h-2.5 rounded-full transition-all duration-300 ${
-                    idx === activeIndex 
-                      ? "w-8 bg-[#A89053]" 
-                      : "w-2.5 bg-slate-300 hover:bg-slate-400"
-                  }`}
-                  title={regions[idx].name}
-                />
-              ))}
-            </div>
+              {/* Sleek Pagination Bar */}
+              {totalPages > 1 && (
+                <div className="mt-16 pt-8 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  {/* Item counter */}
+                  <span className="font-mono text-xs text-slate-500 font-medium">
+                    {isIndo 
+                      ? `Menampilkan ${startIndex + 1}–${Math.min(startIndex + itemsPerPage, regions.length)} dari ${regions.length} Destinasi`
+                      : `Showing ${startIndex + 1}–${Math.min(startIndex + itemsPerPage, regions.length)} of ${regions.length} Destinations`}
+                  </span>
 
-          </div>
-        ) : (
-          <div className="text-center py-20">
-            <p className="font-serif text-slate-500">No destinations found</p>
-          </div>
-        )}
+                  {/* Page Controls */}
+                  <div className="flex items-center gap-2">
+                    {/* Previous Button */}
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                      title={isIndo ? "Sebelumnya" : "Previous"}
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center gap-1.5">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`w-9 h-9 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
+                            pageNum === currentPage
+                              ? "bg-[#0284C7] text-white shadow-md shadow-[#0284C7]/20"
+                              : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Next Button */}
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                      title={isIndo ? "Selanjutnya" : "Next"}
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </section>
       </main>
+
+      <Footer />
     </div>
   );
 }
-

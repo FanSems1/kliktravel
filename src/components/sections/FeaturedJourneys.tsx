@@ -393,7 +393,7 @@ export function FeaturedJourneys() {
       setIsError(false);
       try {
         const [apiTrips, apiDestinations] = await Promise.all([
-          apiFetch<any[]>(`/open-trips?locale=${locale}`).catch(() => null),
+          apiFetch<any[]>("/open-trips").catch(() => null),
           apiFetch<any[]>(`/destinations?locale=${locale}`).catch(() => null),
         ]);
 
@@ -495,6 +495,26 @@ export function FeaturedJourneys() {
             }
           });
 
+          // Ensure every country has at least 3 items by merging static fallbacks if needed
+          finalCountries.forEach((name) => {
+            const currentList = grouped[name] || [];
+            if (currentList.length < 3) {
+              const staticTours = TOUR_DATA[name] || [];
+              for (const staticTour of staticTours) {
+                if (currentList.length >= 3) break;
+                const isDuplicate = currentList.some(
+                  (t) =>
+                    t.id === staticTour.id ||
+                    t.titleID.toLowerCase().trim() === staticTour.titleID.toLowerCase().trim()
+                );
+                if (!isDuplicate) {
+                  currentList.push(staticTour);
+                }
+              }
+              grouped[name] = currentList;
+            }
+          });
+
           setTourMap(grouped);
           localStorage.setItem("klik_admin_featured_tours", JSON.stringify(grouped));
         } else {
@@ -502,7 +522,7 @@ export function FeaturedJourneys() {
           if (saved) {
             setTourMap(JSON.parse(saved));
           } else {
-            setIsError(true);
+            setTourMap(TOUR_DATA);
           }
         }
       } catch (err) {

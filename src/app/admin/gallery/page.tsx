@@ -26,7 +26,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch, uploadMedia } from "@/lib/api";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://tn01x8vz-3000.asse.devtunnels.ms";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://limegreen-albatross-768813.hostingersite.com";
 
 export type GalleryType = "VISUAL_JOURNAL" | "OUR_JOURNEYS";
 
@@ -55,6 +55,8 @@ export default function AdminGalleryPage() {
 
   const [mainTab, setMainTab] = useState<"STOREFRONT_GALLERY" | "MEDIA_LIBRARY">("STOREFRONT_GALLERY");
   const [items, setItems] = useState<GalleryItemData[]>([]);
+  const [isLoadingItems, setIsLoadingItems] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [mediaAssets, setMediaAssets] = useState<MediaAsset[]>([]);
   const [isLoadingMedia, setIsLoadingMedia] = useState(true);
   const [activeStorefrontTab, setActiveStorefrontTab] = useState<"ALL" | GalleryType>("ALL");
@@ -88,6 +90,8 @@ export default function AdminGalleryPage() {
 
   // Image Upload Loading State
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [urlInput, setUrlInput] = useState("");
 
   // Toast Notification State
   const [toast, setToast] = useState<{
@@ -132,24 +136,58 @@ export default function AdminGalleryPage() {
     }
   };
 
+  const fetchGalleryItems = async () => {
+    setIsLoadingItems(true);
+    try {
+      const data = await apiFetch<any[]>("/admin/gallery");
+      if (Array.isArray(data)) {
+        const formatted = data.map((item) => {
+          let type: GalleryType = "VISUAL_JOURNAL";
+          if (item.type === "STOREFRONT" || item.type === "OUR_JOURNEYS" || item.type === "MOMENTS") {
+            type = "OUR_JOURNEYS";
+          } else if (item.type === "EXPEDITION" || item.type === "VISUAL_JOURNAL") {
+            type = "VISUAL_JOURNAL";
+          }
+          return {
+            id: item.id.toString(),
+            image: resolveMediaUrl(item.image),
+            type,
+            titleID: item.titleID || "",
+            titleEN: item.titleEN || "",
+            captionID: item.captionID || "",
+            captionEN: item.captionEN || "",
+            year: item.year || "2026",
+            sortOrder: item.sortOrder || 0,
+            isPublished: item.isPublished !== undefined ? item.isPublished : true,
+          };
+        });
+        setItems(formatted);
+        try {
+          localStorage.setItem("klik_admin_gallery_items", JSON.stringify(formatted));
+        } catch (e) { }
+      }
+    } catch (err) {
+      console.error("Failed to fetch gallery items, falling back to localStorage", err);
+      try {
+        const saved = localStorage.getItem("klik_admin_gallery_items");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            setItems(parsed);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    } finally {
+      setIsLoadingItems(false);
+    }
+  };
+
   // Load from API & LocalStorage
   useEffect(() => {
     fetchMediaAssets();
-
-    try {
-      const saved = localStorage.getItem("klik_admin_gallery_items");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          setItems(parsed);
-          return;
-        }
-      }
-      setItems([]);
-    } catch (e) {
-      console.error(e);
-      setItems([]);
-    }
+    fetchGalleryItems();
   }, []);
 
   const saveItemsToStorage = (newItems: GalleryItemData[]) => {
@@ -173,6 +211,8 @@ export default function AdminGalleryPage() {
       captionEN: "",
       year: new Date().getFullYear().toString()
     });
+    setSelectedImages([]);
+    setUrlInput("");
     setViewMode("form");
   };
 
@@ -188,30 +228,33 @@ export default function AdminGalleryPage() {
       captionEN: item.captionEN || "",
       year: item.year || new Date().getFullYear().toString()
     });
+    setSelectedImages([item.image]);
+    setUrlInput("");
     setViewMode("form");
   };
 
-  // Handle Real Image Upload using POST /admin/media/upload
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // Handle Multiple Real Image Upload using POST /admin/media/upload
+  const handleMultipleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setIsUploading(true);
     try {
-      const uploaded = await uploadMedia(file);
-      if (uploaded && uploaded.url) {
-        const fullUrl = resolveMediaUrl(uploaded.url);
-        setFormData(prev => ({ ...prev, image: fullUrl }));
-        showToast(
-          isIndo ? "Gambar berhasil diunggah!" : "Image uploaded successfully!",
-          "success"
-        );
-        fetchMediaAssets(); // Refresh media assets grid
-      }
+      const uploadPromises = Array.from(files).map(file => uploadMedia(file));
+      const results = await Promise.all(uploadPromises);
+      const urls = results.filter(res => res && res.url).map(res => resolveMediaUrl(res.url));
+      setSelectedImages(prev => [...prev, ...urls]);
+      showToast(
+        isIndo
+          ? `${urls.length} gambar berhasil diunggah!`
+          : `${urls.length} images uploaded successfully!`,
+        "success"
+      );
+      fetchMediaAssets(); // Refresh media assets grid
     } catch (err: any) {
       console.error("Upload error:", err);
       showToast(
-        err.message || (isIndo ? "Gagal mengunggah gambar" : "Failed to upload image"),
+        err.message || (isIndo ? "Gagal mengunggah beberapa gambar" : "Failed to upload some images"),
         "error"
       );
     } finally {
@@ -236,60 +279,108 @@ export default function AdminGalleryPage() {
   };
 
   // Submit Form
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.image.trim()) {
-      showToast(isIndo ? "Mohon unggah atau masukkan URL gambar" : "Please upload or enter image URL", "error");
-      return;
-    }
     if (!formData.titleID.trim()) {
       showToast(isIndo ? "Judul/Lokasi (ID) wajib diisi" : "Title/Location (ID) is required", "error");
       return;
     }
 
-    if (editingItem) {
-      // Edit
-      const updatedList = items.map(item =>
-        item.id === editingItem.id
-          ? {
-            ...item,
-            type: formData.type,
-            image: formData.image,
+    const targetImages = selectedImages.filter(url => url.trim() !== "");
+    if (targetImages.length === 0) {
+      showToast(isIndo ? "Mohon unggah atau pilih minimal satu gambar" : "Please upload or select at least one image", "error");
+      return;
+    }
+
+    setIsSubmitting(true);
+    const backendType = formData.type === "VISUAL_JOURNAL" ? "EXPEDITION" : "MOMENTS";
+
+    try {
+      if (editingItem) {
+        const payload = {
+          type: backendType,
+          image: targetImages[0],
+          titleID: formData.titleID,
+          titleEN: formData.titleEN || formData.titleID,
+          captionID: formData.captionID,
+          captionEN: formData.captionEN,
+          year: formData.year || new Date().getFullYear().toString(),
+          sortOrder: (editingItem as any)?.sortOrder !== undefined ? (editingItem as any).sortOrder : 0,
+          isPublished: (editingItem as any)?.isPublished !== undefined ? (editingItem as any).isPublished : true
+        };
+        await apiFetch(`/admin/gallery/${editingItem.id}`, {
+          method: "PATCH",
+          body: JSON.stringify(payload)
+        });
+        showToast(isIndo ? "Foto galeri berhasil diperbarui!" : "Gallery item updated successfully!");
+      } else {
+        const createPromises = targetImages.map(imgUrl => {
+          const payload = {
+            type: backendType,
+            image: imgUrl,
             titleID: formData.titleID,
             titleEN: formData.titleEN || formData.titleID,
             captionID: formData.captionID,
             captionEN: formData.captionEN,
-            year: formData.year
-          }
-          : item
-      );
-      saveItemsToStorage(updatedList);
-      showToast(isIndo ? "Foto galeri berhasil diperbarui!" : "Gallery item updated successfully!");
-    } else {
-      // Create
-      const newItem: GalleryItemData = {
-        id: `gal-${Date.now()}`,
-        type: formData.type,
-        image: formData.image,
-        titleID: formData.titleID,
-        titleEN: formData.titleEN || formData.titleID,
-        captionID: formData.captionID,
-        captionEN: formData.captionEN,
-        year: formData.year
-      };
-      saveItemsToStorage([newItem, ...items]);
-      showToast(isIndo ? "Foto galeri baru berhasil ditambahkan!" : "New gallery item added successfully!");
-    }
+            year: formData.year || new Date().getFullYear().toString(),
+            sortOrder: 0,
+            isPublished: true
+          };
+          return apiFetch("/admin/gallery", {
+            method: "POST",
+            body: JSON.stringify(payload)
+          });
+        });
 
-    setViewMode("list");
+        await Promise.all(createPromises);
+        showToast(
+          isIndo
+            ? `${targetImages.length} foto galeri baru berhasil ditambahkan!`
+            : `${targetImages.length} new gallery items added successfully!`
+        );
+      }
+      await fetchGalleryItems();
+      setViewMode("list");
+    } catch (err: any) {
+      console.error("Failed to save gallery item:", err);
+      showToast(err.message || (isIndo ? "Gagal menyimpan foto galeri" : "Failed to save gallery item"), "error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Delete Item
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm(isIndo ? "Hapus foto galeri ini dari storefront?" : "Delete this gallery item from storefront?")) {
-      const filtered = items.filter(item => item.id !== id);
-      saveItemsToStorage(filtered);
-      showToast(isIndo ? "Foto galeri berhasil dihapus" : "Gallery item deleted successfully");
+      try {
+        await apiFetch(`/admin/gallery/${id}`, {
+          method: "DELETE"
+        });
+        showToast(isIndo ? "Foto galeri berhasil dihapus" : "Gallery item deleted successfully");
+        await fetchGalleryItems();
+      } catch (err: any) {
+        console.error("Failed to delete gallery item:", err);
+        showToast(err.message || (isIndo ? "Gagal menghapus foto galeri" : "Failed to delete gallery item"), "error");
+      }
+    }
+  };
+
+  // Delete Media Asset using DELETE /admin/media/{id}
+  const handleDeleteMedia = async (id: string) => {
+    if (confirm(isIndo ? "Hapus file media ini secara permanen dari server?" : "Permanently delete this media asset from the server?")) {
+      try {
+        await apiFetch(`/admin/media/${id}`, {
+          method: "DELETE"
+        });
+        showToast(isIndo ? "Media berhasil dihapus dari server!" : "Media asset deleted successfully from server!", "success");
+        if (selectedDetail?.id === id) {
+          setSelectedDetail(null);
+        }
+        await fetchMediaAssets();
+      } catch (err: any) {
+        console.error("Failed to delete media asset:", err);
+        showToast(err.message || (isIndo ? "Gagal menghapus media" : "Failed to delete media asset"), "error");
+      }
     }
   };
 
@@ -323,8 +414,8 @@ export default function AdminGalleryPage() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             className={`fixed bottom-8 right-8 z-50 px-5 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border ${toast.type === "success"
-                ? "bg-[#0F2C59] text-white border-[#0284C7]/40"
-                : "bg-red-900 text-white border-red-500/40"
+              ? "bg-[#0F2C59] text-white border-[#0284C7]/40"
+              : "bg-red-900 text-white border-red-500/40"
               }`}
           >
             {toast.type === "success" ? (
@@ -402,9 +493,17 @@ export default function AdminGalleryPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors"
+                      title={isIndo ? "Buka URL di Tab Baru" : "Open URL in New Tab"}
                     >
                       <ExternalLink size={14} />
                     </a>
+                    <button
+                      onClick={() => handleDeleteMedia(selectedDetail.id)}
+                      className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
+                      title={isIndo ? "Hapus Media Permanen" : "Permanently Delete Media"}
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -430,8 +529,8 @@ export default function AdminGalleryPage() {
           <button
             onClick={() => { setMainTab("STOREFRONT_GALLERY"); setViewMode("list"); }}
             className={`px-4 py-2.5 rounded-xl font-mono text-xs uppercase tracking-wider font-bold transition-all cursor-pointer flex items-center gap-2 ${mainTab === "STOREFRONT_GALLERY"
-                ? "bg-[#0F2C59] text-white shadow-md"
-                : "text-slate-600 hover:text-slate-900"
+              ? "bg-[#0F2C59] text-white shadow-md"
+              : "text-slate-600 hover:text-slate-900"
               }`}
           >
             <Layers size={14} />
@@ -440,8 +539,8 @@ export default function AdminGalleryPage() {
           <button
             onClick={() => { setMainTab("MEDIA_LIBRARY"); setViewMode("list"); }}
             className={`px-4 py-2.5 rounded-xl font-mono text-xs uppercase tracking-wider font-bold transition-all cursor-pointer flex items-center gap-2 ${mainTab === "MEDIA_LIBRARY"
-                ? "bg-[#0284C7] text-white shadow-md"
-                : "text-slate-600 hover:text-slate-900"
+              ? "bg-[#0284C7] text-white shadow-md"
+              : "text-slate-600 hover:text-slate-900"
               }`}
           >
             <Sparkles size={14} />
@@ -484,8 +583,8 @@ export default function AdminGalleryPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label
                   className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col space-y-1.5 ${formData.type === "VISUAL_JOURNAL"
-                      ? "border-[#0284C7] bg-sky-50/50 text-[#0F2C59]"
-                      : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600"
+                    ? "border-[#0284C7] bg-sky-50/50 text-[#0F2C59]"
+                    : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600"
                     }`}
                 >
                   <div className="flex items-center justify-between">
@@ -506,8 +605,8 @@ export default function AdminGalleryPage() {
 
                 <label
                   className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col space-y-1.5 ${formData.type === "OUR_JOURNEYS"
-                      ? "border-[#0F2C59] bg-slate-100 text-[#0F2C59]"
-                      : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600"
+                    ? "border-[#0F2C59] bg-slate-100 text-[#0F2C59]"
+                    : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600"
                     }`}
                 >
                   <div className="flex items-center justify-between">
@@ -529,59 +628,119 @@ export default function AdminGalleryPage() {
             </div>
 
             {/* Image Selection / Upload */}
-            <div>
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                {isIndo ? "Unggah Gambar / Pilih Aset Media *" : "Upload Image / Choose Media Asset *"}
-              </label>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <input
-                  type="text"
-                  required
-                  value={formData.image}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
-                  placeholder="https://..."
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#0284C7] text-slate-800 text-xs"
-                />
-                <label className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0284C7] text-white hover:bg-[#0284C7]/90 font-mono text-xs uppercase tracking-wider font-bold cursor-pointer shrink-0 transition-all shadow-md shadow-[#0284C7]/20">
-                  {isUploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-                  <span>{isUploading ? "Uploading..." : "Upload File"}</span>
-                  <input type="file" accept="image/*" className="hidden" disabled={isUploading} onChange={handleFileUpload} />
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                  {isIndo ? "Unggah Gambar / Pilih Aset Media *" : "Upload Image / Choose Media Asset *"}
                 </label>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="text"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                    placeholder="https://..."
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#0284C7] text-slate-800 text-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (urlInput.trim()) {
+                        setSelectedImages(prev => prev.includes(urlInput.trim()) ? prev : [...prev, urlInput.trim()]);
+                        setUrlInput("");
+                      }
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono text-[10px] uppercase font-bold transition-all shrink-0 cursor-pointer border border-slate-200"
+                  >
+                    {isIndo ? "+ Tambah URL" : "+ Add URL"}
+                  </button>
+                  <label className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0284C7] text-white hover:bg-[#0284C7]/90 font-mono text-[10px] uppercase font-bold cursor-pointer shrink-0 transition-all shadow-md shadow-[#0284C7]/20">
+                    {isUploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                    <span>{isUploading ? "Uploading..." : (isIndo ? "Unggah File" : "Upload File")}</span>
+                    <input type="file" accept="image/*" multiple className="hidden" disabled={isUploading} onChange={handleMultipleFileUpload} />
+                  </label>
+                </div>
+
+                {/* Quick Pick from Server Media Assets */}
+                {mediaAssets.length > 0 && (
+                  <div className="mt-3 bg-slate-50 p-3 rounded-2xl border border-slate-200/80 space-y-2">
+                    <span className="font-mono text-[9px] uppercase tracking-wider text-slate-500 font-bold block">
+                      {isIndo ? "Pilih cepat dari Aset Media Server (Klik untuk pilih/hapus):" : "Quick pick from server media assets (Click to toggle):"}
+                    </span>
+                    <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
+                      {mediaAssets.slice(0, 12).map((asset) => {
+                        const isSelected = selectedImages.includes(asset.url);
+                        return (
+                          <button
+                            key={asset.id}
+                            type="button"
+                            onClick={() => {
+                              if (editingItem) {
+                                setSelectedImages([asset.url]);
+                                setFormData(prev => ({ ...prev, image: asset.url }));
+                              } else {
+                                setSelectedImages(prev =>
+                                  prev.includes(asset.url)
+                                    ? prev.filter(u => u !== asset.url)
+                                    : [...prev, asset.url]
+                                );
+                              }
+                            }}
+                            className={`w-12 h-12 rounded-xl overflow-hidden border-2 shrink-0 relative transition-all ${isSelected ? "border-[#0284C7] ring-2 ring-[#0284C7]/30 scale-105" : "border-slate-200 opacity-80 hover:opacity-100"
+                              }`}
+                            title={asset.filename}
+                          >
+                            <img src={asset.url} alt={asset.filename} className="w-full h-full object-cover" />
+                            {isSelected && (
+                              <div className="absolute inset-0 bg-[#0284C7]/30 flex items-center justify-center text-white font-bold text-xs">
+                                ✓
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Quick Pick from Server Media Assets */}
-              {mediaAssets.length > 0 && (
-                <div className="mt-3 bg-slate-50 p-3 rounded-2xl border border-slate-200/80 space-y-2">
-                  <span className="font-mono text-[9px] uppercase tracking-wider text-slate-500 font-bold block">
-                    {isIndo ? "Pilih cepat dari Aset Media Server terunggah:" : "Quick pick from server media assets:"}
-                  </span>
-                  <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
-                    {mediaAssets.slice(0, 8).map((asset) => (
+              {/* Preview Selected Images Grid */}
+              {selectedImages.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[9px] uppercase tracking-wider text-slate-500 font-bold">
+                      {isIndo ? `Foto Terpilih (${selectedImages.length}):` : `Selected Photos (${selectedImages.length}):`}
+                    </span>
+                    {!editingItem && (
                       <button
-                        key={asset.id}
                         type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, image: asset.url }))}
-                        className={`w-12 h-12 rounded-xl overflow-hidden border-2 shrink-0 relative transition-all ${formData.image === asset.url ? "border-[#0284C7] ring-2 ring-[#0284C7]/30" : "border-slate-200 hover:border-slate-400"
-                          }`}
-                        title={asset.filename}
+                        onClick={() => setSelectedImages([])}
+                        className="text-[9px] font-mono text-red-500 hover:underline cursor-pointer"
                       >
-                        <img src={asset.url} alt={asset.filename} className="w-full h-full object-cover" />
+                        {isIndo ? "Hapus Semua" : "Clear All"}
                       </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                    {selectedImages.map((imgUrl, idx) => (
+                      <div key={idx} className="h-20 bg-slate-100 rounded-xl overflow-hidden border border-slate-200 relative group">
+                        <img src={imgUrl} alt={`Selected ${idx}`} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setSelectedImages(prev => prev.filter((_, i) => i !== idx))}
+                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center opacity-90 hover:opacity-100 transition-opacity cursor-pointer shadow"
+                          title={isIndo ? "Hapus foto ini" : "Remove photo"}
+                        >
+                          <X size={10} />
+                        </button>
+                        <span className="absolute bottom-1 left-1 bg-black/60 text-white font-mono text-[8px] px-1 py-0.5 rounded">
+                          #{idx + 1}
+                        </span>
+                      </div>
                     ))}
                   </div>
                 </div>
               )}
             </div>
-
-            {/* Preview Selected Image */}
-            {formData.image && (
-              <div className="w-full h-44 bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 relative">
-                <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
-                <span className="absolute bottom-2 left-2 bg-black/60 text-white font-mono text-[9px] uppercase px-2 py-0.5 rounded backdrop-blur-sm">
-                  Image Preview
-                </span>
-              </div>
-            )}
 
             {/* Title / Location ID & EN */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -651,9 +810,13 @@ export default function AdminGalleryPage() {
               </button>
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 font-mono text-xs uppercase tracking-wider font-bold transition-all cursor-pointer shadow-md shadow-[#0F2C59]/20"
+                disabled={isSubmitting}
+                className="px-6 py-2.5 rounded-xl bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 font-mono text-xs uppercase tracking-wider font-bold transition-all cursor-pointer shadow-md shadow-[#0F2C59]/20 disabled:opacity-50 flex items-center gap-2"
               >
-                {editingItem ? (isIndo ? "Perbarui Foto" : "Update Photo") : (isIndo ? "Simpan Foto Galeri" : "Save Gallery Photo")}
+                {isSubmitting && <Loader2 size={14} className="animate-spin" />}
+                <span>
+                  {editingItem ? (isIndo ? "Perbarui Foto" : "Update Photo") : (isIndo ? "Simpan Foto Galeri" : "Save Gallery Photo")}
+                </span>
               </button>
             </div>
           </form>
@@ -668,8 +831,8 @@ export default function AdminGalleryPage() {
               <button
                 onClick={() => setActiveStorefrontTab("ALL")}
                 className={`px-3.5 py-2 rounded-xl font-mono text-xs uppercase tracking-wider font-bold transition-all cursor-pointer ${activeStorefrontTab === "ALL"
-                    ? "bg-[#0F2C59] text-white shadow-sm"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  ? "bg-[#0F2C59] text-white shadow-sm"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
               >
                 {isIndo ? `Semua Storefront (${items.length})` : `All Storefront (${items.length})`}
@@ -677,8 +840,8 @@ export default function AdminGalleryPage() {
               <button
                 onClick={() => setActiveStorefrontTab("VISUAL_JOURNAL")}
                 className={`px-3.5 py-2 rounded-xl font-mono text-xs uppercase tracking-wider font-bold transition-all cursor-pointer ${activeStorefrontTab === "VISUAL_JOURNAL"
-                    ? "bg-[#0284C7] text-white shadow-sm"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  ? "bg-[#0284C7] text-white shadow-sm"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
               >
                 {isIndo ? `Galeri Ekspedisi /journal (${countVJ})` : `Expedition /journal (${countVJ})`}
@@ -686,8 +849,8 @@ export default function AdminGalleryPage() {
               <button
                 onClick={() => setActiveStorefrontTab("OUR_JOURNEYS")}
                 className={`px-3.5 py-2 rounded-xl font-mono text-xs uppercase tracking-wider font-bold transition-all cursor-pointer ${activeStorefrontTab === "OUR_JOURNEYS"
-                    ? "bg-slate-800 text-white shadow-sm"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  ? "bg-slate-800 text-white shadow-sm"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
               >
                 {isIndo ? `Momen Bersama Home / (${countOJ})` : `Home Moments / (${countOJ})`}
@@ -718,7 +881,14 @@ export default function AdminGalleryPage() {
           </div>
 
           {/* Grid Display for Storefront Gallery Items */}
-          {filteredStorefrontItems.length === 0 ? (
+          {isLoadingItems ? (
+            <div className="p-12 text-center flex flex-col items-center justify-center space-y-3 bg-white rounded-3xl border border-slate-200/80 shadow-sm">
+              <Loader2 size={32} className="text-[#0284C7] animate-spin" />
+              <p className="font-sans text-xs text-slate-500 font-medium">
+                {isIndo ? "Memuat foto galeri dari server..." : "Loading gallery items from backend..."}
+              </p>
+            </div>
+          ) : filteredStorefrontItems.length === 0 ? (
             <div className="bg-white p-12 text-center rounded-3xl border border-dashed border-slate-200 space-y-3">
               <ImageIcon size={40} className="text-slate-300 mx-auto mb-1" />
               <h3 className="font-serif text-lg font-bold text-[#0F2C59]">
@@ -753,8 +923,8 @@ export default function AdminGalleryPage() {
                     <div className="absolute top-3 left-3">
                       <span
                         className={`font-mono text-[9px] uppercase tracking-wider px-2.5 py-1 rounded-full font-bold shadow-md backdrop-blur-md ${item.type === "VISUAL_JOURNAL"
-                            ? "bg-[#0284C7] text-white"
-                            : "bg-[#0F2C59] text-white"
+                          ? "bg-[#0284C7] text-white"
+                          : "bg-[#0F2C59] text-white"
                           }`}
                       >
                         {item.type === "VISUAL_JOURNAL" ? "📷 Galeri Ekspedisi (/journal)" : "📸 Momen Bersama (Home /)"}
@@ -833,7 +1003,8 @@ export default function AdminGalleryPage() {
               <input
                 type="file"
                 accept="image/*"
-                onChange={handleFileUpload}
+                multiple
+                onChange={handleMultipleFileUpload}
                 className="hidden"
               />
             </label>
@@ -883,6 +1054,13 @@ export default function AdminGalleryPage() {
                         title={isIndo ? "Salin Direct URL" : "Copy Direct URL"}
                       >
                         <Copy size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteMedia(asset.id)}
+                        className="p-2 bg-red-600 text-white rounded-xl hover:bg-red-700 shadow-md transition-colors"
+                        title={isIndo ? "Hapus Media Permanen" : "Permanently Delete Media"}
+                      >
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>

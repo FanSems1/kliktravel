@@ -126,13 +126,22 @@ export function JournalClient() {
   }, []);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("klik_admin_gallery_items");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          const vjItems = parsed
-            .filter((x: any) => x.type === "VISUAL_JOURNAL")
+    const loadGallery = async () => {
+      try {
+        let data: any[] | null = null;
+        try {
+          data = await apiFetch<any[]>("/admin/gallery");
+        } catch (err) {
+          try {
+            data = await apiFetch<any[]>("/gallery");
+          } catch (err2) {
+            console.warn("Could not fetch from /gallery endpoint, falling back to localStorage", err2);
+          }
+        }
+
+        if (data && Array.isArray(data)) {
+          const vjItems = data
+            .filter((x: any) => x.type === "VISUAL_JOURNAL" || x.type === "EXPEDITION")
             .map((x: any, idx: number) => ({
               id: idx + 1,
               image: x.image,
@@ -147,11 +156,40 @@ export function JournalClient() {
             return;
           }
         }
+      } catch (err) {
+        console.error("Failed to load gallery items from API", err);
       }
-    } catch (e) {
-      console.error(e);
-    }
-    setItemsList([]);
+
+      // Local storage fallback
+      try {
+        const saved = localStorage.getItem("klik_admin_gallery_items");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            const vjItems = parsed
+              .filter((x: any) => x.type === "VISUAL_JOURNAL" || x.type === "EXPEDITION")
+              .map((x: any, idx: number) => ({
+                id: idx + 1,
+                image: x.image,
+                locationID: x.titleID || "Destinasi",
+                locationEN: x.titleEN || x.titleID || "Destination",
+                captionID: x.captionID || "",
+                captionEN: x.captionEN || x.captionID || "",
+                year: x.year || "2026"
+              }));
+            if (vjItems.length > 0) {
+              setItemsList(vjItems);
+              return;
+            }
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      setItemsList([]);
+    };
+
+    loadGallery();
   }, []);
 
   // Determine localized categories
