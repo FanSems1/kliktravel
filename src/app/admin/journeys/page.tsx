@@ -62,12 +62,169 @@ interface ApiOpenTrip {
   status?: string;
 }
 
+// Helper to parse number of days from duration string (e.g. "5 Hari 4 Malam", "5 Hari", "5 Days")
+const getDaysFromDurationString = (dur: string): number => {
+  if (!dur || !dur.trim()) return 0;
+  const match = dur.match(/(\d+)\s*(?:hari|day)/i);
+  if (match) {
+    return parseInt(match[1], 10);
+  }
+  const firstNumber = dur.match(/\d+/);
+  return firstNumber ? parseInt(firstNumber[0], 10) : 0;
+};
+
+// Helper to calculate end date (YYYY-MM-DD) based on start date and duration string
+const calculateEndDate = (startDateStr: string, durationStr: string): string => {
+  if (!startDateStr) return "";
+  const days = getDaysFromDurationString(durationStr);
+  if (isNaN(days) || days <= 0) return startDateStr;
+
+  const start = new Date(startDateStr);
+  if (isNaN(start.getTime())) return startDateStr;
+
+  start.setDate(start.getDate() + (days - 1));
+  const yyyy = start.getFullYear();
+  const mm = String(start.getMonth() + 1).padStart(2, "0");
+  const dd = String(start.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+// Helper to parse unstructured Indonesian itinerary text into structured ItineraryDay array
+const parseItineraryText = (text: string): ItineraryDay[] => {
+  if (!text || !text.trim()) return [];
+
+  // Regex to find day markers (HARI 01, HARI 1, DAY 1, etc.)
+  const dayRegex = /(?:HARI|DAY)\s*0*(\d+)/gi;
+  const matches: { dayNum: number; index: number }[] = [];
+  let match;
+
+  while ((match = dayRegex.exec(text)) !== null) {
+    matches.push({
+      dayNum: parseInt(match[1], 10),
+      index: match.index
+    });
+  }
+
+  if (matches.length === 0) {
+    // If no markers found, treat the entire text as Day 1
+    return [{
+      day: 1,
+      title: "Rencana Perjalanan",
+      titleEN: "Itinerary Plan",
+      activities: [],
+      activitiesEN: [],
+      description: text.trim(),
+      descriptionEN: text.trim(),
+      hotel: "",
+      hotelEN: "",
+      image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=800",
+      images: []
+    }];
+  }
+
+  const parsedDays: ItineraryDay[] = [];
+
+  for (let i = 0; i < matches.length; i++) {
+    const current = matches[i];
+    const nextIndex = i + 1 < matches.length ? matches[i + 1].index : text.length;
+
+    // Get content block for this day
+    const rawBlock = text.substring(current.index, nextIndex);
+
+    // Strip prefix like "HARI 01:"
+    const prefixMatch = rawBlock.match(/^(?:HARI|DAY)\s*0*\d+[\s:-]*/i);
+    const prefixLength = prefixMatch ? prefixMatch[0].length : 0;
+    const blockContent = rawBlock.slice(prefixLength).trim();
+
+    // Parse meals, title, description, hotel, activities
+    let meals = "";
+    let title = "";
+    let description = blockContent;
+
+    // Detect meals in parentheses, e.g., (MEALS ON BOARD) or (MAKAN PAGI, MAKAN SIANG)
+    const mealsRegex = /\((?:meals|makan|pagi|siang|malam|mp|ms|mm|board|b|l|d|[\s,/&])+\)/i;
+    const mealsMatch = blockContent.match(mealsRegex);
+
+    if (mealsMatch) {
+      meals = mealsMatch[0].replace(/[\(\)]/g, "").trim();
+      const mealsIndex = blockContent.indexOf(mealsMatch[0]);
+      title = blockContent.substring(0, mealsIndex).replace(/[\s:-]+$/, "").trim();
+      description = blockContent.substring(mealsIndex + mealsMatch[0].length).trim();
+    } else {
+      // Find separator for title (e.g. line break or period)
+      const firstLineEnd = blockContent.indexOf("\n");
+      if (firstLineEnd !== -1) {
+        title = blockContent.substring(0, firstLineEnd).trim();
+        description = blockContent.substring(firstLineEnd + 1).trim();
+      } else {
+        const firstPeriod = blockContent.indexOf(".");
+        if (firstPeriod !== -1 && firstPeriod < 100) {
+          title = blockContent.substring(0, firstPeriod).trim();
+          description = blockContent.substring(firstPeriod + 1).trim();
+        } else {
+          title = `Hari ${current.dayNum}`;
+          description = blockContent;
+        }
+      }
+    }
+
+    // Extract hotel from description
+    let hotel = "";
+    const hotelRegex = /(?:menginap di|hotel\s*:|akomodasi\s*:)\s*([^\n\.]+)/i;
+    const hotelMatch = description.match(hotelRegex);
+    if (hotelMatch) {
+      hotel = hotelMatch[1].trim();
+      description = description.replace(hotelRegex, "").trim();
+    }
+
+    // Clean up description trailing parts (e.g. "Bermalam di Pattaya." left when hotel was removed)
+    description = description.replace(/\s*(?:bermalam|menginap)\s+di\s+[^\n\.]+\.?$/i, "").trim();
+    description = description.replace(/\s+/g, " ").trim();
+
+    // Extract activities
+    const activityKeywords = /(?:mengunjungi|menuju ke|menuju|berbelanja di|ke)\s+([A-Z][a-zA-Z0-9\s'’-]+?)(?=\.|\,|\bdan\b|Setelah|Check-in|Bermalam|menginap|kemudian|selanjutnya)/g;
+    const activities: string[] = [];
+    let actMatch;
+    while ((actMatch = activityKeywords.exec(description)) !== null) {
+      const actName = actMatch[1].trim();
+      if (actName && actName.length > 3 && !activities.includes(actName)) {
+        activities.push(actName);
+      }
+    }
+
+    // Standardize title and meals formatting
+    if (meals) {
+      title = `${title} (${meals.toUpperCase()})`;
+    }
+
+    parsedDays.push({
+      day: current.dayNum,
+      title: title || `Hari ${current.dayNum}`,
+      titleEN: title || `Day ${current.dayNum}`,
+      activities: activities,
+      activitiesEN: activities,
+      description: description,
+      descriptionEN: description,
+      hotel: hotel,
+      hotelEN: hotel,
+      image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=800",
+      images: []
+    });
+  }
+
+  return parsedDays;
+};
+
 export default function AdminJourneysPage() {
   const { locale } = useLanguage();
   const [activeTab, setActiveTab] = useState<"curated" | "open">("open");
   const [viewMode, setViewMode] = useState<"list" | "form">("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  // States for itinerary text auto-converter
+  const [rawItineraryText, setRawItineraryText] = useState("");
+  const [isConverterOpen, setIsConverterOpen] = useState(false);
 
   // Upload loading states
   const [isUploadingOtMain, setIsUploadingOtMain] = useState(false);
@@ -462,6 +619,16 @@ export default function AdminJourneysPage() {
       if (otBatches[0].toDate) setOtDepartureDateTo(otBatches[0].toDate);
     }
   }, [otBatches]);
+
+  // Auto-calculate newBatchToDate based on newBatchFromDate and otDurationID
+  useEffect(() => {
+    if (newBatchFromDate && otDurationID) {
+      const calculated = calculateEndDate(newBatchFromDate, otDurationID);
+      if (calculated && calculated !== newBatchToDate) {
+        setNewBatchToDate(calculated);
+      }
+    }
+  }, [newBatchFromDate, otDurationID]);
 
   // Auto-calculate batch date range label and duration from datepickers
   useEffect(() => {
@@ -1889,8 +2056,8 @@ export default function AdminJourneysPage() {
                     <input type="text" required value={otNameID} onChange={e => setOtNameID(e.target.value)} placeholder="e.g. Tokyo" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Tagline (ID)</label>
-                    <input type="text" value={otTaglineID} onChange={e => setOtTaglineID(e.target.value)} placeholder="e.g. Simfoni Teknologi Modern..." className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Hari (ID) *</label>
+                    <input type="text" required value={otDurationID} onChange={e => setOtDurationID(e.target.value)} placeholder="e.g. 5 Hari 4 Malam" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Hotel (ID)</label>
@@ -1934,8 +2101,8 @@ export default function AdminJourneysPage() {
                     <input type="text" value={otNameEN} onChange={e => setOtNameEN(e.target.value)} placeholder="e.g. Tokyo" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Tagline (EN)</label>
-                    <input type="text" value={otTaglineEN} onChange={e => setOtTaglineEN(e.target.value)} placeholder="e.g. Symphony of Modern Technology..." className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Hari (EN)</label>
+                    <input type="text" value={otDurationEN} onChange={e => setOtDurationEN(e.target.value)} placeholder="e.g. 5 Days 4 Nights" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Hotel (EN)</label>
@@ -2000,7 +2167,6 @@ export default function AdminJourneysPage() {
                             <th className="p-3">Tgl Keberangkatan</th>
                             <th className="p-3">Durasi</th>
                             <th className="p-3">Harga (IDR)</th>
-                            <th className="p-3">Status Batch</th>
                             <th className="p-3 text-right">Aksi</th>
                           </tr>
                         </thead>
@@ -2018,15 +2184,6 @@ export default function AdminJourneysPage() {
                               </td>
                               <td className="p-3 font-bold text-[#0284C7] font-mono">
                                 {b.priceID || "-"}
-                              </td>
-                              <td className="p-3">
-                                <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${b.status === "Available" ? "bg-emerald-100 text-emerald-700 border border-emerald-200" :
-                                  b.status === "FULL" ? "bg-rose-100 text-rose-700 border border-rose-200" :
-                                    b.status === "Closed" ? "bg-amber-100 text-amber-700 border border-amber-200" :
-                                      "bg-slate-100 text-slate-600 border border-slate-200"
-                                  }`}>
-                                  {b.status === "FULL" ? "Kuota Penuh" : b.status}
-                                </span>
                               </td>
                               <td className="p-3 text-right">
                                 <div className="flex items-center justify-end gap-1">
@@ -2081,17 +2238,20 @@ export default function AdminJourneysPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">📅 Tgl Selesai (End Date) *</label>
+                          <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                            📅 Tgl Selesai (End Date) <span className="text-[#A89053] font-normal italic">(Otomatis dari Hari)</span> *
+                          </label>
                           <input
                             type="date"
+                            readOnly
+                            disabled
                             value={newBatchToDate}
-                            onChange={(e) => setNewBatchToDate(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                            className="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none cursor-not-allowed text-slate-500"
                           />
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Durasi (ID)</label>
                           <input
@@ -2111,19 +2271,6 @@ export default function AdminJourneysPage() {
                             placeholder="e.g. Rp 16.800.000"
                             className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
                           />
-                        </div>
-                        <div>
-                          <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Status Batch</label>
-                          <select
-                            value={newBatchStatus}
-                            onChange={(e) => setNewBatchStatus(e.target.value as any)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
-                          >
-                            <option value="Available">Available (Buka)</option>
-                            <option value="FULL">FULL (Kuota Penuh)</option>
-                            <option value="Closed">Closed (Ditutup)</option>
-                            <option value="Draft">Draft</option>
-                          </select>
                         </div>
                       </div>
 
@@ -2204,6 +2351,98 @@ export default function AdminJourneysPage() {
                     >
                       Batal Edit Hari
                     </button>
+                  )}
+                </div>
+
+                {/* ⚡ Auto-Convert Itinerary from Raw Text */}
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsConverterOpen(!isConverterOpen)}
+                    className="w-full flex items-center justify-between text-left text-xs font-bold text-[#0F2C59] hover:text-[#A89053] transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Sparkles size={14} className="text-[#A89053]" />
+                      <span>⚡ Convert / Impor Itinerary dari Teks Raw</span>
+                    </span>
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">
+                      {isConverterOpen ? "Tutup" : "Buka Converter"}
+                    </span>
+                  </button>
+
+                  {isConverterOpen && (
+                    <div className="space-y-3 pt-2 border-t border-slate-200/60 transition-all">
+                      <p className="text-[10px] text-slate-500 leading-relaxed">
+                        Tempelkan teks itinerary rute perjalanan (misalnya dari WA/PDF). Format yang didukung: <code className="bg-slate-200 px-1 py-0.5 rounded text-[#0F2C59] font-mono">HARI 01: KEBERANGKATAN ... Menginap di Hotel***</code>.
+                      </p>
+                      <textarea
+                        rows={6}
+                        value={rawItineraryText}
+                        onChange={(e) => setRawItineraryText(e.target.value)}
+                        placeholder={`Contoh:\nHARI 01: KEBERANGKATAN – BANGKOK (MEALS ON BOARD) Kita berkumpul di bandara... Menginap di Hotel***\nHARI 02: BANGKOK - PATTAYA (MAKAN PAGI, MAKAN SIANG) Setelah sarapan pagi... Menginap di Hotel***`}
+                        className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-mono focus:outline-none focus:border-[#A89053] placeholder-slate-400"
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!rawItineraryText.trim()) return;
+                            const parsed = parseItineraryText(rawItineraryText);
+                            if (parsed.length > 0) {
+                              setOtItinerary(parsed);
+
+                              // Auto calculate duration (e.g. 5 Hari 4 Malam)
+                              const days = parsed.length;
+                              const nights = days - 1;
+                              const durationStrID = `${days} Hari ${nights > 0 ? `${nights} Malam` : ""}`.trim();
+                              const durationStrEN = `${days} Days ${nights > 0 ? `${nights} Nights` : ""}`.trim();
+                              setOtDurationID(durationStrID);
+                              setOtDurationEN(durationStrEN);
+
+                              setToast({ message: `Berhasil meng-convert ${parsed.length} Hari itinerary!`, type: "success" });
+                              setIsConverterOpen(false);
+                            } else {
+                              setToast({ message: "Gagal mendeteksi format itinerary. Pastikan ada kata 'HARI XX' atau 'DAY XX'.", type: "error" });
+                            }
+                          }}
+                          className="bg-[#A89053] hover:bg-[#967F47] text-white px-3.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                        >
+                          Terapkan (Ganti Semua)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!rawItineraryText.trim()) return;
+                            const parsed = parseItineraryText(rawItineraryText);
+                            if (parsed.length > 0) {
+                              // Adjust day numbers for appended days
+                              const startDay = otItinerary.length + 1;
+                              const adjusted = parsed.map((item, index) => ({
+                                ...item,
+                                day: startDay + index
+                              }));
+                              setOtItinerary([...otItinerary, ...adjusted]);
+
+                              // Re-calculate duration
+                              const days = otItinerary.length + parsed.length;
+                              const nights = days - 1;
+                              const durationStrID = `${days} Hari ${nights > 0 ? `${nights} Malam` : ""}`.trim();
+                              const durationStrEN = `${days} Days ${nights > 0 ? `${nights} Nights` : ""}`.trim();
+                              setOtDurationID(durationStrID);
+                              setOtDurationEN(durationStrEN);
+
+                              setToast({ message: `Berhasil menambahkan ${parsed.length} Hari itinerary!`, type: "success" });
+                              setIsConverterOpen(false);
+                            } else {
+                              setToast({ message: "Gagal mendeteksi format itinerary. Pastikan ada kata 'HARI XX' atau 'DAY XX'.", type: "error" });
+                            }
+                          }}
+                          className="bg-[#0F2C59] hover:bg-[#0284C7] text-white px-3.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                        >
+                          Tambahkan di Akhir
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
 

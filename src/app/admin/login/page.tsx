@@ -12,8 +12,8 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { locale } = useLanguage();
 
-  const [email, setEmail] = useState("admin@kliktravel.id");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,8 +21,8 @@ export default function AdminLoginPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const fillDemoCredentials = () => {
-    setEmail("admin@kliktravel.id");
-    setPassword("admin123");
+    setEmail("");
+    setPassword("");
     setErrorMsg(null);
   };
 
@@ -136,7 +136,7 @@ export default function AdminLoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@kliktravel.id"
+                  placeholder="email@gmail.com"
                   className="w-full bg-white/5 border border-white/15 focus:border-[#A89053] text-white text-xs font-sans rounded-xl pl-10 pr-4 py-3.5 focus:outline-none transition-all placeholder:text-white/30"
                 />
               </div>
