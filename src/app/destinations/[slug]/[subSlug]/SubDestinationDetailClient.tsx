@@ -1,9 +1,9 @@
 "use client";
- 
+
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { 
+import {
   ArrowLeft, Calendar, DollarSign, Hotel, Check, X, Phone, MapPin,
   Plane, Star, Award, Landmark, Crown, Waves, Camera, Compass, Map, ShieldCheck,
   ChevronLeft, ChevronRight, Share2
@@ -155,6 +155,77 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
   const [activeImage, setActiveImage] = useState<string>("");
   const [selectedDateIdx, setSelectedDateIdx] = useState<number>(0);
   const [isCopied, setIsCopied] = useState<boolean>(false);
+  const [isDateModalOpen, setIsDateModalOpen] = useState<boolean>(false);
+  const [calendarMonthDate, setCalendarMonthDate] = useState<Date>(new Date(2026, 8, 1));
+  const [modalSelectedDateIdx, setModalSelectedDateIdx] = useState<number>(0);
+
+  const parseBatchRange = (item: any) => {
+    let start: Date | null = null;
+    let end: Date | null = null;
+
+    const b = item?.batch;
+    if (b?.fromDate) {
+      const d = new Date(b.fromDate);
+      if (!isNaN(d.getTime())) start = d;
+    }
+    if (b?.toDate) {
+      const d = new Date(b.toDate);
+      if (!isNaN(d.getTime())) end = d;
+    }
+
+    if (!start && item?.date) {
+      const str = item.date.trim();
+      const monthMap: Record<string, number> = {
+        jan: 0, feb: 1, mar: 2, apr: 3, mei: 4, may: 4, jun: 5, jul: 6, agt: 7, aug: 7, sep: 8, okt: 9, oct: 9, nov: 10, des: 11, dec: 11
+      };
+      const yearMatch = str.match(/\b(202\d)\b/);
+      const year = yearMatch ? parseInt(yearMatch[1], 10) : 2026;
+
+      const parts = str.split("-").map((s: string) => s.trim());
+      if (parts.length === 2) {
+        const endPart = parts[1];
+        const endMonthMatch = endPart.match(/([a-zA-Z]{3,})/);
+        const endDayMatch = endPart.match(/\b(\d{1,2})\b/);
+        let endMonthIdx = 8;
+        if (endMonthMatch) {
+          const key = endMonthMatch[1].toLowerCase().slice(0, 3);
+          if (monthMap[key] !== undefined) endMonthIdx = monthMap[key];
+        }
+        let endDay = endDayMatch ? parseInt(endDayMatch[1], 10) : 15;
+        end = new Date(year, endMonthIdx, endDay);
+
+        const startPart = parts[0];
+        const startMonthMatch = startPart.match(/([a-zA-Z]{3,})/);
+        const startDayMatch = startPart.match(/\b(\d{1,2})\b/);
+        let startMonthIdx = endMonthIdx;
+        if (startMonthMatch) {
+          const key = startMonthMatch[1].toLowerCase().slice(0, 3);
+          if (monthMap[key] !== undefined) startMonthIdx = monthMap[key];
+        }
+        let startDay = startDayMatch ? parseInt(startDayMatch[1], 10) : 11;
+        start = new Date(year, startMonthIdx, startDay);
+      } else {
+        const m = str.match(/(\d{1,2})\s+([a-zA-Z]{3,})/);
+        if (m) {
+          const day = parseInt(m[1], 10);
+          const key = m[2].toLowerCase().slice(0, 3);
+          const mIdx = monthMap[key] !== undefined ? monthMap[key] : 8;
+          start = new Date(year, mIdx, day);
+          end = new Date(year, mIdx, day + 4);
+        }
+      }
+    }
+
+    if (start && !end) {
+      end = new Date(start);
+      end.setDate(end.getDate() + 4);
+    }
+
+    if (start) start = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    if (end) end = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+    return { start, end };
+  };
 
   const handleShare = () => {
     if (typeof window !== "undefined") {
@@ -241,9 +312,8 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
         let allOpenTripsList: any[] = [];
         try {
           const [openTrips, journeys] = await Promise.all([
-            apiFetch<any[]>("/admin/open-trips").catch(() => null) ||
-            apiFetch<any[]>(`/open-trips?locale=${locale}`).catch(() => null),
-            apiFetch<any[]>("/admin/journeys").catch(() => null)
+            apiFetch<any[]>(`/open-trips?locale=${locale}`).catch(() => []),
+            apiFetch<any[]>(`/journeys?locale=${locale}`).catch(() => [])
           ]);
 
           const combinedTrips = [
@@ -273,17 +343,17 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                   slug: match.slug,
                   regionSlug: match.regionSlug || active.regionSlug || "",
                   subSlug: match.subSlug || active.subSlug || "",
-                  name: locale === "id" 
-                    ? (active.title || active.name || match.name || match.slug || "") 
+                  name: locale === "id"
+                    ? (active.title || active.name || match.name || match.slug || "")
                     : (active.title || active.nameEN || active.name || match.nameEN || match.name || match.slug || ""),
-                  tagline: locale === "id" 
-                    ? (active.subtitle || active.tagline || match.tagline || "") 
+                  tagline: locale === "id"
+                    ? (active.subtitle || active.tagline || match.tagline || "")
                     : (active.subtitle || active.taglineEN || active.tagline || match.taglineEN || match.tagline || ""),
-                  duration: locale === "id" 
-                    ? (active.durationLabel || active.duration || match.duration || (match.durationDays ? `${match.durationDays} Hari` : "5 Hari 4 Malam")) 
+                  duration: locale === "id"
+                    ? (active.durationLabel || active.duration || match.duration || (match.durationDays ? `${match.durationDays} Hari` : "5 Hari 4 Malam"))
                     : (active.durationLabel || active.durationEN || active.duration || match.durationEN || match.duration || (match.durationDays ? `${match.durationDays} Days` : "5 Days 4 Nights")),
-                  price: locale === "id" 
-                    ? (active.price || match.price || match.priceRaw || "") 
+                  price: locale === "id"
+                    ? (active.price || match.price || match.priceRaw || "")
                     : (active.priceEN || active.price || match.priceEN || match.price || match.priceRaw || ""),
                   departureDate: active.departureDate || match.departureDate || match.dates || "",
                   departureDateFrom: match.departureDateFrom || "",
@@ -383,10 +453,10 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
         const tours = selectedRegions.map(r => {
           const randomSub = r.subDestinations[Math.floor(Math.random() * r.subDestinations.length)];
           const subSlugKey = randomSub?.slug || "bali";
-          
+
           // Find dynamic open trip matching this subdestination or region
           const matchingTrip = allOpenTripsList.find(p => p.subSlug === subSlugKey || p.slug === subSlugKey || p.regionSlug === r.slug);
-          
+
           // Fallback keyword search
           let keywordImage = "";
           const combined = `${subSlugKey} ${r.slug} ${randomSub?.name || ""}`.toLowerCase();
@@ -408,14 +478,14 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
             keywordImage = "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=1200";
           }
 
-          const resolvedImage = 
-            matchingTrip?.featuredImage || 
-            matchingTrip?.image || 
-            randomSub?.image || 
-            r.image || 
-            subDestinationImages[subSlugKey] || 
-            subDestinationImages[r.slug] || 
-            keywordImage || 
+          const resolvedImage =
+            matchingTrip?.featuredImage ||
+            matchingTrip?.image ||
+            randomSub?.image ||
+            r.image ||
+            subDestinationImages[subSlugKey] ||
+            subDestinationImages[r.slug] ||
+            keywordImage ||
             "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200";
 
           return {
@@ -465,7 +535,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
         <div className="max-w-xl w-full bg-white border border-[#0F2C59]/10 rounded-3xl p-8 md:p-12 shadow-lg flex flex-col items-center relative overflow-hidden">
           <div className="absolute -top-12 -right-12 w-40 h-40 bg-sky-500/10 rounded-full blur-2xl pointer-events-none" />
           <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-rose-500/10 rounded-full blur-2xl pointer-events-none" />
-          
+
           <div className="w-20 h-20 rounded-2xl bg-sky-50 flex items-center justify-center mb-6 text-[#0284C7] shadow-inner">
             <MapPin className="w-10 h-10 stroke-[1.5]" />
           </div>
@@ -697,8 +767,8 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
   const activeBatch = (departureDatesList[selectedDateIdx] as any)?.batch || null;
   const activeDepartureDate = departureDatesList[selectedDateIdx]?.date || "";
-  const displayDuration = activeBatch 
-    ? (locale === "id" ? activeBatch.durationID : (activeBatch.durationEN || activeBatch.durationID)) 
+  const displayDuration = activeBatch
+    ? (locale === "id" ? activeBatch.durationID : (activeBatch.durationEN || activeBatch.durationID))
     : tourDetail.duration;
 
   const whatsappMessage = encodeURIComponent(
@@ -707,14 +777,20 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
       : `Hello Klik Travel ID, I am interested in the "${displayTourName}" tour package (${displayDuration}) departing on ${activeDepartureDate}. Please provide schedule availability details.`
   );
 
+  const vipWhatsappMessage = encodeURIComponent(
+    locale === "id"
+      ? `Halo Klik Travel ID, saya berminat dengan Layanan VIP / Private Trip untuk destinasi "${displayTourName}". Saya membutuhkan penyesuaian kelas penerbangan, upgrade hotel bintang 5, atau custom itinerary. Mohon informasi & konsultasi lebih lanjut.`
+      : `Hello Klik Travel ID, I am interested in your VIP / Private Trip Service for "${displayTourName}". I need custom flight class, 5★ hotel upgrade, or a custom itinerary. Please assist me with further consultation.`
+  );
+
   // Format price string cleanly
   const currentRegion = activeRegions.find(r => r.slug === slug);
   const currentRegionName = currentRegion?.name || (slug ? slug.replace(/-/g, " ") : "");
   const tripBadgeText = `TRIP ${currentRegionName.toUpperCase()}`;
 
   const formattedPrice = (() => {
-    const rawTargetPrice = activeBatch 
-      ? (locale === "id" ? activeBatch.priceID : (activeBatch.priceEN || activeBatch.priceID)) 
+    const rawTargetPrice = activeBatch
+      ? (locale === "id" ? activeBatch.priceID : (activeBatch.priceEN || activeBatch.priceID))
       : tourDetail.price;
     const rawPrice = (rawTargetPrice || "").toString().trim();
     if (!rawPrice || rawPrice === "-") return "-";
@@ -739,12 +815,12 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
   })();
 
   // Deduplicate tagline if it repeats the title
-  const hasDistinctTagline = tourDetail.tagline && 
-    tourDetail.tagline.toLowerCase() !== displayTourName.toLowerCase() && 
+  const hasDistinctTagline = tourDetail.tagline &&
+    tourDetail.tagline.toLowerCase() !== displayTourName.toLowerCase() &&
     tourDetail.tagline !== "-";
 
-  const heroImage = tourDetail.featuredImage || 
-                    "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1800";
+  const heroImage = tourDetail.featuredImage ||
+    "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1800";
 
   // Gallery images compiling
   const fallbackGallery = [
@@ -781,7 +857,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
   return (
     <div className="bg-[#F8FAFC] text-slate-800 min-h-screen font-sans selection:bg-sky-500 selection:text-white pb-24">
-      
+
       {/* Top Breadcrumb Header */}
       <div className="max-w-7xl mx-auto px-6 md:px-12 pt-28 pb-4">
         <nav className="flex items-center gap-2 text-xs font-sans text-slate-500 overflow-x-auto whitespace-nowrap scrollbar-none">
@@ -800,27 +876,27 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
       {/* Main Grid Section: Image Gallery & Tour Info */}
       <section className="max-w-7xl mx-auto px-6 md:px-12 mb-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* LEFT SIDE: Big Main Image Carousel + Thumbnail Images */}
           <div className="lg:col-span-7 flex flex-col md:flex-row gap-4">
-            
+
             {/* Main Big Image with Chevron Arrows */}
             <div className="relative flex-1 aspect-[4/3] rounded-2xl overflow-hidden bg-slate-900 shadow-md group border border-slate-200">
-              <img 
-                src={displayMainImage} 
-                alt={displayTourName} 
+              <img
+                src={displayMainImage}
+                alt={displayTourName}
                 className="w-full h-full object-cover transition-all duration-500"
               />
               <div className="absolute inset-0 bg-black/5" />
 
               {/* Chevron Navigation Arrows */}
-              <button 
+              <button
                 onClick={handlePrevImage}
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 backdrop-blur-sm"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <button 
+              <button
                 onClick={handleNextImage}
                 className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 backdrop-blur-sm"
               >
@@ -834,15 +910,14 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                 <button
                   key={idx}
                   onClick={() => setActiveImage(imgUrl)}
-                  className={`relative w-24 h-16 md:w-28 md:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
-                    displayMainImage === imgUrl 
-                      ? "border-teal-600 ring-2 ring-teal-500/20 opacity-100 scale-95" 
+                  className={`relative w-24 h-16 md:w-28 md:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${displayMainImage === imgUrl
+                      ? "border-teal-600 ring-2 ring-teal-500/20 opacity-100 scale-95"
                       : "border-transparent opacity-70 hover:opacity-100"
-                  }`}
+                    }`}
                 >
-                  <img 
-                    src={imgUrl} 
-                    alt={`Preview ${idx + 1}`} 
+                  <img
+                    src={imgUrl}
+                    alt={`Preview ${idx + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </button>
@@ -890,7 +965,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
               <div className="flex items-center gap-3">
                 {/* Share Button with feedback */}
-                <button 
+                <button
                   onClick={handleShare}
                   className="w-11 h-11 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-[#0F2C59]/70 hover:text-[#0284C7] transition-all shadow-sm relative group cursor-pointer"
                   title={locale === "id" ? "Bagikan Tour Ini" : "Share This Tour"}
@@ -904,7 +979,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                 </button>
 
                 {/* Main WhatsApp CTA Button */}
-                <a 
+                <a
                   href={`https://wa.me/6281230011027?text=${whatsappMessage}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -923,17 +998,25 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
       {/* Departure Dates Selector Bar */}
       <section className="max-w-7xl mx-auto px-6 md:px-12 mb-12">
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
-          
+
           {/* Navy "Lihat Semua Tanggal" Button */}
-          <a 
-            href={`https://wa.me/6281230011027?text=${whatsappMessage}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button 
+            onClick={() => {
+              setModalSelectedDateIdx(selectedDateIdx);
+              const activeItem = departureDatesList[selectedDateIdx] || departureDatesList[0];
+              if (activeItem) {
+                const parsed = parseBatchRange(activeItem);
+                if (parsed.start) {
+                  setCalendarMonthDate(new Date(parsed.start.getFullYear(), parsed.start.getMonth(), 1));
+                }
+              }
+              setIsDateModalOpen(true);
+            }}
             className="bg-[#0F2C59] hover:bg-[#0284C7] text-white font-sans font-bold text-xs uppercase tracking-wider px-6 py-4 rounded-xl flex items-center justify-center gap-2.5 shrink-0 shadow-md transition-all cursor-pointer"
           >
             <Calendar className="w-4 h-4" />
             <span>{locale === "id" ? "Lihat Semua Tanggal" : "View All Dates"}</span>
-          </a>
+          </button>
 
           {/* Date Pills Horizontal Row */}
           <div className="flex-1 flex items-center gap-3 overflow-x-auto scrollbar-none py-1">
@@ -947,13 +1030,12 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                 <button
                   key={idx}
                   onClick={() => setSelectedDateIdx(idx)}
-                  className={`shrink-0 px-5 py-2.5 rounded-xl text-center transition-all cursor-pointer border flex flex-col items-center justify-center ${
-                    isSelected 
-                      ? "bg-[#0284C7] border-[#0284C7] text-white shadow-sm" 
+                  className={`shrink-0 px-5 py-2.5 rounded-xl text-center transition-all cursor-pointer border flex flex-col items-center justify-center ${isSelected
+                      ? "bg-[#0284C7] border-[#0284C7] text-white shadow-sm"
                       : isFull || isClosed
                         ? "bg-slate-50 border-slate-200 text-slate-400 opacity-70"
                         : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"
-                  }`}
+                    }`}
                 >
                   <span className="block text-[10px] uppercase font-medium tracking-wide opacity-80">
                     {item.day}
@@ -962,15 +1044,14 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                     {item.date}
                   </span>
                   <span className="block text-[9px] opacity-80 font-normal mt-0.5 font-mono">
-                    {b 
+                    {b
                       ? (locale === "id" ? b.priceID : (b.priceEN || b.priceID))
                       : `${item.count} ${locale === "id" ? "Keberangkatan" : "Departure"}`
                     }
                   </span>
                   {b && (isFull || isClosed) && (
-                    <span className={`inline-block mt-1 px-1.5 py-0.2 text-[8px] font-bold text-white uppercase rounded font-mono ${
-                      isFull ? "bg-rose-600" : "bg-amber-600"
-                    }`}>
+                    <span className={`inline-block mt-1 px-1.5 py-0.2 text-[8px] font-bold text-white uppercase rounded font-mono ${isFull ? "bg-rose-600" : "bg-amber-600"
+                      }`}>
                       {isFull ? (locale === "id" ? "Penuh" : "FULL") : (locale === "id" ? "Tutup" : "Closed")}
                     </span>
                   )}
@@ -991,10 +1072,10 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
       {/* Main Content: Highlights & Itinerary */}
       <section className="max-w-7xl mx-auto px-6 mt-12 grid grid-cols-1 lg:grid-cols-12 gap-12">
-        
+
         {/* Left Side: Highlights & Daily Details */}
         <div className="lg:col-span-8 flex flex-col gap-12">
-          
+
           {/* Highlights Card */}
           <div className="bg-white border border-slate-200/70 rounded-3xl p-6 md:p-8 shadow-sm">
             <div className="flex flex-col gap-1 mb-6 pb-3 border-b border-slate-100">
@@ -1024,36 +1105,34 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               </span>
               <h2 className="font-serif font-bold text-2xl text-slate-900">{t("detail_itinerary")}</h2>
             </div>
-            
+
             {/* Timeline Wrapper */}
             <div className="flex flex-col gap-12 relative before:absolute before:left-5 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-200">
               {tourDetail.itinerary.map((day, idx) => (
                 <div key={idx} className="flex gap-6 md:snap-start relative">
-                  
+
                   {/* Timeline Node */}
                   <div className="relative z-10 shrink-0">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-mono font-bold text-xs transition-all duration-300 shadow-sm shrink-0 border-2 ${
-                      activeDay === day.day 
-                      ? "bg-sky-600 text-white border-white ring-4 ring-sky-500/20" 
-                      : "bg-white text-slate-400 border-slate-200"
-                    }`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-mono font-bold text-xs transition-all duration-300 shadow-sm shrink-0 border-2 ${activeDay === day.day
+                        ? "bg-sky-600 text-white border-white ring-4 ring-sky-500/20"
+                        : "bg-white text-slate-400 border-slate-200"
+                      }`}>
                       D{day.day}
                     </div>
                   </div>
 
                   {/* Day Content */}
-                  <div 
-                    className={`flex-1 bg-white border rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer ${
-                      activeDay === day.day ? "border-sky-600" : "border-slate-200/80"
-                    }`}
+                  <div
+                    className={`flex-1 bg-white border rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer ${activeDay === day.day ? "border-sky-600" : "border-slate-200/80"
+                      }`}
                     onClick={() => setActiveDay(day.day)}
                   >
                     {/* Atmospheric Image(s) */}
                     {(() => {
-                      const allImgs: string[] = (day as any).images && (day as any).images.length > 0 
-                        ? (day as any).images 
+                      const allImgs: string[] = (day as any).images && (day as any).images.length > 0
+                        ? (day as any).images
                         : (day.image ? (day.image.includes("||") ? day.image.split("||") : [day.image]) : []);
-                      
+
                       if (allImgs.length > 1) {
                         return (
                           <div className="w-full h-48 md:h-64 relative grid grid-cols-2 gap-1 bg-slate-900 overflow-hidden">
@@ -1070,9 +1149,9 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                       } else {
                         return (
                           <div className="w-full h-48 md:h-64 relative">
-                            <img 
-                              src={allImgs[0] || day.image || "https://images.unsplash.com/photo-1540553016722-983e48a2cd10?q=80&w=800"} 
-                              alt={day.title} 
+                            <img
+                              src={allImgs[0] || day.image || "https://images.unsplash.com/photo-1540553016722-983e48a2cd10?q=80&w=800"}
+                              alt={day.title}
                               className="w-full h-full object-cover"
                             />
                             <div className="absolute top-4 left-4 bg-slate-950/80 border border-sky-400/35 backdrop-blur-md text-sky-400 px-3.5 py-1.5 rounded-full font-mono text-[9px] font-bold uppercase tracking-widest">
@@ -1090,7 +1169,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                       <h3 className="font-serif font-bold text-lg md:text-xl text-slate-900 mb-4">
                         {locale === "id" ? day.title : (day.titleEN || (day as any).titleEn || day.title)}
                       </h3>
-                      
+
                       {/* Activities Pills */}
                       <div className="flex flex-wrap gap-2 mb-5">
                         {((locale === "id" ? day.activities : ((day.activitiesEN && day.activitiesEN.length > 0 ? day.activitiesEN : (day as any).activitiesEn) || day.activities)) || []).map((act: string, aIdx: number) => (
@@ -1125,7 +1204,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
         {/* Right Side: Inclusions & Exclusions */}
         <div className="lg:col-span-4 flex flex-col gap-8">
-          
+
           {/* WhatsApp CTA Card */}
           <div className="bg-slate-950 text-white rounded-3xl p-6 md:p-8 shadow-xl text-center relative overflow-hidden border border-slate-800">
             <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 to-transparent pointer-events-none" />
@@ -1136,8 +1215,8 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                 ? "Butuh penyesuaian kelas penerbangan, upgrade hotel bintang 5, atau private tour? Tim Klik Travel ID siap melayani."
                 : "Need adjustments for flight classes, 5★ hotel upgrades, or bespoke private tours? Our team is ready."}
             </p>
-            <a 
-              href={`https://wa.me/6281230011027?text=${whatsappMessage}`}
+            <a
+              href={`https://wa.me/6281230011027?text=${vipWhatsappMessage}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white py-3.5 px-6 rounded-xl font-sans font-bold text-xs tracking-widest uppercase transition-all duration-300 relative z-10 shadow-md hover:scale-[1.02] cursor-pointer"
@@ -1171,14 +1250,23 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               <h3 className="font-serif font-bold text-base text-slate-900">{t("detail_exclusions")}</h3>
             </div>
             <div className="flex flex-col gap-4">
-              {tourDetail.exclusions.map((exc, idx) => (
-                <div key={idx} className="flex gap-3 items-start">
-                  <div className="w-5 h-5 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 mt-0.5">
-                    <X className="w-3 h-3" strokeWidth={3} />
+              {tourDetail.exclusions.map((exc, idx) => {
+                const isOptional = exc.toLowerCase().includes("optional") || /^\s*[-*•]/.test(exc);
+                return (
+                  <div key={idx} className="flex gap-3 items-start">
+                    {!isOptional ? (
+                      <div className="w-5 h-5 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 mt-0.5">
+                        <X className="w-3 h-3" strokeWidth={3} />
+                      </div>
+                    ) : (
+                      <div className="w-5 h-5 flex items-center justify-center shrink-0 mt-0.5 text-slate-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                      </div>
+                    )}
+                    <span className="font-sans text-xs text-slate-600 font-medium leading-normal">{exc}</span>
                   </div>
-                  <span className="font-sans text-xs text-slate-600 font-medium leading-normal">{exc}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -1204,7 +1292,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
             <span className="font-medium leading-relaxed">
-              {locale === "id" 
+              {locale === "id"
                 ? "Rules (Term and Condition) telah diatur sesuai dengan yang ditetapkan oleh wholesaler dan tidak dapat diganggu gugat."
                 : "Rules (Term and Condition) have been set by the wholesaler and are non-negotiable."}
             </span>
@@ -1212,7 +1300,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
           {/* Terms Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 text-slate-700 text-xs md:text-sm leading-relaxed">
-            
+
             {/* 1. Pendaftaran */}
             <div className="space-y-3">
               <h4 className="font-sans font-bold text-slate-900 text-sm md:text-base flex items-center gap-2">
@@ -1221,17 +1309,17 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               </h4>
               <ul className="space-y-2 list-disc pl-5 font-light">
                 <li>
-                  {locale === "id" 
-                    ? "Konfirmasi pendaftaran tour harus disertai dengan pembayaran DP sebesar Rp 5.000.000 (non-refundable) dan sisanya dapat dicicil 3x sampai pelunasan 30 hari sebelum tanggal keberangkatan."
-                    : "Tour registration confirmation must be accompanied by a DP payment of IDR 5,000,000 (non-refundable). The balance can be paid in 3 installments up to 30 days before departure."}
+                  {locale === "id"
+                    ? "Konfirmasi pendaftaran tour harus disertai dengan pembayaran DP sebesar Rp 3.000.000 (non-refundable) dan sisanya dapat dicicil 3x sampai pelunasan 30 hari sebelum tanggal keberangkatan."
+                    : "Tour registration confirmation must be accompanied by a DP payment of IDR 3,000,000 (non-refundable). The balance can be paid in 3 installments up to 30 days before departure."}
                 </li>
                 <li>
-                  {locale === "id" 
+                  {locale === "id"
                     ? "Harga yang terlampir dalam penawaran paket masih dapat berubah sewaktu-waktu selama tour belum dikonfirmasi."
                     : "Prices enclosed in the package offer are subject to change until the tour is fully confirmed."}
                 </li>
                 <li>
-                  {locale === "id" 
+                  {locale === "id"
                     ? "Itinerary bersifat tidak mengikat dan dapat berubah sewaktu-waktu menyesuaikan kondisi di lapangan atau situasi yang tidak terduga (Force Majeure)."
                     : "Itinerary is non-binding and subject to change to adjust with field conditions or unexpected situations (Force Majeure)."}
                 </li>
@@ -1253,17 +1341,17 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                   </div>
                 </li>
                 <li>
-                  {locale === "id" 
+                  {locale === "id"
                     ? "Pelunasan pembayaran dilakukan maksimal H-30 sebelum keberangkatan."
                     : "Full payment balance must be settled at least 30 days (H-30) prior to departure."}
                 </li>
                 <li>
-                  {locale === "id" 
+                  {locale === "id"
                     ? "Pendaftaran yang dilakukan kurang dari 30 hari sebelum tanggal keberangkatan harus melakukan pembayaran penuh (full payment)."
                     : "Registrations made less than 30 days before departure require immediate full payment."}
                 </li>
                 <li>
-                  {locale === "id" 
+                  {locale === "id"
                     ? "Wajib konfirmasi semua pembayaran dengan mengirimkan bukti transfer."
                     : "All payments must be confirmed by sending transfer receipts."}
                 </li>
@@ -1289,12 +1377,12 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                   </ul>
                 </li>
                 <li>
-                  {locale === "id" 
+                  {locale === "id"
                     ? "Pembatalan akibat Force Majeure (bencana alam, cuaca buruk, kerusuhan, wabah penyakit, dll): perjalanan dapat dijadwalkan ulang atau dibatalkan. Tidak ada pengembalian dana atas fasilitas yang tidak terpakai, dan pihak Travel tidak bertanggung jawab atas kerugian/ketidaknyamanan yang terjadi."
                     : "Cancellations due to Force Majeure (natural disasters, severe weather, riots, disease outbreaks, etc.): trips may be rescheduled or cancelled. No refund is provided for unused amenities, and the Travel agency is not liable for any losses/inconveniences."}
                 </li>
                 <li>
-                  {locale === "id" 
+                  {locale === "id"
                     ? "Untuk alasan apa pun pembatalan sepihak oleh peserta, DP dan cicilan yang masuk tetap tidak dapat dikembalikan."
                     : "For any personal reasons of cancellation by the participant, DP and installments remain non-refundable."}
                 </li>
@@ -1309,7 +1397,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               </h4>
               <ul className="space-y-2 list-disc pl-5 font-light">
                 <li>
-                  {locale === "id" 
+                  {locale === "id"
                     ? "Penolakan atau keterlambatan penerbitan visa bukan merupakan tanggung jawab pihak travel dan sepenuhnya merupakan hak prerogatif pihak Kedutaan."
                     : "Rejection or delay in visa issuance is entirely under the Embassy's authority and is not the responsibility of the travel agency."}
                 </li>
@@ -1324,7 +1412,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span>
-              {locale === "id" 
+              {locale === "id"
                 ? "Dengan melakukan pendaftaran, peserta dianggap mengerti dan menyetujui syarat dan ketentuan yang berlaku."
                 : "By registering, participants are deemed to have understood and agreed to the applicable terms and conditions."}
             </span>
@@ -1343,22 +1431,22 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               {t("detail_other_tours")}
             </h2>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
             {featuredTours.map((tour, idx) => (
-              <Link 
+              <Link
                 key={idx}
                 href={`/destinations/${tour.regionSlug}/${tour.subSlug}`}
                 className="group flex flex-col cursor-pointer"
               >
                 <div className="w-full aspect-[4/5] rounded-3xl overflow-hidden relative shadow-lg bg-slate-900 mb-6">
-                  <img 
-                    src={tour.image} 
-                    alt={tour.name} 
+                  <img
+                    src={tour.image}
+                    alt={tour.name}
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
-                  
+
                   {/* Badge */}
                   <div className="absolute top-5 left-5 bg-white/90 backdrop-blur-sm text-slate-900 text-[10px] font-sans font-bold uppercase tracking-widest px-4 py-2 rounded-full">
                     {locale === "id" ? "Paket Tour" : "Tour Package"}
@@ -1374,10 +1462,10 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                     </h3>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center text-sky-600 font-sans text-xs uppercase font-bold tracking-widest group-hover:tracking-[0.2em] transition-all duration-300">
                   <span>{locale === "id" ? "Lihat Detail" : "View Details"}</span>
-                  <motion.span 
+                  <motion.span
                     className="ml-2"
                     initial={{ x: 0 }}
                     whileHover={{ x: 5 }}
@@ -1389,6 +1477,258 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
             ))}
           </div>
         </section>
+      )}
+
+      {/* Visual Monthly Calendar Modal */}
+      {isDateModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-xl w-full p-6 md:p-8 relative border border-slate-100 max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
+              <div>
+                <h3 className="font-serif text-xl md:text-2xl font-bold text-[#0F2C59]">
+                  {locale === "id" ? "Jadwal Keberangkatan" : "Departure Schedules"}
+                </h3>
+                <p className="font-sans text-xs text-[#0F2C59]/60 mt-0.5">
+                  {displayTourName}
+                </p>
+              </div>
+              <button 
+                onClick={() => setIsDateModalOpen(false)}
+                className="w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Calendar Month Navigation Header */}
+            {(() => {
+              const year = calendarMonthDate.getFullYear();
+              const month = calendarMonthDate.getMonth();
+              const monthsID = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+              const monthsEN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+              const monthLabel = `${locale === "id" ? monthsID[month] : monthsEN[month]} ${year}`;
+
+              const firstDayIdx = new Date(year, month, 1).getDay();
+              const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+              // Parse all departure batches into ranges
+              const parsedBatches = departureDatesList.map((item: any, idx: number) => {
+                const range = parseBatchRange(item);
+                return {
+                  index: idx,
+                  item,
+                  start: range.start,
+                  end: range.end,
+                  status: item.batch?.status || "Available",
+                };
+              });
+
+              return (
+                <div className="flex-1 overflow-y-auto py-3 scrollbar-thin flex flex-col">
+                  
+                  {/* Month Navigation */}
+                  <div className="flex items-center justify-between bg-slate-50 border border-slate-200/70 rounded-2xl px-4 py-2.5 mb-4 shrink-0">
+                    <button
+                      onClick={() => setCalendarMonthDate(new Date(year, month - 1, 1))}
+                      className="p-1.5 rounded-xl hover:bg-white text-[#0F2C59] transition-colors cursor-pointer"
+                      title={locale === "id" ? "Bulan Sebelumnya" : "Previous Month"}
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+
+                    <div className="font-serif font-bold text-base md:text-lg text-[#0F2C59]">
+                      {monthLabel}
+                    </div>
+
+                    <button
+                      onClick={() => setCalendarMonthDate(new Date(year, month + 1, 1))}
+                      className="p-1.5 rounded-xl hover:bg-white text-[#0F2C59] transition-colors cursor-pointer"
+                      title={locale === "id" ? "Bulan Berikutnya" : "Next Month"}
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Calendar Grid Header (Weekdays) */}
+                  <div className="grid grid-cols-7 text-center font-sans text-xs font-bold text-[#0F2C59]/60 pb-2 border-b border-slate-100 shrink-0">
+                    {(locale === "id" ? ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"] : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]).map((d) => (
+                      <div key={d}>{d}</div>
+                    ))}
+                  </div>
+
+                  {/* Calendar Grid Body */}
+                  <div className="grid grid-cols-7 gap-y-2 text-center py-3 my-auto">
+                    {/* Padding blank cells before 1st of month */}
+                    {Array.from({ length: firstDayIdx }).map((_, i) => (
+                      <div key={`pad-${i}`} className="aspect-square" />
+                    ))}
+
+                    {/* Days cells */}
+                    {Array.from({ length: daysInMonth }).map((_, i) => {
+                      const day = i + 1;
+                      const cellDate = new Date(year, month, day);
+                      cellDate.setHours(0, 0, 0, 0);
+
+                      let matchingBatch: any = null;
+                      let isStart = false;
+
+                      for (const pb of parsedBatches) {
+                        if (pb.start) {
+                          const sTime = pb.start.getTime();
+                          const cTime = cellDate.getTime();
+                          if (cTime === sTime) {
+                            matchingBatch = pb;
+                            isStart = true;
+                            break;
+                          }
+                        }
+                      }
+
+                      const isCellSelected = matchingBatch && modalSelectedDateIdx === matchingBatch.index;
+                      const isFullOrClosed = matchingBatch && (matchingBatch.status === "FULL" || matchingBatch.status === "Closed" || matchingBatch.status === "close");
+
+                      let cellBgClass = "text-slate-600";
+                      if (isStart) {
+                        cellBgClass = isFullOrClosed
+                          ? "bg-rose-500 text-white font-bold rounded-full shadow-sm"
+                          : "bg-emerald-500 text-white font-bold rounded-full shadow-md";
+                      }
+
+                      return (
+                        <div key={day} className="flex items-center justify-center py-0.5">
+                          <button
+                            disabled={!isStart}
+                            onClick={() => {
+                              if (matchingBatch) {
+                                setModalSelectedDateIdx(matchingBatch.index);
+                              }
+                            }}
+                            className={`w-9 h-9 rounded-full flex flex-col items-center justify-center font-sans text-xs transition-all relative ${cellBgClass} ${
+                              !isStart ? "text-slate-500 hover:bg-slate-50 cursor-default" : "cursor-pointer hover:scale-110"
+                            } ${
+                              isCellSelected ? "ring-2 ring-sky-500 ring-offset-2 z-20" : ""
+                            }`}
+                          >
+                            <span>{day}</span>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Selected Date Summary Card at Bottom of Modal */}
+                  {(() => {
+                    const selectedItem = departureDatesList[modalSelectedDateIdx];
+                    if (!selectedItem) return null;
+
+                    const b = selectedItem.batch;
+                    const isFull = b?.status === "FULL";
+                    const isClosed = b?.status === "Closed" || b?.status === "close";
+                    const isSelectable = !isFull && !isClosed;
+
+                    const batchText = encodeURIComponent(
+                      locale === "id"
+                        ? `Halo Klik Travel ID, saya tertarik dengan paket tour "${displayTourName}" (${b?.durationID || displayDuration}) keberangkatan tanggal ${selectedItem.date}. Mohon informasi ketersediaan jadwal.`
+                        : `Hello Klik Travel ID, I am interested in the "${displayTourName}" tour package (${b?.durationEN || displayDuration}) departing on ${selectedItem.date}. Please provide schedule availability details.`
+                    );
+
+                    return (
+                      <div className="mt-3 p-4 rounded-2xl border border-sky-100 bg-sky-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 animate-in fade-in duration-200">
+                        <div className="flex items-start gap-3">
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
+                            isSelectable ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-600"
+                          }`}>
+                            <Calendar className="w-4.5 h-4.5" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-sans font-bold text-sm text-[#0F2C59]">
+                                {selectedItem.date}
+                              </span>
+                              <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                                isSelectable ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
+                              }`}>
+                                {isSelectable 
+                                  ? (locale === "id" ? "Tersedia" : "Available") 
+                                  : (isFull ? (locale === "id" ? "Penuh" : "Full") : (locale === "id" ? "Tutup" : "Closed"))
+                                }
+                              </span>
+                            </div>
+                            <p className="font-sans text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
+                              <span>{selectedItem.day}</span>
+                              <span className="w-1 h-1 rounded-full bg-slate-300" />
+                              <span>{b?.durationID || displayDuration}</span>
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-sky-100">
+                          {b?.priceID && (
+                            <div className="text-left sm:text-right">
+                              <p className="text-[9px] uppercase text-slate-400 font-sans tracking-wider">
+                                {locale === "id" ? "Mulai Dari" : "Starting From"}
+                              </p>
+                              <p className="font-sans font-bold text-xs md:text-sm text-[#0F2C59]">
+                                {b.priceID}
+                              </p>
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => {
+                                setSelectedDateIdx(modalSelectedDateIdx);
+                                setIsDateModalOpen(false);
+                              }}
+                              className="px-4 py-2 rounded-xl bg-[#0F2C59] hover:bg-[#0284C7] text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+                            >
+                              {locale === "id" ? "Pilih Tanggal Ini" : "Select This Date"}
+                            </button>
+
+                            <a
+                              href={`https://wa.me/6281230011027?text=${batchText}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-9 h-9 rounded-xl bg-[#25D366] hover:bg-[#128C7E] text-white flex items-center justify-center transition-all shadow-sm shrink-0 cursor-pointer"
+                              title={locale === "id" ? "Pesan via WhatsApp" : "Book via WhatsApp"}
+                            >
+                              <Phone className="w-3.5 h-3.5 fill-current" />
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                </div>
+              );
+            })()}
+
+            {/* Modal Footer */}
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between shrink-0 text-xs font-sans text-slate-500">
+              <div className="flex items-center gap-3">
+                <span className="flex items-center gap-1">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
+                  {locale === "id" ? "Ada Trip" : "Trip Active"}
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block" />
+                  {locale === "id" ? "Dipilih" : "Selected"}
+                </span>
+              </div>
+              <a
+                href={`https://wa.me/6281230011027?text=${vipWhatsappMessage}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-[#0F2C59] hover:text-sky-600 transition-colors cursor-pointer"
+              >
+                {locale === "id" ? "Konsultasi VIP →" : "VIP Request →"}
+              </a>
+            </div>
+
+          </div>
+        </div>
       )}
 
     </div>

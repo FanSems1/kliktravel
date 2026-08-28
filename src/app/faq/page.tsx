@@ -3,15 +3,15 @@
 import React, { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  ChevronDown, 
-  HelpCircle, 
-  Calendar, 
-  CreditCard, 
-  FileText, 
-  Compass, 
-  MessageCircle, 
-  ArrowRight 
+import {
+  ChevronDown,
+  HelpCircle,
+  Calendar,
+  CreditCard,
+  FileText,
+  Compass,
+  MessageCircle,
+  ArrowRight
 } from "lucide-react";
 
 interface FAQItem {
@@ -39,8 +39,8 @@ export default function FAQPage() {
       titleEN: "Booking & Reservation",
       items: [
         {
-          q: isIndo 
-            ? "Bagaimana cara memesan paket tour di Klik Travel ID?" 
+          q: isIndo
+            ? "Bagaimana cara memesan paket tour di Klik Travel ID?"
             : "How do I book a tour package with Klik Travel ID?",
           a: isIndo
             ? "Anda dapat menjelajahi destinasi impian di website kami, pilih paket keberangkatan, lalu klik tombol 'Reservasi' atau hubungi Travel Expert kami via WhatsApp. Kami akan membantu Anda memverifikasi ketersediaan slot dan memproses booking Anda."
@@ -51,8 +51,8 @@ export default function FAQPage() {
             ? "Berapa minimal uang muka (DP) untuk memesan tour?"
             : "How much deposit (DP) is required to secure a booking?",
           a: isIndo
-            ? "Uang muka (DP) bervariasi bergantung pada jenis destinasi dan durasi tur (umumnya berkisar mulai dari Rp 5.000.000 per orang untuk rute internasional). Detail nominal pembayaran awal akan diinformasikan oleh tim kami."
-            : "The minimum deposit (DP) varies depending on the destination and tour length (generally starting from IDR 5,000,000 per person for international routes). Exact payment details will be provided by our team during booking."
+            ? "Uang muka (DP) bervariasi bergantung pada jenis destinasi dan durasi tur (umumnya berkisar mulai dari Rp 3.000.000 per orang untuk rute internasional). Detail nominal pembayaran awal akan diinformasikan oleh tim kami."
+            : "The minimum deposit (DP) varies depending on the destination and tour length (generally starting from IDR 3,000,000 per person for international routes). Exact payment details will be provided by our team during booking."
         },
         {
           q: isIndo
@@ -140,7 +140,7 @@ export default function FAQPage() {
 
   // Active Category State
   const [activeCategory, setActiveCategory] = useState<string>("booking");
-  
+
   // Expandable Accordion Item State
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
@@ -149,7 +149,7 @@ export default function FAQPage() {
   return (
     <div className="min-h-screen bg-[#FDFBF7] pt-28 pb-20">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
-        
+
         {/* Header Hero Section */}
         <div className="text-center max-w-2xl mx-auto mb-16">
           <span className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-[#0284C7] block mb-3">
@@ -167,7 +167,7 @@ export default function FAQPage() {
 
         {/* Main Grid: Category List + FAQ Items Accordion */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* LEFT SIDE: Category Tabs */}
           <div className="lg:col-span-4 space-y-2 lg:sticky lg:top-24">
             {categories.map((cat) => {
@@ -179,15 +179,13 @@ export default function FAQPage() {
                     setActiveCategory(cat.id);
                     setActiveFaq(null);
                   }}
-                  className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl border text-left transition-all duration-300 cursor-pointer ${
-                    isActive
+                  className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl border text-left transition-all duration-300 cursor-pointer ${isActive
                       ? "bg-[#0F2C59] border-[#0F2C59] text-white shadow-lg shadow-[#0F2C59]/10"
                       : "bg-white border-[#0F2C59]/10 text-[#0F2C59]/80 hover:bg-white/80 hover:border-[#0F2C59]/30"
-                  }`}
+                    }`}
                 >
-                  <div className={`p-2.5 rounded-xl transition-colors ${
-                    isActive ? "bg-white/10 text-white" : "bg-[#0F2C59]/5 text-[#0F2C59]"
-                  }`}>
+                  <div className={`p-2.5 rounded-xl transition-colors ${isActive ? "bg-white/10 text-white" : "bg-[#0F2C59]/5 text-[#0F2C59]"
+                    }`}>
                     {cat.icon}
                   </div>
                   <div>
@@ -214,8 +212,8 @@ export default function FAQPage() {
               {currentCategory.items.map((item, index) => {
                 const isOpen = activeFaq === index;
                 return (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className="border border-[#0F2C59]/10 rounded-2xl overflow-hidden bg-[#FDFBF7]/30 hover:bg-[#FDFBF7]/60 transition-colors"
                   >
                     <button
@@ -225,11 +223,10 @@ export default function FAQPage() {
                       <span className="font-serif text-base md:text-lg text-[#0F2C59]">
                         {item.q}
                       </span>
-                      <ChevronDown className={`text-[#A89053] shrink-0 transition-transform duration-500 ${
-                        isOpen ? "rotate-180" : ""
-                      }`} />
+                      <ChevronDown className={`text-[#A89053] shrink-0 transition-transform duration-500 ${isOpen ? "rotate-180" : ""
+                        }`} />
                     </button>
-                    
+
                     <AnimatePresence initial={false}>
                       {isOpen && (
                         <motion.div

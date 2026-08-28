@@ -48,10 +48,10 @@ export function FinalCTA() {
       try {
         let data: any[] | null = null;
         try {
-          data = await apiFetch<any[]>("/admin/gallery");
+          data = await apiFetch<any[]>("/gallery");
         } catch (err) {
           try {
-            data = await apiFetch<any[]>("/gallery");
+            data = await apiFetch<any[]>("/admin/gallery");
           } catch (err2) {
             console.warn("Could not fetch from /gallery endpoint, falling back to localStorage", err2);
           }

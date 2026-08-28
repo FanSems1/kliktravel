@@ -24,7 +24,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
       setIsLoading(true);
       try {
         // 1. Fetch Curated Journeys from API
-        const apiJourneys = await apiFetch<any[]>("/admin/journeys").catch(() => []);
+        const apiJourneys = await apiFetch<any[]>(`/journeys?locale=${locale}`).catch(() => []);
         const matchCj = apiJourneys.find((j: any) => j.slug === slug);
         if (matchCj) {
           const cId = matchCj.contentId || {};
@@ -72,7 +72,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
         }
 
         // 2. Fetch Open Trips from API
-        const apiOpenTrips = await apiFetch<any[]>("/admin/open-trips").catch(() => []);
+        const apiOpenTrips = await apiFetch<any[]>(`/open-trips?locale=${locale}`).catch(() => []);
         const matchOt = apiOpenTrips.find((ot: any) => ot.slug === slug);
         if (matchOt) {
           const cId = matchOt.contentId || {};
@@ -201,8 +201,8 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
         <p className="font-sans text-sm text-[#0F2C59]/70 max-w-md mb-8">
           {locale === "id" ? "Paket perjalanan yang Anda cari tidak tersedia atau telah dipindahkan." : "The travel package you are looking for is unavailable or has been moved."}
         </p>
-        <Link 
-          href="/journeys" 
+        <Link
+          href="/journeys"
           className="inline-flex items-center gap-2 bg-[#0284C7] text-white px-6 py-3 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#0369a1] transition-all"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -214,13 +214,13 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
 
   return (
     <div className="relative">
-      
+
       {/* 1. HERO CINEMATIC */}
       <section className="relative w-full h-screen overflow-hidden">
         {journey.image ? (
-          <img 
-            src={journey.image} 
-            alt={journey.title} 
+          <img
+            src={journey.image}
+            alt={journey.title}
             className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
@@ -228,9 +228,9 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/30 to-black/50 z-[1]" />
         <div className="absolute inset-0 image-texture opacity-30 mix-blend-overlay z-[2]" />
-        
+
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 mt-16 z-[3]">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
@@ -249,32 +249,32 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
           </motion.div>
         </div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 1.5 }}
           className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center text-white/80 z-[3]"
         >
           <span className="font-mono text-[8px] tracking-[0.3em] uppercase mb-4 drop-shadow-sm">{t("detail_discover_journey")}</span>
-          <motion.div 
+          <motion.div
             animate={{ y: [0, 8, 0] }}
             transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 5v14M19 12l-7 7-7-7"/>
+              <path d="M12 5v14M19 12l-7 7-7-7" />
             </svg>
           </motion.div>
         </motion.div>
       </section>
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 relative py-24 md:py-36">
-        
+
         {/* Main Content Column */}
         <div className="col-span-1 lg:col-span-8 space-y-32">
-          
+
           {/* 2. INTRODUCTION */}
           <section>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
@@ -318,13 +318,13 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
               <div className="space-y-2">
                 {journey.itinerary.map((item, index) => {
                   const isOpen = activeDay === index;
-                  const itemImgs: string[] = (item as any).images && (item as any).images.length > 0 
-                    ? (item as any).images 
+                  const itemImgs: string[] = (item as any).images && (item as any).images.length > 0
+                    ? (item as any).images
                     : ((item as any).image ? ((item as any).image.includes("||") ? (item as any).image.split("||") : [(item as any).image]) : []);
 
                   return (
                     <div key={index} className="border-b border-charcoal/10 last:border-0 pb-2">
-                      <button 
+                      <button
                         onClick={() => setActiveDay(isOpen ? null : index)}
                         className="w-full py-6 flex items-center justify-between text-left group"
                       >
@@ -494,7 +494,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
                   const isOpen = activeFaq === index;
                   return (
                     <div key={index} className="bg-white rounded-2xl border border-charcoal/10 overflow-hidden">
-                      <button 
+                      <button
                         onClick={() => setActiveFaq(isOpen ? null : index)}
                         className="w-full p-6 flex items-center justify-between text-left"
                       >
@@ -528,7 +528,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
         {/* Floating Sidebar (Overview & Booking) */}
         <div className="col-span-1 lg:col-span-4 relative">
           <div className="sticky top-32 flex flex-col space-y-12">
-            
+
             {/* FLOATING INFORMATION OVERVIEW */}
             <div>
               <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-charcoal/50 block mb-6 border-b border-charcoal/10 pb-4">
@@ -542,8 +542,8 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
                 <li className="flex flex-col">
                   <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-charcoal/40 mb-1">{t("detail_destinations_count")}</span>
                   <span className="font-serif text-2xl text-foreground">
-                    {journey.countriesCount < 2 
-                      ? (locale === "id" ? "1 Destinasi" : "1 Destination") 
+                    {journey.countriesCount < 2
+                      ? (locale === "id" ? "1 Destinasi" : "1 Destination")
                       : `${journey.countriesCount} ${locale === "id" ? "Destinasi" : "Destinations"}`}
                   </span>
                 </li>
@@ -568,14 +568,14 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
                 <span className="font-serif text-4xl mb-8">
                   {journey.price}
                 </span>
-                <Link 
+                <Link
                   href="/inquire"
                   className="w-full bg-earth-dark text-white hover:bg-white hover:text-charcoal font-sans text-xs uppercase tracking-[0.25em] py-4 rounded-full transition-colors duration-300 mb-4 font-semibold shadow-lg text-center"
                 >
                   {t("detail_request_booking")}
                 </Link>
-                <Link 
-                  href="/inquire" 
+                <Link
+                  href="/inquire"
                   className="text-white/60 hover:text-white font-sans text-[10px] uppercase tracking-[0.2em] transition-colors underline underline-offset-4"
                 >
                   {t("detail_ask_expert")}
@@ -606,7 +606,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
             <span className="font-medium leading-relaxed">
-              {locale === "id" 
+              {locale === "id"
                 ? "Rules (Term and Condition) telah diatur sesuai dengan yang ditetapkan oleh wholesaler dan tidak dapat diganggu gugat."
                 : "Rules (Term and Condition) have been set by the wholesaler and are non-negotiable."}
             </span>
@@ -614,7 +614,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
 
           {/* Terms Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 text-foreground/80 text-xs md:text-sm leading-relaxed">
-            
+
             {/* 1. Pendaftaran */}
             <div className="space-y-3">
               <h4 className="font-sans font-bold text-foreground text-sm md:text-base flex items-center gap-2">
@@ -623,17 +623,17 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
               </h4>
               <ul className="space-y-2 list-disc pl-5 font-light">
                 <li>
-                  {locale === "id" 
-                    ? "Konfirmasi pendaftaran tour harus disertai dengan pembayaran DP sebesar Rp 5.000.000 (non-refundable) dan sisanya dapat dicicil 3x sampai pelunasan 30 hari sebelum tanggal keberangkatan."
-                    : "Tour registration confirmation must be accompanied by a DP payment of IDR 5,000,000 (non-refundable). The balance can be paid in 3 installments up to 30 days before departure."}
+                  {locale === "id"
+                    ? "Konfirmasi pendaftaran tour harus disertai dengan pembayaran DP sebesar Rp 3.000.000 (non-refundable) dan sisanya dapat dicicil 3x sampai pelunasan 30 hari sebelum tanggal keberangkatan."
+                    : "Tour registration confirmation must be accompanied by a DP payment of IDR 3,000,000 (non-refundable). The balance can be paid in 3 installments up to 30 days before departure."}
                 </li>
                 <li>
-                  {locale === "id" 
+                  {locale === "id"
                     ? "Harga yang terlampir dalam penawaran paket masih dapat berubah sewaktu-waktu selama tour belum dikonfirmasi."
                     : "Prices enclosed in the package offer are subject to change until the tour is fully confirmed."}
                 </li>
                 <li>
-                  {locale === "id" 
+                  {locale === "id"
                     ? "Itinerary bersifat tidak mengikat dan dapat berubah sewaktu-waktu menyesuaikan kondisi di lapangan atau situasi yang tidak terduga (Force Majeure)."
                     : "Itinerary is non-binding and subject to change to adjust with field conditions or unexpected situations (Force Majeure)."}
                 </li>
@@ -655,17 +655,17 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
                   </div>
                 </li>
                 <li>
-                  {locale === "id" 
+                  {locale === "id"
                     ? "Pelunasan pembayaran dilakukan maksimal H-30 sebelum keberangkatan."
                     : "Full payment balance must be settled at least 30 days (H-30) prior to departure."}
                 </li>
                 <li>
-                  {locale === "id" 
+                  {locale === "id"
                     ? "Pendaftaran yang dilakukan kurang dari 30 hari sebelum tanggal keberangkatan harus melakukan pembayaran penuh (full payment)."
                     : "Registrations made less than 30 days before departure require immediate full payment."}
                 </li>
                 <li>
-                  {locale === "id" 
+                  {locale === "id"
                     ? "Wajib konfirmasi semua pembayaran dengan mengirimkan bukti transfer."
                     : "All payments must be confirmed by sending transfer receipts."}
                 </li>
@@ -691,12 +691,12 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
                   </ul>
                 </li>
                 <li>
-                  {locale === "id" 
+                  {locale === "id"
                     ? "Pembatalan akibat Force Majeure (bencana alam, cuaca buruk, kerusuhan, wabah penyakit, dll): perjalanan dapat dijadwalkan ulang atau dibatalkan. Tidak ada pengembalian dana atas fasilitas yang tidak terpakai, dan pihak Travel tidak bertanggung jawab atas kerugian/ketidaknyamanan yang terjadi."
                     : "Cancellations due to Force Majeure (natural disasters, severe weather, riots, disease outbreaks, etc.): trips may be rescheduled or cancelled. No refund is provided for unused amenities, and the Travel agency is not liable for any losses/inconveniences."}
                 </li>
                 <li>
-                  {locale === "id" 
+                  {locale === "id"
                     ? "Untuk alasan apa pun pembatalan sepihak oleh peserta, DP dan cicilan yang masuk tetap tidak dapat dikembalikan."
                     : "For any personal reasons of cancellation by the participant, DP and installments remain non-refundable."}
                 </li>
@@ -711,7 +711,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
               </h4>
               <ul className="space-y-2 list-disc pl-5 font-light">
                 <li>
-                  {locale === "id" 
+                  {locale === "id"
                     ? "Penolakan atau keterlambatan penerbitan visa bukan merupakan tanggung jawab pihak travel dan sepenuhnya merupakan hak prerogatif pihak Kedutaan."
                     : "Rejection or delay in visa issuance is entirely under the Embassy's authority and is not the responsibility of the travel agency."}
                 </li>
@@ -726,7 +726,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span>
-              {locale === "id" 
+              {locale === "id"
                 ? "Dengan melakukan pendaftaran, peserta dianggap mengerti dan menyetujui syarat dan ketentuan yang berlaku."
                 : "By registering, participants are deemed to have understood and agreed to the applicable terms and conditions."}
             </span>
@@ -737,9 +737,9 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
       {/* 10. FINAL CTA */}
       <section className="relative w-full aspect-[21/9] min-h-[500px] overflow-hidden mt-12">
         {journey.image ? (
-          <img 
-            src={journey.image} 
-            alt={journey.title} 
+          <img
+            src={journey.image}
+            alt={journey.title}
             className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
@@ -747,19 +747,19 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
         )}
         <div className="absolute inset-0 bg-charcoal/60 z-[1]" />
         <div className="absolute inset-0 image-texture opacity-30 mix-blend-overlay z-[2]" />
-        
+
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 z-[3]">
           <h2 className="font-serif text-5xl md:text-7xl text-white font-normal tracking-wide mb-12 drop-shadow-md">
             {t("detail_ready_to_go")}
           </h2>
           <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
-            <Link 
+            <Link
               href="/inquire"
               className="bg-white text-charcoal hover:bg-earth-dark hover:text-white font-sans text-xs uppercase tracking-[0.25em] py-4 px-10 rounded-full transition-colors duration-300 font-semibold shadow-2xl"
             >
               {t("detail_reserve_button")}
             </Link>
-            <Link 
+            <Link
               href="/journeys"
               className="bg-transparent border border-white/30 text-white hover:bg-white/10 font-sans text-xs uppercase tracking-[0.25em] py-4 px-10 rounded-full transition-colors duration-300"
             >

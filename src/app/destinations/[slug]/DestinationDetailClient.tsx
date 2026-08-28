@@ -198,11 +198,11 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
   useEffect(() => {
     async function loadRegion() {
       try {
-        // 1. Fetch admin destinations to check isActive and status
-        const adminDestinations = await apiFetch<any[]>("/admin/destinations").catch(() => null);
+        // 1. Fetch destinations to check isActive and status
+        const publicDestinations = await apiFetch<any[]>(`/destinations?locale=${locale}`).catch(() => null);
         let adminDest: any = null;
-        if (adminDestinations && Array.isArray(adminDestinations)) {
-          adminDest = adminDestinations.find((d: any) => d.slug === slug || d.key === slug);
+        if (publicDestinations && Array.isArray(publicDestinations)) {
+          adminDest = publicDestinations.find((d: any) => d.slug === slug || d.key === slug);
         }
 
         // If the entire region has status "off" or isActive === false
@@ -256,11 +256,10 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
               };
             });
 
-          // Fetch open trips and journeys from admin to get all statuses (Available, Closed, Draft, off)
+          // Fetch open trips and journeys from public endpoints
           const [openTrips, journeys] = await Promise.all([
-            apiFetch<any[]>("/admin/open-trips").catch(() => null) || 
             apiFetch<any[]>(`/open-trips?locale=${locale}`).catch(() => []),
-            apiFetch<any[]>("/admin/journeys").catch(() => [])
+            apiFetch<any[]>(`/journeys?locale=${locale}`).catch(() => [])
           ]);
 
           const combinedTrips = [

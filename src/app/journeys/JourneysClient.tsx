@@ -18,7 +18,7 @@ export function JourneysClient() {
   useEffect(() => {
     async function loadJourneys() {
       try {
-        const data = await apiFetch<any[]>("/admin/journeys").catch(() => []);
+        const data = await apiFetch<any[]>(`/journeys?locale=${locale}`).catch(() => []);
         if (data && Array.isArray(data) && data.length > 0) {
           const filtered = data.filter((item: any) => {
             const statusLower = (item.status || "").toLowerCase();
