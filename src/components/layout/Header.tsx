@@ -115,14 +115,13 @@ export function Header() {
     }
   };
 
+  const isSingleDestinationPage = pathname?.startsWith("/destinations/") && pathname.split("/").filter(Boolean).length === 2;
   const isHomePage = pathname === "/";
-  const isDestinationsListPage = pathname === "/destinations";
-  const isSubDestinationDetailPage = pathname?.startsWith("/destinations/") && pathname.split("/").filter(Boolean).length === 3;
   const isPrivateTripPage = pathname === "/private-trip";
   const isJournalPage = pathname?.startsWith("/journal");
   const isJourneysPage = pathname?.startsWith("/journeys");
 
-  const isLightPage = !isHomePage && !isDestinationsListPage && !isSubDestinationDetailPage && !isPrivateTripPage && !isJournalPage && !isJourneysPage;
+  const isLightPage = !isHomePage && !isSingleDestinationPage && !isPrivateTripPage && !isJournalPage && !isJourneysPage;
 
   const showDarkHeader = isScrolled || isLightPage;
 

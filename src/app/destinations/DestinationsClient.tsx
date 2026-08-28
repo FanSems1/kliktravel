@@ -121,29 +121,20 @@ export function DestinationsClient() {
               className="w-full h-full object-cover object-center scale-105 select-none"
             />
             {/* Elegant Double Overlay Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/55 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-t from-white via-white/10 to-transparent" />
           </div>
 
           {/* Hero Content aligned exactly like in the picture */}
           <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 w-full pt-16">
             <div className="max-w-3xl text-left">
-              <span 
-                className="block font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] text-white/90 font-bold mb-3"
-                style={{ textShadow: "0 2px 6px rgba(0,0,0,0.8)" }}
-              >
+              <span className="block font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] text-white/90 font-bold mb-3">
                 {isIndo ? "Jelajahi Dunia Bersama Kami" : "Explore The World With Us"}
               </span>
-              <h1 
-                className="font-serif text-3xl sm:text-4xl md:text-6xl text-white font-normal uppercase tracking-widest mb-5"
-                style={{ textShadow: "0 3px 12px rgba(0,0,0,0.9)" }}
-              >
+              <h1 className="font-serif text-3xl sm:text-4xl md:text-6xl text-white font-normal uppercase tracking-widest mb-5 drop-shadow-md">
                 {isIndo ? "DESTINASI WISATA PILIHAN" : "CURATED DESTINATIONS"}
               </h1>
-              <p 
-                className="font-serif italic text-white text-sm sm:text-base md:text-lg max-w-2xl font-light leading-relaxed"
-                style={{ textShadow: "0 2px 10px rgba(0,0,0,0.95)" }}
-              >
+              <p className="font-serif italic text-white/95 text-sm sm:text-base md:text-lg max-w-2xl font-light leading-relaxed drop-shadow-sm">
                 {isIndo 
                   ? "Temukan keindahan tak terbatas dari berbagai belahan nusantara hingga destinasi internasional impian Anda." 
                   : "Discover infinite beauty from exotic archipelago gems to your dream international getaways."}
