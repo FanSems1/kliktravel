@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -15,28 +15,149 @@ import {
   MessageSquare,
   MapPin,
   Eye,
-  FileText
+  FileText,
+  Loader2
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { apiFetch } from "@/lib/api";
+
+const DEFAULT_INQUIRIES = [
+  {
+    id: "PT-101",
+    name: "Bambang Soetjipto",
+    phone: "+62 812 3456 7890",
+    destination: "Labuan Bajo Private Luxury Yacht",
+    guests: "8 Adults, 2 Children",
+    dates: "15 — 20 Okt 2026",
+    status: "new",
+    budget: "IDR 150.000.000"
+  },
+  {
+    id: "PT-102",
+    name: "Siska & Family",
+    phone: "+62 817 9988 7766",
+    destination: "Switzerland & Italian Lakes Custom",
+    guests: "4 Pax (VVIP)",
+    dates: "01 — 12 Des 2026",
+    status: "contacted",
+    budget: "IDR 300.000.000"
+  },
+];
 
 export default function AdminDashboardPage() {
   const { locale } = useLanguage();
+  const [inquiries, setInquiries] = useState<any[]>([]);
+  const [openTripsCount, setOpenTripsCount] = useState<number>(18);
+  const [journalCount, setJournalCount] = useState<number>(12);
+  const [testimonialsCount, setTestimonialsCount] = useState<number>(34);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    async function loadDashboardData() {
+      setIsLoading(true);
+
+      // 1. Fetch Private Trips
+      try {
+        const data = await apiFetch<any[]>("/admin/private-trips");
+        if (data && Array.isArray(data) && data.length > 0) {
+          const normalized = data.map((item: any) => ({
+            id: item.id,
+            name: item.name || "",
+            phone: item.phone || "",
+            destination: item.destination || "",
+            dates: item.dates || "",
+            guests: item.guests || "",
+            budget: item.budget || "",
+            notes: item.notes || "",
+            status: (item.status?.toLowerCase() || "new") as "new" | "contacted" | "closed"
+          }));
+          setInquiries(normalized);
+          localStorage.setItem("klik_private_trip_inquiries", JSON.stringify(normalized));
+        } else {
+          const saved = localStorage.getItem("klik_private_trip_inquiries");
+          if (saved) {
+            setInquiries(JSON.parse(saved));
+          } else {
+            setInquiries(DEFAULT_INQUIRIES);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch private-trips:", err);
+        const saved = localStorage.getItem("klik_private_trip_inquiries");
+        if (saved) {
+          try {
+            setInquiries(JSON.parse(saved));
+          } catch {
+            setInquiries(DEFAULT_INQUIRIES);
+          }
+        } else {
+          setInquiries(DEFAULT_INQUIRIES);
+        }
+      }
+
+      // 2. Fetch Open Trips Count
+      try {
+        const openTrips = await apiFetch<any[]>("/admin/open-trips");
+        if (openTrips && Array.isArray(openTrips)) {
+          setOpenTripsCount(openTrips.length);
+        }
+      } catch (err) {
+        console.error("Failed to fetch open trips count:", err);
+      }
+
+      // 3. Fetch Journal Articles Count
+      try {
+        const articles = await apiFetch<any[]>("/admin/journal").catch(async () => {
+          return await apiFetch<any[]>("/journal");
+        });
+        if (articles && Array.isArray(articles)) {
+          setJournalCount(articles.length);
+        }
+      } catch (err) {
+        console.error("Failed to fetch journal count:", err);
+      }
+
+      // 4. Fetch Testimonials Count
+      try {
+        const reviews = await apiFetch<any[]>("/admin/testimonials");
+        if (reviews && Array.isArray(reviews)) {
+          setTestimonialsCount(reviews.length);
+        }
+      } catch (err) {
+        console.error("Failed to fetch testimonials count:", err);
+      }
+
+      setIsLoading(false);
+    }
+
+    loadDashboardData();
+  }, []);
+
+  const totalBudgetVal = inquiries.reduce((sum, item) => {
+    if (!item.budget) return sum;
+    const cleanNum = parseInt(item.budget.replace(/\D/g, ""), 10);
+    return isNaN(cleanNum) ? sum : sum + cleanNum;
+  }, 0);
+
+  const formattedTotalBudget = totalBudgetVal > 0 
+    ? `IDR ${(totalBudgetVal / 1000000).toFixed(1)}M` 
+    : "IDR 450.0M";
 
   const metrics = [
     {
       titleID: "Total Konsultasi & Inquiry",
       titleEN: "Total Inquiries & Consultations",
-      value: "148",
-      change: "+14.2%",
-      isPositive: true,
+      value: inquiries.length.toString(),
+      change: `+${inquiries.filter(i => i.status === "new").length} baru`,
+      isPositive: inquiries.filter(i => i.status === "new").length > 0,
       icon: MessageSquare,
       color: "bg-sky-500/10 text-sky-600 border-sky-200",
     },
     {
       titleID: "Paket Perjalanan Aktif",
       titleEN: "Active Tour Packages",
-      value: "24",
-      change: "+4 trip baru",
+      value: openTripsCount.toString(),
+      change: "Open Trip aktif",
       isPositive: true,
       icon: Compass,
       color: "bg-[#A89053]/10 text-[#A89053] border-[#A89053]/30",
@@ -44,7 +165,7 @@ export default function AdminDashboardPage() {
     {
       titleID: "Est. Nilai Booking (Bulan Ini)",
       titleEN: "Est. Booking Value (This Month)",
-      value: "IDR 485.5M",
+      value: formattedTotalBudget,
       change: "+18.5%",
       isPositive: true,
       icon: TrendingUp,
@@ -53,50 +174,11 @@ export default function AdminDashboardPage() {
     {
       titleID: "Inquiry Perlu Follow Up",
       titleEN: "Pending Follow-ups",
-      value: "7",
+      value: inquiries.filter(i => i.status === "new" || i.status === "contacted").length.toString(),
       change: "Membutuhkan respon",
       isPositive: false,
       icon: Clock,
       color: "bg-amber-500/10 text-amber-600 border-amber-200",
-    },
-  ];
-
-  const recentInquiries = [
-    {
-      id: "INQ-2026-081",
-      customer: "Budi Santoso",
-      destination: "Komodo Phinisi Expedition",
-      participants: "4 Pax",
-      date: "10 Agu 2026",
-      status: "pending",
-      type: "Private Trip",
-    },
-    {
-      id: "INQ-2026-080",
-      customer: "Clara Wijaya",
-      destination: "Kyoto Autumn Leaves",
-      participants: "2 Pax",
-      date: "09 Agu 2026",
-      status: "confirmed",
-      type: "Open Trip",
-    },
-    {
-      id: "INQ-2026-079",
-      customer: "David Kusuma",
-      destination: "Winter Harbin & Ice Festival",
-      participants: "6 Pax",
-      date: "08 Agu 2026",
-      status: "confirmed",
-      type: "Open Trip",
-    },
-    {
-      id: "INQ-2026-078",
-      customer: "Elena Rostova",
-      destination: "Switzerland & Alps Luxury Tour",
-      participants: "2 Pax",
-      date: "07 Agu 2026",
-      status: "followup",
-      type: "Private Trip",
     },
   ];
 
@@ -106,7 +188,7 @@ export default function AdminDashboardPage() {
       titleEN: "Open Trips & Destinations",
       descID: "Kelola daftar wilayah, kuota trip, dan jadwal keberangkatan.",
       descEN: "Manage regions, trip capacity, and departure dates.",
-      count: "18 Open Trips",
+      count: `${openTripsCount} Open Trips`,
       href: "/admin/destinations",
       badge: "Utama",
     },
@@ -115,7 +197,7 @@ export default function AdminDashboardPage() {
       titleEN: "Private & Custom Trips",
       descID: "Atur paket perjalanan eksklusif dan preferensi grup.",
       descEN: "Configure bespoke itineraries and custom requests.",
-      count: "6 Template",
+      count: `${inquiries.length} Permintaan`,
       href: "/admin/private-trips",
       badge: "Eksklusif",
     },
@@ -124,7 +206,7 @@ export default function AdminDashboardPage() {
       titleEN: "Travel Journal & Articles",
       descID: "Tulis dan publikasikan cerita petualangan dan panduan lokal.",
       descEN: "Publish editorial stories and destination guides.",
-      count: "12 Artikel Published",
+      count: `${journalCount} Artikel Published`,
       href: "/admin/journal",
       badge: "Editorial",
     },
@@ -133,7 +215,7 @@ export default function AdminDashboardPage() {
       titleEN: "Customer Testimonials",
       descID: "Moderasi ulasan dan dokumentasi momen kebersamaan customer.",
       descEN: "Moderate customer reviews and highlight moments.",
-      count: "34 Reviews",
+      count: `${testimonialsCount} Reviews`,
       href: "/admin/testimonials",
       badge: "Sosial",
     },
@@ -281,45 +363,76 @@ export default function AdminDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs font-sans text-slate-700">
-              {recentInquiries.map((inq) => (
-                <tr key={inq.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-4 px-6 font-mono font-medium text-slate-500">{inq.id}</td>
-                  <td className="py-4 px-6 font-bold text-slate-800">{inq.customer}</td>
-                  <td className="py-4 px-6 font-medium text-slate-700">{inq.destination}</td>
-                  <td className="py-4 px-6">
-                    <span className={`text-[10px] font-mono uppercase font-semibold px-2 py-0.5 rounded ${inq.type === "Private Trip"
-                        ? "bg-purple-100 text-purple-700"
-                        : "bg-blue-100 text-blue-700"
-                      }`}>
-                      {inq.type}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 text-slate-600">{inq.participants}</td>
-                  <td className="py-4 px-6 text-slate-500 font-mono text-[11px]">{inq.date}</td>
-                  <td className="py-4 px-6">
-                    {inq.status === "confirmed" && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-sans font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">
-                        <CheckCircle2 size={12} /> Confirmed
-                      </span>
-                    )}
-                    {inq.status === "pending" && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-sans font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">
-                        <Clock size={12} /> Pending
-                      </span>
-                    )}
-                    {inq.status === "followup" && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-sans font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-sky-100 text-sky-700">
-                        <AlertCircle size={12} /> Need Response
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-4 px-6 text-right">
-                    <button className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-[#0F2C59] hover:text-white transition-colors font-sans text-xs font-semibold">
-                      Detail
-                    </button>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={8} className="py-10 text-center text-slate-400 italic">
+                    <div className="flex items-center justify-center gap-2">
+                      <Loader2 size={16} className="animate-spin text-[#0F2C59]" />
+                      <span>{locale === "id" ? "Memuat data..." : "Loading data..."}</span>
+                    </div>
                   </td>
                 </tr>
-              ))}
+              ) : inquiries.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-10 text-center text-slate-400 italic">
+                    {locale === "id" ? "Belum ada inquiry masuk." : "No inquiries found."}
+                  </td>
+                </tr>
+              ) : (
+                inquiries.slice(0, 5).map((inq) => (
+                  <tr key={inq.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-4 px-6 font-mono font-medium text-slate-500">{inq.id}</td>
+                    <td className="py-4 px-6 font-bold text-slate-800">
+                      <div className="flex flex-col">
+                        <span>{inq.name}</span>
+                        {inq.phone && (
+                          <a 
+                            href={`https://wa.me/${inq.phone.replace(/[^0-9]/g, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] font-mono text-sky-600 hover:underline mt-0.5"
+                          >
+                            {inq.phone}
+                          </a>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 font-medium text-slate-700">{inq.destination}</td>
+                    <td className="py-4 px-6">
+                      <span className="text-[10px] font-mono uppercase font-semibold px-2 py-0.5 rounded bg-purple-100 text-purple-700">
+                        Private Trip
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-slate-600">{inq.guests || "N/A"}</td>
+                    <td className="py-4 px-6 text-slate-500 font-mono text-[11px]">{inq.dates || "N/A"}</td>
+                    <td className="py-4 px-6">
+                      {(inq.status === "closed" || inq.status === "confirmed") && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-sans font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">
+                          <CheckCircle2 size={12} /> Confirmed
+                        </span>
+                      )}
+                      {(inq.status === "new" || inq.status === "pending") && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-sans font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">
+                          <Clock size={12} /> Pending
+                        </span>
+                      )}
+                      {(inq.status === "contacted" || inq.status === "followup") && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-sans font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-sky-100 text-sky-700">
+                          <AlertCircle size={12} /> Need Response
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-4 px-6 text-right">
+                      <Link
+                        href="/admin/private-trips"
+                        className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-[#0F2C59] hover:text-white transition-colors font-sans text-xs font-semibold inline-block"
+                      >
+                        Detail
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
