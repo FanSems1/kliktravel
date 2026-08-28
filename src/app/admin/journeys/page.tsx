@@ -64,7 +64,7 @@ interface ApiOpenTrip {
 
 export default function AdminJourneysPage() {
   const { locale } = useLanguage();
-  const [activeTab, setActiveTab] = useState<"curated" | "open">("curated");
+  const [activeTab, setActiveTab] = useState<"curated" | "open">("open");
   const [viewMode, setViewMode] = useState<"list" | "form">("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -1297,46 +1297,17 @@ export default function AdminJourneysPage() {
       {/* Header */}
       {viewMode === "list" ? (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          {/* Title Section */}
           <div>
             <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#A89053] font-bold block mb-1">
               Product Management
             </span>
             <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#0F2C59]">
-              {locale === "id" ? "Paket Perjalanan & Open Trip" : "Tour Packages & Open Trips"}
+              {locale === "id" ? "Open Trip & Paket Perjalanan" : "Open Trips & Tour Packages"}
             </h1>
             <p className="text-xs text-slate-500 font-sans mt-0.5">
-              Kelola katalog Curated Journeys dan Open Trips / Paket Wisata dengan API Backend.
+              Kelola katalog Open Trips / Paket Perjalanan dengan API Backend.
             </p>
-          </div>
-
-          {/* Tab Switcher */}
-          <div className="flex bg-slate-200/70 p-1.5 rounded-2xl gap-1 font-sans text-xs font-bold shrink-0 w-full sm:w-auto">
-            <button
-              onClick={() => {
-                setActiveTab("curated");
-                setSearchQuery("");
-              }}
-              className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "curated"
-                ? "bg-[#0F2C59] text-white shadow-md"
-                : "text-slate-600 hover:text-[#0F2C59]"
-                }`}
-            >
-              <Compass size={15} />
-              <span>Curated Journeys ({curatedList.length})</span>
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab("open");
-                setSearchQuery("");
-              }}
-              className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "open"
-                ? "bg-[#0F2C59] text-white shadow-md"
-                : "text-slate-600 hover:text-[#0F2C59]"
-                }`}
-            >
-              <Calendar size={15} />
-              <span>Open Trips ({openTripsList.length})</span>
-            </button>
           </div>
         </div>
       ) : (
@@ -2050,9 +2021,9 @@ export default function AdminJourneysPage() {
                               </td>
                               <td className="p-3">
                                 <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${b.status === "Available" ? "bg-emerald-100 text-emerald-700 border border-emerald-200" :
-                                    b.status === "FULL" ? "bg-rose-100 text-rose-700 border border-rose-200" :
-                                      b.status === "Closed" ? "bg-amber-100 text-amber-700 border border-amber-200" :
-                                        "bg-slate-100 text-slate-600 border border-slate-200"
+                                  b.status === "FULL" ? "bg-rose-100 text-rose-700 border border-rose-200" :
+                                    b.status === "Closed" ? "bg-amber-100 text-amber-700 border border-amber-200" :
+                                      "bg-slate-100 text-slate-600 border border-slate-200"
                                   }`}>
                                   {b.status === "FULL" ? "Kuota Penuh" : b.status}
                                 </span>

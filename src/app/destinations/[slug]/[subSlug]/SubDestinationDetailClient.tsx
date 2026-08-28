@@ -236,16 +236,24 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
         const region = currentRegions.find((r) => r.slug === slug);
         const subDestination = region?.subDestinations.find((s) => s.slug === subSlug);
 
-        // 2. Load tour details (all open-trips matching current destination)
+        // 2. Load tour details (all open-trips and journeys matching current destination)
         let matchingPackages: TourPackageDetail[] = [];
         let allOpenTripsList: any[] = [];
         try {
-          const openTrips = await apiFetch<any[]>("/admin/open-trips").catch(() => null) ||
-                            await apiFetch<any[]>(`/open-trips?locale=${locale}`).catch(() => null);
+          const [openTrips, journeys] = await Promise.all([
+            apiFetch<any[]>("/admin/open-trips").catch(() => null) ||
+            apiFetch<any[]>(`/open-trips?locale=${locale}`).catch(() => null),
+            apiFetch<any[]>("/admin/journeys").catch(() => null)
+          ]);
 
-          if (openTrips && Array.isArray(openTrips)) {
-            allOpenTripsList = openTrips;
-            const matches = openTrips.filter(p => {
+          const combinedTrips = [
+            ...(openTrips && Array.isArray(openTrips) ? openTrips : []),
+            ...(journeys && Array.isArray(journeys) ? journeys : [])
+          ];
+
+          if (combinedTrips.length > 0) {
+            allOpenTripsList = combinedTrips;
+            const matches = combinedTrips.filter(p => {
               const cId = p.contentId || p.contentID || {};
               const cEn = p.contentEn || p.contentEN || {};
               const pSubSlug = (p.subSlug || cId.subSlug || cEn.subSlug || p.slug || "").toLowerCase();
@@ -265,10 +273,18 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                   slug: match.slug,
                   regionSlug: match.regionSlug || active.regionSlug || "",
                   subSlug: match.subSlug || active.subSlug || "",
-                  name: locale === "id" ? (active.name || match.name) : (active.nameEN || active.name || match.nameEN || match.name),
-                  tagline: locale === "id" ? (active.tagline || match.tagline) : (active.taglineEN || active.tagline || match.taglineEN || match.tagline),
-                  duration: locale === "id" ? (active.duration || match.duration) : (active.durationEN || active.duration || match.durationEN || match.duration),
-                  price: locale === "id" ? (active.price || match.price) : (active.priceEN || active.price || match.priceEN || match.price),
+                  name: locale === "id" 
+                    ? (active.title || active.name || match.name || match.slug || "") 
+                    : (active.title || active.nameEN || active.name || match.nameEN || match.name || match.slug || ""),
+                  tagline: locale === "id" 
+                    ? (active.subtitle || active.tagline || match.tagline || "") 
+                    : (active.subtitle || active.taglineEN || active.tagline || match.taglineEN || match.tagline || ""),
+                  duration: locale === "id" 
+                    ? (active.durationLabel || active.duration || match.duration || (match.durationDays ? `${match.durationDays} Hari` : "5 Hari 4 Malam")) 
+                    : (active.durationLabel || active.durationEN || active.duration || match.durationEN || match.duration || (match.durationDays ? `${match.durationDays} Days` : "5 Days 4 Nights")),
+                  price: locale === "id" 
+                    ? (active.price || match.price || match.priceRaw || "") 
+                    : (active.priceEN || active.price || match.priceEN || match.price || match.priceRaw || ""),
                   departureDate: active.departureDate || match.departureDate || match.dates || "",
                   departureDateFrom: match.departureDateFrom || "",
                   departureDateTo: match.departureDateTo || "",
@@ -708,7 +724,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
     const numericOnly = rawPrice.replace(/[^0-9]/g, "");
     if (numericOnly) {
       const numFormatted = Number(numericOnly).toLocaleString("id-ID");
-      return locale === "id" ? `Mulai Rp ${numFormatted} / pax` : `From Rp ${numFormatted} / pax`;
+      return `Rp ${numFormatted}`;
     }
     return rawPrice;
   })();

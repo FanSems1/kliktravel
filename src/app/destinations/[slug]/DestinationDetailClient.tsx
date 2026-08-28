@@ -97,7 +97,7 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
   const { locale } = useLanguage();
   const [region, setRegion] = useState<RegionDestination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [openTripsMap, setOpenTripsMap] = useState<Record<string, { status?: string; price?: string; duration?: string; image?: string; departureDate?: string }>>({});
+  const [openTripsMap, setOpenTripsMap] = useState<Record<string, { status?: string; price?: string; duration?: string; image?: string; departureDate?: string; title?: string }>>({});
   const [minPriceInput, setMinPriceInput] = useState<string>("");
   const [maxPriceInput, setMaxPriceInput] = useState<string>("");
   const [selectedMonthFilter, setSelectedMonthFilter] = useState<string>("");
@@ -256,13 +256,21 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
               };
             });
 
-          // Fetch open trips from admin to get all statuses (Available, Closed, Draft, off)
-          const openTrips = await apiFetch<any[]>("/admin/open-trips").catch(() => null) || 
-                            await apiFetch<any[]>(`/open-trips?locale=${locale}`).catch(() => []);
+          // Fetch open trips and journeys from admin to get all statuses (Available, Closed, Draft, off)
+          const [openTrips, journeys] = await Promise.all([
+            apiFetch<any[]>("/admin/open-trips").catch(() => null) || 
+            apiFetch<any[]>(`/open-trips?locale=${locale}`).catch(() => []),
+            apiFetch<any[]>("/admin/journeys").catch(() => [])
+          ]);
 
-          if (Array.isArray(openTrips)) {
+          const combinedTrips = [
+            ...(openTrips && Array.isArray(openTrips) ? openTrips : []),
+            ...(journeys && Array.isArray(journeys) ? journeys : [])
+          ];
+
+          if (combinedTrips.length > 0) {
             const map: Record<string, any> = {};
-            openTrips.forEach((ot) => {
+            combinedTrips.forEach((ot) => {
               const cId = ot.contentId || ot.contentID || {};
               const cEn = ot.contentEn || ot.contentEN || {};
               const c = locale === "en" ? (Object.keys(cEn).length > 0 ? cEn : cId) : (Object.keys(cId).length > 0 ? cId : cEn);
@@ -276,6 +284,7 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
               const otDuration = c?.duration || ot.duration || cId?.duration || cEn?.duration || "";
               const otImage = ot.featuredImage || ot.image || c?.featuredImage || c?.image || cId?.featuredImage || cEn?.featuredImage || "";
               const otDate = ot.departureDate || ot.dates || ot.departureDates || c?.departureDate || c?.dates || "";
+              const otTitle = c?.title || ot.title || cId?.title || cEn?.title || "";
 
               if (otSubSlug) {
                 map[otSubSlug] = {
@@ -284,6 +293,7 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                   duration: otDuration,
                   image: otImage,
                   departureDate: otDate,
+                  title: otTitle,
                 };
               }
             });
@@ -346,47 +356,17 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
   }
 
   return (
-    <div className="bg-ivory text-foreground min-h-screen font-sans selection:bg-[#A89053] selection:text-white">
-      {/* Cinematic Hero */}
-      <section className="relative w-full h-screen overflow-hidden">
-        {region.image ? (
-          <img 
-            src={region.image} 
-            alt={region.name} 
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        ) : regionHeroImages[region.slug] ? (
-          <img 
-            src={regionHeroImages[region.slug]} 
-            alt={region.name} 
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        ) : (
-          <div className={`absolute inset-0 bg-gradient-to-tr ${region.featuredImageGradient}`} />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/60 z-[1]" />
-        <div className="absolute inset-0 bg-black/25 z-[1]" />
-        <div className="absolute inset-0 image-texture opacity-35 mix-blend-overlay z-[2]" />
-        
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 mt-16 z-[3]">
-          <h1 className="font-serif text-5xl md:text-8xl text-white font-normal tracking-wider mb-6 drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
-            {region.name.toUpperCase()}
-          </h1>
-          <p className="font-sans text-sm md:text-lg text-white max-w-2xl font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-            {region.subtitle}
-          </p>
-        </div>
-      </section>
-
-      {/* Explore Sub-Destinations / Carousel Section */}
-      <main className="w-full">
+    <div className="bg-[#F2F7FA] text-[#0F2C59] min-h-screen font-sans selection:bg-[#0284C7] selection:text-white">
+      <main className="w-full pt-32 pb-24">
         {/* Top Header & Filter Pills */}
-        <div className="max-w-7xl mx-auto px-6 md:px-12 pt-20 pb-8 text-left flex flex-col items-start w-full">
-          <h2 className="font-sans font-bold text-4xl md:text-5xl lg:text-6xl text-[#0F2C59] mb-4 tracking-tight">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 pb-8 text-left flex flex-col items-start w-full">
+          <h1 className="font-sans font-bold text-4xl md:text-5xl lg:text-6xl text-[#0F2C59] mb-4 tracking-tight">
             Explore {region.name}
-          </h2>
-          <p className="font-sans text-[#0F2C59]/70 text-sm md:text-base max-w-2xl mb-8 leading-relaxed">
-            Ready to start your own getaway in {region.name}? From legendary history to award-winning nature, {region.name} has so much to explore.
+          </h1>
+          <p className="font-sans text-[#0F2C59]/70 text-sm md:text-base max-w-3xl mb-8 leading-relaxed">
+            {locale === "id"
+              ? `Siap memulai liburan impian Anda di ${region.name}? Dari sejarah legendaris hingga pesona alam luar biasa, ${region.name} menyimpan begitu banyak hal indah untuk dijelajahi.`
+              : `Ready to start your own getaway in ${region.name}? From legendary history to award-winning nature, ${region.name} has so much to explore.`}
           </p>
 
           {/* Premium Minimalist Price Filter Row */}
@@ -396,7 +376,7 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-[#0284C7]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                {locale === "id" ? "Filter Harga:" : "Filter Price:"}
+                {locale === "id" ? "FILTER HARGA:" : "FILTER PRICE:"}
               </span>
 
               <div className="relative">
@@ -426,14 +406,14 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
 
               <span className="font-sans text-xs font-bold uppercase tracking-wider text-[#0F2C59] flex items-center gap-2 mr-1">
                 <Clock size={16} className="text-[#0284C7]" />
-                {locale === "id" ? "Filter Tanggal:" : "Filter Date:"}
+                {locale === "id" ? "FILTER TANGGAL:" : "FILTER DATE:"}
               </span>
 
               <div className="relative">
                 <select
                   value={selectedMonthFilter}
                   onChange={(e) => setSelectedMonthFilter(e.target.value)}
-                  className="bg-white border border-[#0F2C59]/15 rounded-xl px-4 py-2.5 text-[#0F2C59] font-sans text-xs focus:outline-none focus:border-[#0284C7] focus:ring-1 focus:ring-[#0284C7] w-48 transition-all shadow-sm cursor-pointer appearance-none pr-8"
+                  className="bg-white border border-[#0F2C59]/15 rounded-xl px-4 py-2.5 text-[#0F2C59] font-sans text-xs focus:outline-none focus:border-[#0284C7] focus:ring-1 focus:ring-[#0284C7] w-48 transition-all shadow-sm cursor-pointer appearance-none pr-8 font-bold"
                 >
                   <option value="">{locale === "id" ? "Semua Bulan / Tanggal" : "All Months / Dates"}</option>
                   {availableMonths.map((m) => (
@@ -463,29 +443,9 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
           </div>
         </div>
 
-        {/* Carousel Section */}
-        <div className="w-full pb-24 relative overflow-hidden">
-          
-          <div className="max-w-[1600px] mx-auto relative">
-            
-            {/* Left/Right Buttons */}
-            {filteredSubDestinations.length > 3 && (
-              <div className="absolute left-2 md:left-8 top-[35%] -translate-y-1/2 z-20 pointer-events-none w-full max-w-[1600px] flex justify-between px-2 md:px-0">
-                <button 
-                  onClick={scrollLeft}
-                  className="w-10 h-10 md:w-12 md:h-12 bg-white border border-[#0F2C59]/10 rounded-full flex items-center justify-center text-[#0F2C59] shadow-md hover:bg-gray-50 transition-colors pointer-events-auto shrink-0"
-                >
-                  <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
-                </button>
-                <button 
-                  onClick={scrollRight}
-                  className="w-10 h-10 md:w-12 md:h-12 bg-white border border-[#0F2C59]/10 rounded-full flex items-center justify-center text-[#0F2C59] shadow-md hover:bg-gray-50 transition-colors pointer-events-auto shrink-0 mr-4 md:mr-16"
-                >
-                  <ChevronRight className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
-                </button>
-              </div>
-            )}
-
+        {/* Packages Grid Section */}
+        <div className="w-full pb-24 relative">
+          <div className="max-w-7xl mx-auto relative">
             {filteredSubDestinations.length === 0 ? (
               <div className="max-w-md mx-auto text-center py-16 px-6 bg-white border border-[#0F2C59]/10 rounded-3xl shadow-sm">
                 <p className="font-sans text-[#0F2C59]/60 text-sm mb-6 leading-relaxed">
@@ -505,14 +465,10 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                 </button>
               </div>
             ) : (
-              /* Sub-Destinations Grid/Carousel Container */
+              /* Sub-Destinations Responsive Grid Container */
               <div 
                 ref={scrollContainerRef}
-                className={
-                  filteredSubDestinations.length <= 3
-                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 pb-8 px-6 md:px-12 max-w-7xl mx-auto"
-                    : "grid grid-rows-2 grid-flow-col auto-cols-[85vw] sm:auto-cols-[50vw] md:auto-cols-[35vw] lg:auto-cols-[25vw] overflow-x-auto gap-6 md:gap-8 pb-8 snap-x snap-mandatory scrollbar-none no-scrollbar scroll-smooth px-6 md:px-12 max-w-7xl mx-auto"
-                }
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-6 md:px-12 w-full"
               >
                 {filteredSubDestinations.map((sub, idx) => {
                   const mockImages = [
@@ -523,84 +479,77 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                   ];
                   const otInfo = openTripsMap[sub.slug.toLowerCase()];
                   const image = otInfo?.image || sub.image || subDestinationImages[sub.slug] || mockImages[idx % mockImages.length];
+                  
+                  const isFull = otInfo?.status === "Closed" || otInfo?.status === "inactive" || otInfo?.status === "FULL" || otInfo?.status === "Draft" || otInfo?.status === "draft";
 
                   return (
                     <Link 
                       href={`/destinations/${region.slug}/${sub.slug}`}
                       key={sub.slug || idx} 
-                      className={`snap-start shrink-0 flex flex-col group cursor-pointer ${
-                        filteredSubDestinations.length <= 3 ? "w-full max-w-sm mx-auto" : "w-full"
-                      }`}
+                      className="flex flex-col group cursor-pointer w-full bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-slate-200/80 p-4 pb-6"
                     >
                       {/* Card Image */}
-                      <div className="w-full aspect-[4/3] rounded-2xl relative overflow-hidden mb-6 bg-charcoal shadow-md border border-slate-100">
+                      <div className="w-full aspect-[4/3] rounded-2xl relative overflow-hidden mb-6 bg-slate-100 shadow-sm">
                         <img 
                           src={image} 
                           alt={sub.name} 
                           className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         />
-                        <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500" />
+                        <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-500" />
                         
-                        <div className="absolute bottom-0 left-0 bg-[#0284C7] text-white text-[10px] md:text-xs font-sans font-bold uppercase tracking-wider px-4 md:px-5 py-2 md:py-2.5">
+                        {/* Blue TAG badge bottom left of image */}
+                        <div className="absolute bottom-4 left-4 bg-[#0284C7] text-white text-[10px] md:text-[11px] font-sans font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-lg shadow-sm">
                           {locale === "id" ? "PAKET TOUR" : "TOUR PACKAGE"}
                         </div>
 
-                        {otInfo?.status && (
-                          <div className={`absolute top-3 right-3 backdrop-blur-md border text-[10px] font-mono font-bold uppercase px-2.5 py-1 rounded-lg shadow-md flex items-center gap-1.5 ${
-                            otInfo.status === "Closed" || otInfo.status === "inactive" || otInfo.status === "FULL" || otInfo.status === "Draft" || otInfo.status === "draft"
-                              ? "bg-rose-950/80 text-rose-200 border-rose-500/30"
-                              : "bg-emerald-950/80 text-emerald-300 border-emerald-500/30"
-                          }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${
-                              otInfo.status === "Closed" || otInfo.status === "inactive" || otInfo.status === "FULL" || otInfo.status === "Draft" || otInfo.status === "draft" ? "bg-rose-400" : "bg-emerald-400"
-                            }`} />
-                            <span>
-                              {otInfo.status === "Closed" || otInfo.status === "inactive" || otInfo.status === "FULL" || otInfo.status === "Draft" || otInfo.status === "draft"
-                                ? "FULL"
-                                : otInfo.status.toUpperCase()}
-                            </span>
-                          </div>
-                        )}
+                        {/* Emerald Status Badge top right */}
+                        <div className={`absolute top-4 right-4 text-[10px] md:text-[11px] font-sans font-bold uppercase px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5 text-white ${
+                          isFull
+                            ? "bg-rose-600"
+                            : "bg-emerald-600"
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full bg-white ${!isFull && "animate-pulse"}`} />
+                          <span>
+                            {isFull
+                              ? (locale === "id" ? "PENUH" : "FULL")
+                              : (locale === "id" ? "AVAILABLE" : "AVAILABLE")}
+                          </span>
+                        </div>
                       </div>
                       
                       {/* Card Text */}
-                      <h3 className="font-sans font-bold text-lg md:text-xl text-[#0F2C59] leading-snug mb-2 group-hover:text-[#0284C7] transition-colors pr-4">
-                        {locale === "id" ? `Paket Tour ${sub.name}` : `${sub.name} Tour Package`}
-                      </h3>
+                      <div className="px-1">
+                        <h3 className="font-sans font-bold text-lg md:text-xl text-[#0F2C59] leading-snug mb-2 group-hover:text-[#0284C7] transition-colors pr-2">
+                          {otInfo?.title || (locale === "id" ? `Paket Tour ${sub.name}` : `${sub.name} Tour Package`)}
+                        </h3>
 
-                      {otInfo?.price && (
-                        <p className="font-sans font-bold text-sm md:text-base text-[#0284C7] mb-3">
-                          {(() => {
-                            const trimmed = otInfo.price.trim();
-                            if (/^(mulai|from|rp|usd|idr)/i.test(trimmed)) {
-                              return trimmed;
-                            }
-                            return locale === "en" ? `From Rp ${trimmed}` : `Mulai Rp ${trimmed}`;
-                          })()}
-                        </p>
-                      )}
-                      
-                      {(() => {
-                        const isFull = otInfo?.status === "Closed" || otInfo?.status === "inactive" || otInfo?.status === "FULL" || otInfo?.status === "Draft" || otInfo?.status === "draft";
-                        return (
-                          <div className="flex flex-col gap-1.5 text-[#0F2C59]/80 font-sans text-xs md:text-sm">
-                            <div className="flex items-center gap-2">
-                              <span className={`w-1.5 h-1.5 rounded-full ${isFull ? "bg-rose-500" : "bg-[#0284C7]"}`} />
-                              <span>
-                                {isFull
-                                  ? (locale === "id" ? "Pendaftaran Ditutup / Kuota Penuh" : "Fully Booked / Registration Closed")
-                                  : (locale === "id" ? "Tersedia beberapa tanggal keberangkatan" : "Multiple departure dates available")}
-                              </span>
-                            </div>
-                            {otInfo?.departureDate && (
-                              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono pl-3.5">
-                                <Clock size={13} className="text-[#0284C7] shrink-0" />
-                                <span className="truncate">{otInfo.departureDate}</span>
-                              </div>
-                            )}
+                        {otInfo?.price && (
+                          <p className="font-sans font-bold text-base md:text-lg text-[#0284C7] mb-2">
+                            {(() => {
+                              const trimmed = otInfo.price.trim();
+                              if (/^(mulai|from|rp|usd|idr)/i.test(trimmed)) {
+                                return trimmed;
+                              }
+                              return locale === "en" ? `From Rp ${trimmed}` : `Mulai Rp ${trimmed}`;
+                            })()}
+                          </p>
+                        )}
+                        
+                        <div className="flex items-center gap-2 text-slate-500 font-sans text-xs md:text-sm mt-1">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isFull ? "bg-rose-500" : "bg-[#0284C7]"}`} />
+                          <span>
+                            {isFull
+                              ? (locale === "id" ? "Pendaftaran Ditutup / Kuota Penuh" : "Fully Booked / Registration Closed")
+                              : (locale === "id" ? "Tersedia beberapa tanggal keberangkatan" : "Multiple departure dates available")}
+                          </span>
+                        </div>
+                        {otInfo?.departureDate && !isFull && (
+                          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono mt-2 pl-3.5">
+                            <Clock size={13} className="text-[#0284C7] shrink-0" />
+                            <span className="truncate">{otInfo.departureDate}</span>
                           </div>
-                        );
-                      })()}
+                        )}
+                      </div>
                     </Link>
                   );
                 })}
@@ -611,7 +560,7 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
             <div className="mt-16 text-center">
               <Link 
                 href="/destinations"
-                className="inline-block bg-transparent text-[#0F2C59] font-sans text-xs md:text-sm font-bold uppercase tracking-widest py-4 md:py-5 px-8 md:px-12 rounded-full border border-[#0F2C59] hover:bg-[#0F2C59]/5 transition-colors duration-300"
+                className="inline-block bg-white text-[#0F2C59] font-sans text-xs md:text-sm font-bold uppercase tracking-widest py-4 px-8 md:px-12 rounded-full border border-[#0F2C59]/20 hover:bg-[#0F2C59]/5 transition-colors shadow-sm"
               >
                 {locale === "id" ? "LIHAT SEMUA DESTINASI" : "CHECK ALL DESTINATIONS"}
               </Link>

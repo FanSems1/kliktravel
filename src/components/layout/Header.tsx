@@ -115,13 +115,14 @@ export function Header() {
     }
   };
 
-  const isSingleDestinationPage = pathname?.startsWith("/destinations/") && pathname.split("/").filter(Boolean).length === 2;
   const isHomePage = pathname === "/";
+  const isDestinationsListPage = pathname === "/destinations";
+  const isSubDestinationDetailPage = pathname?.startsWith("/destinations/") && pathname.split("/").filter(Boolean).length === 3;
   const isPrivateTripPage = pathname === "/private-trip";
   const isJournalPage = pathname?.startsWith("/journal");
   const isJourneysPage = pathname?.startsWith("/journeys");
 
-  const isLightPage = !isHomePage && !isSingleDestinationPage && !isPrivateTripPage && !isJournalPage && !isJourneysPage;
+  const isLightPage = !isHomePage && !isDestinationsListPage && !isSubDestinationDetailPage && !isPrivateTripPage && !isJournalPage && !isJourneysPage;
 
   const showDarkHeader = isScrolled || isLightPage;
 
@@ -182,7 +183,7 @@ export function Header() {
             </Link>
 
             <Link 
-              href="/journeys"
+              href="/destinations"
               className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${
                 showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white font-semibold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-white/90"
               }`}
@@ -360,7 +361,7 @@ export function Header() {
           {/* Mobile Actions */}
           <div className="flex md:hidden items-center space-x-3.5">
             <Link 
-              href="/journeys"
+              href="/destinations"
               className={`font-sans text-[10px] uppercase tracking-wider transition-all duration-300 font-bold shrink-0 ${
                 showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)] hover:text-white/90"
               }`}
@@ -434,7 +435,7 @@ export function Header() {
 
 
               <Link 
-                href="/journeys"
+                href="/destinations"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="font-serif text-lg tracking-wider text-foreground/90 hover:text-[#0284C7] transition-colors block py-1"
               >

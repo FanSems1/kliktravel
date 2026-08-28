@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { localizedRegions, RegionDestination } from "@/data/destinations";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiFetch } from "@/lib/api";
@@ -32,7 +30,7 @@ export function DestinationsClient() {
   const [regions, setRegions] = useState<RegionDestination[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3;
+  const itemsPerPage = 9;
 
   const isIndo = locale === "id";
 
@@ -112,23 +110,46 @@ export function DestinationsClient() {
 
   return (
     <div className="bg-white text-slate-800 min-h-screen font-sans flex flex-col justify-between selection:bg-[#0284C7] selection:text-white">
-      <Header />
-
-      <main className="pt-32 pb-24 flex-1">
+      <main className="pb-24 flex-1">
         {/* Hero Section */}
-        <section className="max-w-7xl mx-auto px-6 text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0284C7]/10 text-[#0284C7] text-xs font-mono font-semibold uppercase tracking-[0.2em] mb-4">
-            <Compass size={14} />
-            <span>{isIndo ? "Jelajahi Dunia Bersama Kami" : "Explore The World With Us"}</span>
+        <section className="relative w-full h-[55vh] md:h-[65vh] flex items-center mb-16 bg-slate-900 overflow-hidden">
+          {/* Background Image */}
+          <div className="absolute inset-0 z-0">
+            <img 
+              src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2000" 
+              alt="Destinasi Wisata Pilihan" 
+              className="w-full h-full object-cover object-center scale-105 select-none"
+            />
+            {/* Elegant Double Overlay Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/55 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/10 to-transparent" />
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-[#0F2C59] tracking-tight mb-6 font-bold">
-            {isIndo ? "DESTINASI WISATA PILIHAN" : "CURATED DESTINATIONS"}
-          </h1>
-          <p className="font-sans text-slate-600 text-base md:text-lg max-w-2xl mx-auto font-light leading-relaxed">
-            {isIndo 
-              ? "Temukan keindahan tak terbatas dari berbagai belahan nusantara hingga destinasi internasional impian Anda." 
-              : "Discover infinite beauty from exotic archipelago gems to your dream international getaways."}
-          </p>
+
+          {/* Hero Content aligned exactly like in the picture */}
+          <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 w-full pt-16">
+            <div className="max-w-3xl text-left">
+              <span 
+                className="block font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] text-white/90 font-bold mb-3"
+                style={{ textShadow: "0 2px 6px rgba(0,0,0,0.8)" }}
+              >
+                {isIndo ? "Jelajahi Dunia Bersama Kami" : "Explore The World With Us"}
+              </span>
+              <h1 
+                className="font-serif text-3xl sm:text-4xl md:text-6xl text-white font-normal uppercase tracking-widest mb-5"
+                style={{ textShadow: "0 3px 12px rgba(0,0,0,0.9)" }}
+              >
+                {isIndo ? "DESTINASI WISATA PILIHAN" : "CURATED DESTINATIONS"}
+              </h1>
+              <p 
+                className="font-serif italic text-white text-sm sm:text-base md:text-lg max-w-2xl font-light leading-relaxed"
+                style={{ textShadow: "0 2px 10px rgba(0,0,0,0.95)" }}
+              >
+                {isIndo 
+                  ? "Temukan keindahan tak terbatas dari berbagai belahan nusantara hingga destinasi internasional impian Anda." 
+                  : "Discover infinite beauty from exotic archipelago gems to your dream international getaways."}
+              </p>
+            </div>
+          </div>
         </section>
 
         {/* Content Container */}
@@ -284,8 +305,6 @@ export function DestinationsClient() {
           )}
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 }

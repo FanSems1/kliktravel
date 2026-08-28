@@ -32,33 +32,60 @@ export function JourneysClient() {
             const fallbackContent = item.contentId || item.contentID || item.contentEn || item.contentEN || {};
             const activeContent = content || fallbackContent;
 
-            let formattedPrice = activeContent.price;
-            if (!formattedPrice && item.priceRaw) {
-              const numPrice = Number(item.priceRaw);
-              formattedPrice = numPrice ? `IDR ${(numPrice / 1000000).toFixed(1)} JT` : "";
+            let formattedPrice = activeContent.price || item.priceRaw;
+            if (formattedPrice) {
+              const cleanNum = formattedPrice.replace(/[^0-9]/g, "");
+              if (cleanNum && !formattedPrice.toLowerCase().includes("rp") && !formattedPrice.toLowerCase().includes("idr")) {
+                const num = Number(cleanNum);
+                if (num >= 1000) {
+                  formattedPrice = `Rp ${num.toLocaleString("id-ID")}`;
+                }
+              }
             }
             if (!formattedPrice) {
               formattedPrice = "Hubungi Kami";
             }
 
+            let durationLabel = (activeContent.durationLabel || "").trim();
+            if (!durationLabel) {
+              if (Array.isArray(activeContent.itinerary) && activeContent.itinerary.length > 0) {
+                const days = activeContent.itinerary.length;
+                durationLabel = days > 1 ? `${days} Hari ${days - 1} Malam` : `${days} Hari`;
+              } else if (item.durationDays && Number(item.durationDays) > 0 && Number(item.durationDays) <= 100) {
+                durationLabel = `${item.durationDays} Hari`;
+              } else {
+                durationLabel = "";
+              }
+            }
+
+            let destName = activeContent.destination || item.destination || "";
+            if (!destName) {
+              const s = (item.slug || "").toLowerCase();
+              if (s.includes("seoul") || s.includes("korea")) destName = "Korea";
+              else if (s.includes("victoria") || s.includes("hongkong")) destName = "Hong Kong";
+              else if (s.includes("komodo") || s.includes("bali")) destName = "Indonesia";
+              else if (s.includes("tokyo") || s.includes("japan")) destName = "Jepang";
+            }
+
             return {
               id: item.id,
               slug: item.slug,
+              subSlug: item.slug,
               title: activeContent.title || item.slug,
-              destination: activeContent.destination || "Indonesia",
+              destination: destName,
               subtitle: activeContent.subtitle || "",
               durationDays: item.durationDays,
-              durationLabel: activeContent.durationLabel || `${item.durationDays} Hari`,
+              durationLabel: durationLabel,
               dates: activeContent.dates || "",
               airline: activeContent.airline || "",
               price: formattedPrice,
               priceRaw: Number(item.priceRaw) || 0,
               travelMonth: activeContent.travelMonth || "",
-              travelStyle: activeContent.travelStyle || "",
+              travelStyle: activeContent.travelStyle || "Tour",
               imageGradient: item.imageGradient || "from-[#38BDF8] to-[#0369A1]",
               image: item.image || "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=1200",
               introHeading: activeContent.introHeading || "",
-              introDescription: activeContent.introDescription || "",
+              introDescription: activeContent.introDescription || activeContent.subtitle || "",
               isPublished: true,
             };
           });

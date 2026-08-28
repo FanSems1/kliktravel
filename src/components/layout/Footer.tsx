@@ -55,7 +55,7 @@ export function Footer() {
             <h4 className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/40 mb-6">{t("footer_explore")}</h4>
             <ul className="space-y-3 font-sans text-xs uppercase tracking-wider">
               <li>
-                <Link href="/journeys" className="text-white/70 hover:text-white transition-colors">
+                <Link href="/destinations" className="text-white/70 hover:text-white transition-colors">
                   {t("nav_journeys")}
                 </Link>
               </li>
