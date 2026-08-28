@@ -4,21 +4,21 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  LayoutDashboard, 
-  Map, 
-  Compass, 
-  Ship, 
-  BookOpen, 
-  MessageSquare, 
-  Settings, 
-  Menu, 
-  X, 
-  Search, 
-  Bell, 
-  Globe, 
-  LogOut, 
-  ChevronLeft, 
+import {
+  LayoutDashboard,
+  Map,
+  Compass,
+  Ship,
+  BookOpen,
+  MessageSquare,
+  Settings,
+  Menu,
+  X,
+  Search,
+  Bell,
+  Globe,
+  LogOut,
+  ChevronLeft,
   ChevronRight,
   User,
   Image as ImageIcon,
@@ -138,12 +138,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       href: "/admin/testimonials",
       icon: MessageSquare,
     },
-    {
-      name: "Laporan & Analitik",
-      nameEN: "Reports & Analytics",
-      href: "/admin/reports",
-      icon: BarChart3,
-    },
+    // {
+    //   name: "Laporan & Analitik",
+    //   nameEN: "Reports & Analytics",
+    //   href: "/admin/reports",
+    //   icon: BarChart3,
+    // },
     {
       name: "Pengaturan",
       nameEN: "Settings",
@@ -156,19 +156,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex">
       <meta name="robots" content="noindex, nofollow" />
       {/* Desktop Sidebar */}
-      <aside 
-        className={`hidden md:flex flex-col bg-[#0F2C59] text-white transition-all duration-300 relative border-r border-white/10 ${
-          isSidebarCollapsed ? "w-20" : "w-64"
-        }`}
+      <aside
+        className={`hidden md:flex flex-col bg-[#0F2C59] text-white transition-all duration-300 relative border-r border-white/10 ${isSidebarCollapsed ? "w-20" : "w-64"
+          }`}
       >
         {/* Brand/Logo Area */}
         <div className="h-20 flex items-center justify-between px-6 border-b border-white/5">
           {!isSidebarCollapsed ? (
             <Link href="/admin" className="flex items-center gap-3">
-              <img 
-                src="/kliktravelid.png" 
-                alt="KlikTravel.ID Logo" 
-                className="h-8 w-8 object-contain rounded-lg shrink-0" 
+              <img
+                src="/kliktravelid.png"
+                alt="KlikTravel.ID Logo"
+                className="h-8 w-8 object-contain rounded-lg shrink-0"
               />
               <span className="bg-earth/80 text-[8px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.5 rounded text-white border border-white/15">
                 Admin
@@ -176,10 +175,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </Link>
           ) : (
             <Link href="/admin" className="mx-auto flex items-center justify-center">
-              <img 
-                src="/kliktravelid.png" 
-                alt="KlikTravel.ID Logo" 
-                className="h-9 w-9 object-contain rounded-lg" 
+              <img
+                src="/kliktravelid.png"
+                alt="KlikTravel.ID Logo"
+                className="h-9 w-9 object-contain rounded-lg"
               />
             </Link>
           )}
@@ -194,11 +193,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl font-sans text-xs uppercase tracking-wider font-medium transition-all group relative ${
-                  isActive 
-                    ? "bg-[#A89053] text-white shadow-lg shadow-[#A89053]/15" 
+                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl font-sans text-xs uppercase tracking-wider font-medium transition-all group relative ${isActive
+                    ? "bg-[#A89053] text-white shadow-lg shadow-[#A89053]/15"
                     : "text-white/70 hover:bg-white/5 hover:text-white"
-                }`}
+                  }`}
               >
                 <Icon className={`w-4 h-4 transition-transform group-hover:scale-110 ${isActive ? "text-white" : "text-white/60"}`} />
                 {!isSidebarCollapsed && (
@@ -217,14 +215,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Sidebar Footer / Collapse Toggle */}
         <div className="p-4 border-t border-white/5 flex flex-col gap-2">
-          <button 
+          <button
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             className="hidden md:flex items-center justify-center p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer w-full"
             aria-label="Toggle Sidebar"
           >
             {isSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
-          
+
           <button
             onClick={handleLogout}
             className="flex items-center gap-4 px-4 py-3.5 rounded-xl text-red-300 hover:bg-red-500/10 hover:text-red-200 transition-colors font-sans text-xs uppercase tracking-wider font-medium w-full text-left cursor-pointer"
@@ -239,14 +237,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <AnimatePresence>
         {isMobileOpen && (
           <>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMobileOpen(false)}
               className="fixed inset-0 bg-black z-40 md:hidden"
             />
-            <motion.aside 
+            <motion.aside
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
@@ -255,16 +253,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
-                  <img 
-                    src="/kliktravelid.png" 
-                    alt="KlikTravel.ID Logo" 
-                    className="h-8 w-8 object-contain rounded-lg shrink-0" 
+                  <img
+                    src="/kliktravelid.png"
+                    alt="KlikTravel.ID Logo"
+                    className="h-8 w-8 object-contain rounded-lg shrink-0"
                   />
                   <span className="bg-earth/80 text-[8px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.5 rounded text-white border border-white/15">
                     Admin
                   </span>
                 </div>
-                <button 
+                <button
                   onClick={() => setIsMobileOpen(false)}
                   className="p-1 rounded-full bg-white/10 hover:bg-white/20 text-white"
                 >
@@ -281,11 +279,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       key={item.href}
                       href={item.href}
                       onClick={() => setIsMobileOpen(false)}
-                      className={`flex items-center gap-4 px-4 py-3.5 rounded-xl font-sans text-xs uppercase tracking-wider font-medium transition-colors ${
-                        isActive 
-                          ? "bg-[#A89053] text-white shadow-lg" 
+                      className={`flex items-center gap-4 px-4 py-3.5 rounded-xl font-sans text-xs uppercase tracking-wider font-medium transition-colors ${isActive
+                          ? "bg-[#A89053] text-white shadow-lg"
                           : "text-white/70 hover:bg-white/5 hover:text-white"
-                      }`}
+                        }`}
                     >
                       <Icon className="w-4 h-4" />
                       <span>{locale === "id" ? item.name : item.nameEN}</span>
@@ -316,7 +313,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Topbar */}
         <header className="h-20 bg-white border-b border-slate-200/80 px-6 md:px-8 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => setIsMobileOpen(true)}
               className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 md:hidden transition-colors"
             >
@@ -324,8 +321,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </button>
             <div className="hidden sm:flex items-center gap-2 px-3.5 py-2 bg-slate-100 rounded-full border border-slate-200/50 w-64 md:w-80">
               <Search size={16} className="text-slate-400" />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search resources, bookings..."
                 className="bg-transparent text-xs font-sans text-slate-700 placeholder-slate-400 focus:outline-none w-full"
               />
