@@ -1619,7 +1619,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
                   {/* Selected Date Summary Card at Bottom of Modal */}
                   {(() => {
-                    const selectedItem = departureDatesList[modalSelectedDateIdx];
+                    const selectedItem = departureDatesList[modalSelectedDateIdx] as any;
                     if (!selectedItem) return null;
 
                     const b = selectedItem.batch;
