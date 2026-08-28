@@ -154,6 +154,21 @@ export function DestinationsClient() {
             </div>
           ) : (
             <>
+              {/* Section Header above Cards */}
+              <div className="mb-12 text-center md:text-left">
+                <span className="font-mono text-[10px] md:text-xs uppercase tracking-[0.25em] text-[#0284C7] font-bold block mb-2">
+                  {isIndo ? "PENGALAMAN TERKURASI" : "CURATED EXPERIENCES"}
+                </span>
+                <h2 className="text-2xl md:text-4xl font-serif font-bold text-[#0F2C59] tracking-tight mb-3">
+                  {isIndo ? "Pilih Destinasi Impian Anda" : "Choose Your Dream Destination"}
+                </h2>
+                <p className="font-sans text-slate-500 text-sm md:text-base max-w-2xl font-light leading-relaxed">
+                  {isIndo 
+                    ? "Temukan berbagai pilihan paket open trip dan private tour eksklusif di lokasi-lokasi terpopuler dunia." 
+                    : "Discover a wide selection of exclusive open trips and private tours in the world's most popular locations."}
+                </p>
+              </div>
+
               {/* 3-Column Responsive Grid */}
               <AnimatePresence mode="wait">
                 <motion.div

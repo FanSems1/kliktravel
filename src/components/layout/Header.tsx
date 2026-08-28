@@ -121,7 +121,9 @@ export function Header() {
   const isJournalPage = pathname?.startsWith("/journal");
   const isJourneysPage = pathname?.startsWith("/journeys");
 
-  const isLightPage = !isHomePage && !isSingleDestinationPage && !isPrivateTripPage && !isJournalPage && !isJourneysPage;
+  const isDestinationsPage = pathname === "/destinations";
+
+  const isLightPage = !isHomePage && !isSingleDestinationPage && !isDestinationsPage && !isPrivateTripPage && !isJournalPage && !isJourneysPage;
 
   const showDarkHeader = isScrolled || isLightPage;
 
