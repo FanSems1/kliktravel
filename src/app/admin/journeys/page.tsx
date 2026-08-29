@@ -1738,10 +1738,10 @@ export default function AdminJourneysPage() {
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Package Title (EN)</label>
                     <input type="text" value={cjTitleEN} onChange={e => setCjTitleEN(e.target.value)} placeholder="e.g. Spring Splendor in Japan" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
                   </div>
-                  <div>
+                  {/* <div>
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Subtitle / Tagline (EN)</label>
                     <input type="text" value={cjSubtitleEN} onChange={e => setCjSubtitleEN(e.target.value)} placeholder="e.g. 5-day luxury journey around cherry blossoms" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
-                  </div>
+                  </div> */}
                 </div>
               )}
 
@@ -2119,10 +2119,10 @@ export default function AdminJourneysPage() {
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Package Name (EN)</label>
                     <input type="text" value={otNameEN} onChange={e => setOtNameEN(e.target.value)} placeholder="e.g. Tokyo" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
                   </div>
-                  <div>
+                  {/* <div>
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Subtitle / Tagline (EN)</label>
                     <textarea rows={2} value={otTaglineEN} onChange={e => setOtTaglineEN(e.target.value)} placeholder="e.g. Immerse yourself in the unmatched natural beauty..." className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-[#A89053] resize-y" />
-                  </div>
+                  </div> */}
                   <div>
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Hari (EN)</label>
                     <input type="text" value={otDurationEN} onChange={e => setOtDurationEN(e.target.value)} placeholder="e.g. 5 Days 4 Nights" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
