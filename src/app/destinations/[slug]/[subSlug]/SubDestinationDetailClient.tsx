@@ -594,14 +594,27 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
         if (activeSchedules.length > 0) {
           return activeSchedules.map((schedule: any) => {
             let dayOfWeek = "";
-            const formattedPrice = schedule.price ? `Rp ${schedule.price.toLocaleString("id-ID")}` : "";
+            const rawP = schedule.price ? schedule.price.toString().trim() : "";
+            let formattedPrice = rawP;
+            if (rawP && rawP !== "-") {
+              if (!rawP.toLowerCase().includes("rp") && !rawP.toLowerCase().includes("usd") && !rawP.toLowerCase().includes("idr")) {
+                const numericOnly = rawP.replace(/[^0-9]/g, "");
+                if (numericOnly) {
+                  formattedPrice = `Rp ${Number(numericOnly).toLocaleString("id-ID")}`;
+                }
+              }
+            }
 
             let durID = "5 Hari 4 Malam";
             let durEN = "5 Days 4 Nights";
             let dtID = "";
             let dtEN = "";
 
-            if (schedule.startDate && schedule.endDate) {
+            if (schedule.startDate === "-") {
+              dayOfWeek = locale === "id" ? "Tiap Hari" : "Everyday";
+              dtID = locale === "id" ? "Tiap Hari" : "Everyday";
+              dtEN = locale === "id" ? "Tiap Hari" : "Everyday";
+            } else if (schedule.startDate && schedule.endDate) {
               const start = new Date(schedule.startDate);
               const end = new Date(schedule.endDate);
               if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && start <= end) {
@@ -681,7 +694,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
           let dayOfWeek = "";
           const dateLabel = (locale === "id" ? batch.dateStrID : (batch.dateStrEN || batch.dateStrID)) || "";
 
-          if (batch.fromDate) {
+          if (batch.fromDate && batch.fromDate !== "-") {
             const dateObj = new Date(batch.fromDate);
             if (!isNaN(dateObj.getTime())) {
               const daysID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
@@ -690,7 +703,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
             }
           }
 
-          if (!dayOfWeek && dateLabel) {
+          if (!dayOfWeek && dateLabel && dateLabel !== "-") {
             const lower = dateLabel.toLowerCase();
             if (lower.includes("senin") || lower.includes("mon")) dayOfWeek = locale === "id" ? "Senin" : "Mon";
             else if (lower.includes("selasa") || lower.includes("tue")) dayOfWeek = locale === "id" ? "Selasa" : "Tue";
@@ -702,12 +715,12 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
           }
 
           if (!dayOfWeek) {
-            dayOfWeek = locale === "id" ? "Jumat" : "Fri";
+            dayOfWeek = dateLabel === "-" ? (locale === "id" ? "Tiap Hari" : "Everyday") : (locale === "id" ? "Jumat" : "Fri");
           }
 
           return {
             day: dayOfWeek,
-            date: dateLabel || "TBA",
+            date: dateLabel === "-" ? (locale === "id" ? "Tiap Hari" : "Everyday") : (dateLabel || "TBA"),
             count: 1,
             batch
           };
@@ -720,7 +733,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
         let dayOfWeek = "";
         let dateLabel = item.departureDate || "";
 
-        if (item.departureDateFrom) {
+        if (item.departureDateFrom && item.departureDateFrom !== "-") {
           const dateObj = new Date(item.departureDateFrom);
           if (!isNaN(dateObj.getTime())) {
             const daysID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
@@ -729,7 +742,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
           }
         }
 
-        if (!dayOfWeek && dateLabel) {
+        if (!dayOfWeek && dateLabel && dateLabel !== "-") {
           const lower = dateLabel.toLowerCase();
           if (lower.includes("senin") || lower.includes("mon")) dayOfWeek = locale === "id" ? "Senin" : "Mon";
           else if (lower.includes("selasa") || lower.includes("tue")) dayOfWeek = locale === "id" ? "Selasa" : "Tue";
@@ -741,16 +754,16 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
         }
 
         if (!dayOfWeek) {
-          dayOfWeek = locale === "id" ? "Jumat" : "Fri";
+          dayOfWeek = dateLabel === "-" ? (locale === "id" ? "Tiap Hari" : "Everyday") : (locale === "id" ? "Jumat" : "Fri");
         }
 
-        if (dateLabel.includes(",") && dateLabel.split(",")[1]) {
+        if (dateLabel !== "-" && dateLabel.includes(",") && dateLabel.split(",")[1]) {
           dateLabel = dateLabel.split(",")[1].trim();
         }
 
         return {
           day: dayOfWeek,
-          date: dateLabel || "TBA",
+          date: dateLabel === "-" ? (locale === "id" ? "Tiap Hari" : "Everyday") : (dateLabel || "TBA"),
           count: 1
         };
       });
@@ -771,10 +784,11 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
     ? (locale === "id" ? activeBatch.durationID : (activeBatch.durationEN || activeBatch.durationID))
     : tourDetail.duration;
 
+  const isEverydayDeparture = activeDepartureDate === "Tiap Hari" || activeDepartureDate === "Everyday";
   const whatsappMessage = encodeURIComponent(
     locale === "id"
-      ? `Halo Klik Travel ID, saya tertarik dengan paket tour "${displayTourName}" (${displayDuration}) keberangkatan tanggal ${activeDepartureDate}. Mohon informasi ketersediaan jadwal.`
-      : `Hello Klik Travel ID, I am interested in the "${displayTourName}" tour package (${displayDuration}) departing on ${activeDepartureDate}. Please provide schedule availability details.`
+      ? `Halo Klik Travel ID, saya tertarik dengan paket tour "${displayTourName}" (${displayDuration})${isEverydayDeparture ? " dengan keberangkatan setiap hari" : ` keberangkatan tanggal ${activeDepartureDate}`}. Mohon informasi ketersediaan jadwal.`
+      : `Hello Klik Travel ID, I am interested in the "${displayTourName}" tour package (${displayDuration})${isEverydayDeparture ? " with everyday departures" : ` departing on ${activeDepartureDate}`}. Please provide schedule availability details.`
   );
 
   const vipWhatsappMessage = encodeURIComponent(
@@ -823,33 +837,27 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
     "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1800";
 
   // Gallery images compiling
-  const fallbackGallery = [
-    "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?q=80&w=800",
-    "https://images.unsplash.com/photo-1528164344705-47542687000d?q=80&w=800",
-    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800",
-    "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?q=80&w=800",
-  ];
-
   const galleryImages = [
     tourDetail.featuredImage,
     ...(tourDetail.itinerary?.map(d => d.image).filter(Boolean) || [])
   ].filter(Boolean);
 
-  // Pad gallery to exactly 4 items
-  while (galleryImages.length < 4) {
-    const fallbackImg = fallbackGallery[galleryImages.length % fallbackGallery.length];
-    galleryImages.push(fallbackImg);
+  // If there are no images at all, add a single fallback/default image so the carousel works
+  if (galleryImages.length === 0) {
+    galleryImages.push(heroImage);
   }
 
   const displayMainImage = activeImage || galleryImages[0] || heroImage;
 
   const handlePrevImage = () => {
+    if (galleryImages.length <= 1) return;
     const currentIdx = galleryImages.indexOf(displayMainImage);
     const prevIdx = (currentIdx - 1 + galleryImages.length) % galleryImages.length;
     setActiveImage(galleryImages[prevIdx]);
   };
 
   const handleNextImage = () => {
+    if (galleryImages.length <= 1) return;
     const currentIdx = galleryImages.indexOf(displayMainImage);
     const nextIdx = (currentIdx + 1) % galleryImages.length;
     setActiveImage(galleryImages[nextIdx]);
@@ -890,39 +898,45 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               <div className="absolute inset-0 bg-black/5" />
 
               {/* Chevron Navigation Arrows */}
-              <button
-                onClick={handlePrevImage}
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 backdrop-blur-sm"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button
-                onClick={handleNextImage}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 backdrop-blur-sm"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
+              {galleryImages.length > 1 && (
+                <>
+                  <button
+                    onClick={handlePrevImage}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 backdrop-blur-sm"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={handleNextImage}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 backdrop-blur-sm"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Vertical Stack of Preview Thumbnails (Desktop) / Horizontal Row (Mobile) */}
-            <div className="flex flex-row md:flex-col gap-3 shrink-0 overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-none">
-              {galleryImages.map((imgUrl, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveImage(imgUrl)}
-                  className={`relative w-24 h-16 md:w-28 md:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${displayMainImage === imgUrl
-                      ? "border-teal-600 ring-2 ring-teal-500/20 opacity-100 scale-95"
-                      : "border-transparent opacity-70 hover:opacity-100"
-                    }`}
-                >
-                  <img
-                    src={imgUrl}
-                    alt={`Preview ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
+            {galleryImages.length > 1 && (
+              <div className="flex flex-row md:flex-col gap-3 shrink-0 overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-none">
+                {galleryImages.map((imgUrl, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImage(imgUrl)}
+                    className={`relative w-24 h-16 md:w-28 md:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${displayMainImage === imgUrl
+                        ? "border-teal-600 ring-2 ring-teal-500/20 opacity-100 scale-95"
+                        : "border-transparent opacity-70 hover:opacity-100"
+                      }`}
+                  >
+                    <img
+                      src={imgUrl}
+                      alt={`Preview ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
 
           </div>
 
@@ -941,7 +955,10 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
               {/* Sub-info / Departure Count */}
               <div className="text-xs font-sans text-slate-600 mb-4 font-medium">
-                {departureDatesList.length} {locale === "id" ? "Tanggal Keberangkatan" : "Departure Dates"} • {displayDuration}
+                {departureDatesList.some((item: any) => item.date === "Tiap Hari" || item.date === "Everyday" || item.day === "Tiap Hari" || item.day === "Everyday")
+                  ? (locale === "id" ? "Keberangkatan Setiap Hari" : "Everyday Departures")
+                  : `${departureDatesList.length} ${locale === "id" ? "Tanggal Keberangkatan" : "Departure Dates"}`
+                } • {displayDuration}
               </div>
 
               <div className="w-full h-[1px] bg-slate-200 mb-4" />
@@ -1025,6 +1042,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               const b = (item as any).batch;
               const isFull = b?.status === "FULL";
               const isClosed = b?.status === "Closed";
+              const isEveryday = item.date === "Tiap Hari" || item.date === "Everyday" || item.date === "-" || item.day === "Tiap Hari" || item.day === "Everyday";
 
               return (
                 <button
@@ -1038,15 +1056,18 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                     }`}
                 >
                   <span className="block text-[10px] uppercase font-medium tracking-wide opacity-80">
-                    {item.day}
+                    {isEveryday ? (locale === "id" ? "SETIAP HARI" : "EVERYDAY") : item.day}
                   </span>
                   <span className="block text-xs font-bold whitespace-nowrap">
-                    {item.date}
+                    {isEveryday ? (locale === "id" ? "SETIAP HARI" : "EVERYDAY") : item.date}
                   </span>
                   <span className="block text-[9px] opacity-80 font-normal mt-0.5 font-mono">
-                    {b
+                    {b && b.priceID && b.priceID !== "-"
                       ? (locale === "id" ? b.priceID : (b.priceEN || b.priceID))
-                      : `${item.count} ${locale === "id" ? "Keberangkatan" : "Departure"}`
+                      : (isEveryday
+                          ? (locale === "id" ? "Tersedia Tiap Hari" : "Available Everyday")
+                          : `${item.count} ${locale === "id" ? "Keberangkatan" : "Departure"}`
+                        )
                     }
                   </span>
                   {b && (isFull || isClosed) && (
@@ -1065,8 +1086,12 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
         {/* Selected Date Summary Line */}
         <div className="mt-4 text-xs font-sans text-slate-600 font-medium">
           {locale === "id"
-            ? `Terdapat 1 keberangkatan pada ${departureDatesList[selectedDateIdx]?.date || "tanggal ini"}:`
-            : `1 departure available on ${departureDatesList[selectedDateIdx]?.date || "this date"}:`}
+            ? (departureDatesList[selectedDateIdx]?.date === "Tiap Hari" || departureDatesList[selectedDateIdx]?.date === "Everyday"
+                ? "Keberangkatan tersedia setiap hari:"
+                : `Terdapat 1 keberangkatan pada ${departureDatesList[selectedDateIdx]?.date || "tanggal ini"}:`)
+            : (departureDatesList[selectedDateIdx]?.date === "Tiap Hari" || departureDatesList[selectedDateIdx]?.date === "Everyday"
+                ? "Departures available everyday:"
+                : `1 departure available on ${departureDatesList[selectedDateIdx]?.date || "this date"}:`)}
         </div>
       </section>
 
@@ -1627,10 +1652,11 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                     const isClosed = b?.status === "Closed" || b?.status === "close";
                     const isSelectable = !isFull && !isClosed;
 
+                    const isEverydayTrip = selectedItem.date === "Tiap Hari" || selectedItem.date === "Everyday";
                     const batchText = encodeURIComponent(
                       locale === "id"
-                        ? `Halo Klik Travel ID, saya tertarik dengan paket tour "${displayTourName}" (${b?.durationID || displayDuration}) keberangkatan tanggal ${selectedItem.date}. Mohon informasi ketersediaan jadwal.`
-                        : `Hello Klik Travel ID, I am interested in the "${displayTourName}" tour package (${b?.durationEN || displayDuration}) departing on ${selectedItem.date}. Please provide schedule availability details.`
+                        ? `Halo Klik Travel ID, saya tertarik dengan paket tour "${displayTourName}" (${b?.durationID || displayDuration})${isEverydayTrip ? " dengan keberangkatan setiap hari" : ` keberangkatan tanggal ${selectedItem.date}`}. Mohon informasi ketersediaan jadwal.`
+                        : `Hello Klik Travel ID, I am interested in the "${displayTourName}" tour package (${b?.durationEN || displayDuration})${isEverydayTrip ? " with everyday departures" : ` departing on ${selectedItem.date}`}. Please provide schedule availability details.`
                     );
 
                     return (

@@ -551,7 +551,6 @@ export default function AdminDestinationsPage() {
                     type="text"
                     required
                     value={idField}
-                    disabled={isEditing}
                     onChange={(e) => setIdField(e.target.value.toLowerCase())}
                     placeholder="e.g. indonesia, japan"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#A89053] disabled:opacity-50 text-slate-800"

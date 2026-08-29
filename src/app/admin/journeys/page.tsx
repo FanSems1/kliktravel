@@ -503,6 +503,7 @@ export default function AdminJourneysPage() {
   const [otDepartureDateEN, setOtDepartureDateEN] = useState("");
   const [otDepartureDateFrom, setOtDepartureDateFrom] = useState("");
   const [otDepartureDateTo, setOtDepartureDateTo] = useState("");
+  const [otIsEveryday, setOtIsEveryday] = useState(false);
   const [otHotelRatingID, setOtHotelRatingID] = useState("");
   const [otHotelRatingEN, setOtHotelRatingEN] = useState("");
   const [otFeaturedImage, setOtFeaturedImage] = useState("");
@@ -971,6 +972,7 @@ export default function AdminJourneysPage() {
     setOtDepartureDateEN("");
     setOtDepartureDateFrom("");
     setOtDepartureDateTo("");
+    setOtIsEveryday(false);
     setOtHotelRatingID("");
     setOtHotelRatingEN("");
     setOtStatus("Available");
@@ -1029,6 +1031,8 @@ export default function AdminJourneysPage() {
     setOtDurationEN(cEn.duration || cId.duration || pkg.duration);
     setOtPriceID(cId.price || pkg.price);
     setOtPriceEN(cEn.price || cId.price || pkg.price);
+    const isEv = (cId.departureDate === "-" || pkg.departureDate === "-");
+    setOtIsEveryday(isEv);
     setOtDepartureDateID(cId.departureDate || pkg.departureDate || "");
     setOtDepartureDateEN(cEn.departureDate || cId.departureDate || pkg.departureDate || "");
     setOtDepartureDateFrom(cId.departureDateFrom || pkg.departureDateFrom || "");
@@ -1175,6 +1179,11 @@ export default function AdminJourneysPage() {
       return;
     }
 
+    if (otIsEveryday && !otPriceID.trim()) {
+      setToast({ message: "Harap masukkan Harga per Pax (IDR) untuk Keberangkatan Setiap Hari!", type: "error" });
+      return;
+    }
+
     setIsSaving(true);
     const schedules = otBatches.map((b, idx) => {
       const numericPrice = parseInt(b.priceID.replace(/[^0-9]/g, ""), 10) || 0;
@@ -1189,6 +1198,10 @@ export default function AdminJourneysPage() {
       };
     });
 
+    const calculatedSchedules = otIsEveryday 
+      ? [{ startDate: "-", endDate: "-", price: parseInt(otPriceID.replace(/[^0-9]/g, ""), 10) || 0, quota: 99, status: "open" as const, sortOrder: 0 }]
+      : schedules;
+
     const contentId = {
       regionSlug: otRegionSlug,
       subSlug: otSubSlug,
@@ -1196,15 +1209,15 @@ export default function AdminJourneysPage() {
       tagline: otTaglineID,
       duration: otDurationID,
       price: otPriceID,
-      departureDate: otDepartureDateID,
-      departureDateFrom: otDepartureDateFrom,
-      departureDateTo: otDepartureDateTo,
+      departureDate: otIsEveryday ? "-" : otDepartureDateID,
+      departureDateFrom: otIsEveryday ? "-" : otDepartureDateFrom,
+      departureDateTo: otIsEveryday ? "-" : otDepartureDateTo,
       hotelRating: otHotelRatingID,
       highlights: otHighlightsID,
       inclusions: otInclusionsID,
       exclusions: otExclusionsID,
       itinerary: otItinerary,
-      schedules,
+      schedules: calculatedSchedules,
     };
 
     const contentEn = {
@@ -1214,22 +1227,22 @@ export default function AdminJourneysPage() {
       tagline: otTaglineEN || otTaglineID,
       duration: otDurationEN || otDurationID,
       price: otPriceEN || otPriceID,
-      departureDate: otDepartureDateEN || otDepartureDateID,
-      departureDateFrom: otDepartureDateFrom,
-      departureDateTo: otDepartureDateTo,
+      departureDate: otIsEveryday ? "-" : (otDepartureDateEN || otDepartureDateID),
+      departureDateFrom: otIsEveryday ? "-" : otDepartureDateFrom,
+      departureDateTo: otIsEveryday ? "-" : otDepartureDateTo,
       hotelRating: otHotelRatingEN || otHotelRatingID,
       highlights: otHighlightsEN || otHighlightsID,
       inclusions: otInclusionsEN || otInclusionsID,
       exclusions: otExclusionsEN || otExclusionsID,
       itinerary: otItinerary,
-      schedules,
+      schedules: calculatedSchedules,
     };
 
     const payload = {
       slug: otSlug.trim().toLowerCase(),
       featuredImage: otFeaturedImage || "https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?q=80&w=1200",
       status: otStatus,
-      schedules,
+      schedules: calculatedSchedules,
       contentId,
       contentEn
     };
@@ -1261,7 +1274,7 @@ export default function AdminJourneysPage() {
   // MULTI-SCHEDULE BATCH HANDLERS
   // ==========================================
   const handleAddOrUpdateBatch = () => {
-    if (!newBatchFromDate || !newBatchToDate) {
+    if (!otIsEveryday && (!newBatchFromDate || !newBatchToDate)) {
       setToast({ message: "Harap pilih Tanggal Mulai dan Selesai Keberangkatan!", type: "error" });
       return;
     }
@@ -1269,10 +1282,10 @@ export default function AdminJourneysPage() {
     const bId = editingBatchId || `batch-${Date.now()}`;
     const batchItem: DepartureBatch = {
       id: bId,
-      dateStrID: newBatchDateID.trim(),
-      dateStrEN: newBatchDateEN.trim() || newBatchDateID.trim(),
-      fromDate: newBatchFromDate,
-      toDate: newBatchToDate,
+      dateStrID: otIsEveryday ? "-" : (newBatchDateID.trim() || "-"),
+      dateStrEN: otIsEveryday ? "-" : (newBatchDateEN.trim() || newBatchDateID.trim() || "-"),
+      fromDate: otIsEveryday ? "-" : newBatchFromDate,
+      toDate: otIsEveryday ? "-" : newBatchToDate,
       durationID: newBatchDurationID.trim() || otDurationID || "5 Hari 4 Malam",
       durationEN: newBatchDurationEN.trim() || otDurationEN || newBatchDurationID.trim() || "5 Days 4 Nights",
       priceID: newBatchPriceID.trim() || otPriceID || "",
@@ -2154,173 +2167,232 @@ export default function AdminJourneysPage() {
                 </div>
 
                 <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200/80 space-y-4">
+                  <div className="flex items-center gap-2.5 bg-white p-3 rounded-xl border border-slate-200">
+                    <input
+                      type="checkbox"
+                      id="everyday-checkbox"
+                      checked={otIsEveryday}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setOtIsEveryday(checked);
+                        if (checked) {
+                          setOtDepartureDateID("-");
+                          setOtDepartureDateEN("-");
+                          setOtDepartureDateFrom("-");
+                          setOtDepartureDateTo("-");
+                        } else {
+                          setOtDepartureDateID("");
+                          setOtDepartureDateEN("");
+                          setOtDepartureDateFrom("");
+                          setOtDepartureDateTo("");
+                        }
+                      }}
+                      className="w-4 h-4 text-[#0F2C59] border-slate-300 rounded focus:ring-[#A89053] cursor-pointer"
+                    />
+                    <label htmlFor="everyday-checkbox" className="text-xs font-bold text-[#0F2C59] cursor-pointer select-none">
+                      Keberangkatan Setiap Hari (EVERYDAY)
+                    </label>
+                    <span className="text-[10px] text-slate-500 italic ml-auto">
+                      (Mengisi payload tanggal dengan "-")
+                    </span>
+                  </div>
+
                   <p className="text-[11px] text-slate-500 font-sans leading-relaxed">
                     Tambahkan beberapa opsi tanggal keberangkatan, harga per pax, durasi, dan status kuota untuk paket wisata ini. Pilihan ini akan tampil di storefront secara otomatis.
                   </p>
 
-                  {/* Existing Batches List Table */}
-                  {otBatches.length > 0 && (
-                    <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-sm">
-                      <table className="w-full text-left border-collapse text-xs">
-                        <thead>
-                          <tr className="bg-slate-100/80 border-b border-slate-200 text-[10px] font-mono uppercase text-slate-500 font-bold">
-                            <th className="p-3">Tgl Keberangkatan</th>
-                            <th className="p-3">Durasi</th>
-                            <th className="p-3">Harga (IDR)</th>
-                            <th className="p-3 text-right">Aksi</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                          {otBatches.map((b) => (
-                            <tr key={b.id} className={`hover:bg-slate-50/80 transition-colors ${editingBatchId === b.id ? "bg-[#A89053]/10" : ""}`}>
-                              <td className="p-3 font-semibold text-slate-800">
-                                {b.dateStrID}
-                                {b.dateStrEN && b.dateStrEN !== b.dateStrID && (
-                                  <span className="block text-[10px] text-slate-400 font-normal">EN: {b.dateStrEN}</span>
-                                )}
-                              </td>
-                              <td className="p-3 text-slate-600 font-mono text-[11px]">
-                                {b.durationID}
-                              </td>
-                              <td className="p-3 font-bold text-[#0284C7] font-mono">
-                                {b.priceID || "-"}
-                              </td>
-                              <td className="p-3 text-right">
-                                <div className="flex items-center justify-end gap-1">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleEditBatch(b)}
-                                    className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-200 hover:text-slate-800 transition-all"
-                                    title="Edit Batch"
-                                  >
-                                    <Edit3 size={13} />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDuplicateBatch(b)}
-                                    className="p-1.5 rounded-lg text-sky-600 hover:bg-sky-50 transition-all"
-                                    title="Duplikat Batch"
-                                  >
-                                    <Plus size={13} />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDeleteBatch(b.id)}
-                                    className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-all"
-                                    title="Hapus Batch"
-                                  >
-                                    <Trash2 size={13} />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-
-                  {/* Batch Input Form */}
-                  <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-3">
-                    <span className="text-[10px] font-mono font-bold text-[#0F2C59] uppercase tracking-wider block">
-                      {editingBatchId ? "✏️ Edit Batch Keberangkatan" : "➕ Tambah Batch Keberangkatan Baru"}
-                    </span>
-
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">📅 Tgl Mulai (Start Date) *</label>
-                          <input
-                            type="date"
-                            value={newBatchFromDate}
-                            onChange={(e) => setNewBatchFromDate(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                            📅 Tgl Selesai (End Date) <span className="text-[#A89053] font-normal italic">(Otomatis dari Hari)</span> *
-                          </label>
-                          <input
-                            type="date"
-                            readOnly
-                            disabled
-                            value={newBatchToDate}
-                            className="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none cursor-not-allowed text-slate-500"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Durasi (ID)</label>
-                          <input
-                            type="text"
-                            value={newBatchDurationID}
-                            onChange={(e) => setNewBatchDurationID(e.target.value)}
-                            placeholder="e.g. 5 Hari 4 Malam"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Harga per Pax (IDR) *</label>
-                          <input
-                            type="text"
-                            value={newBatchPriceID}
-                            onChange={(e) => setNewBatchPriceID(e.target.value)}
-                            placeholder="e.g. Rp 16.800.000"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Display calculated label preview */}
-                      {(newBatchDateID || newBatchDateEN) && (
-                        <div className="text-[10px] text-slate-500 font-mono flex items-center gap-2 pt-1 border-t border-slate-100">
-                          <span>Label Keberangkatan: <strong>{newBatchDateID}</strong></span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const customVal = prompt("Masukkan custom label tanggal:", newBatchDateID);
-                              if (customVal !== null) {
-                                setNewBatchDateID(customVal);
-                              }
-                            }}
-                            className="text-[#0284C7] hover:underline text-[9px]"
-                          >
-                            (Edit Manual)
-                          </button>
+                  {!otIsEveryday ? (
+                    <>
+                      {/* Existing Batches List Table */}
+                      {otBatches.length > 0 && (
+                        <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-sm">
+                          <table className="w-full text-left border-collapse text-xs">
+                            <thead>
+                              <tr className="bg-slate-100/80 border-b border-slate-200 text-[10px] font-mono uppercase text-slate-500 font-bold">
+                                <th className="p-3">Tgl Keberangkatan</th>
+                                <th className="p-3">Durasi</th>
+                                <th className="p-3">Harga (IDR)</th>
+                                <th className="p-3 text-right">Aksi</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {otBatches.map((b) => (
+                                <tr key={b.id} className={`hover:bg-slate-50/80 transition-colors ${editingBatchId === b.id ? "bg-[#A89053]/10" : ""}`}>
+                                  <td className="p-3 font-semibold text-slate-800">
+                                    {b.dateStrID}
+                                    {b.dateStrEN && b.dateStrEN !== b.dateStrID && (
+                                      <span className="block text-[10px] text-slate-400 font-normal">EN: {b.dateStrEN}</span>
+                                    )}
+                                  </td>
+                                  <td className="p-3 text-slate-600 font-mono text-[11px]">
+                                    {b.durationID}
+                                  </td>
+                                  <td className="p-3 font-bold text-[#0284C7] font-mono">
+                                    {b.priceID || "-"}
+                                  </td>
+                                  <td className="p-3 text-right">
+                                    <div className="flex items-center justify-end gap-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleEditBatch(b)}
+                                        className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-200 hover:text-slate-800 transition-all"
+                                        title="Edit Batch"
+                                      >
+                                        <Edit3 size={13} />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDuplicateBatch(b)}
+                                        className="p-1.5 rounded-lg text-sky-600 hover:bg-sky-50 transition-all"
+                                        title="Duplikat Batch"
+                                      >
+                                        <Plus size={13} />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteBatch(b.id)}
+                                        className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-all"
+                                        title="Hapus Batch"
+                                      >
+                                        <Trash2 size={13} />
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
                       )}
-                    </div>
 
-                    <div className="flex items-center justify-between pt-1">
-                      {editingBatchId ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingBatchId(null);
-                            setNewBatchDateID("");
-                            setNewBatchDateEN("");
-                            setNewBatchDurationID("");
-                            setNewBatchPriceID("");
-                          }}
-                          className="text-[10px] text-rose-600 font-bold uppercase hover:underline"
-                        >
-                          Batal Edit
-                        </button>
-                      ) : <div />}
+                      {/* Batch Input Form */}
+                      <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-3">
+                        <span className="text-[10px] font-mono font-bold text-[#0F2C59] uppercase tracking-wider block">
+                          {editingBatchId ? "✏️ Edit Batch Keberangkatan" : "➕ Tambah Batch Keberangkatan Baru"}
+                        </span>
 
-                      <button
-                        type="button"
-                        onClick={handleAddOrUpdateBatch}
-                        className="bg-[#0F2C59] hover:bg-[#0284C7] text-white px-4 py-2 rounded-lg font-mono text-[10px] uppercase tracking-wider font-bold transition-all cursor-pointer inline-flex items-center gap-1.5"
-                      >
-                        <Plus size={12} />
-                        <span>{editingBatchId ? "Simpan Perubahan Batch" : "Tambah Batch Ke Tabel"}</span>
-                      </button>
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">📅 Tgl Mulai (Start Date) *</label>
+                              <input
+                                type="date"
+                                value={newBatchFromDate}
+                                onChange={(e) => setNewBatchFromDate(e.target.value)}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
+                                📅 Tgl Selesai (End Date) <span className="text-[#A89053] font-normal italic">(Otomatis dari Hari)</span> *
+                              </label>
+                              <input
+                                type="date"
+                                readOnly
+                                disabled
+                                value={newBatchToDate}
+                                className="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none cursor-not-allowed text-slate-500"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Durasi (ID)</label>
+                              <input
+                                type="text"
+                                value={newBatchDurationID}
+                                onChange={(e) => setNewBatchDurationID(e.target.value)}
+                                placeholder="e.g. 5 Hari 4 Malam"
+                                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Harga per Pax (IDR) *</label>
+                              <input
+                                type="text"
+                                value={newBatchPriceID}
+                                onChange={(e) => setNewBatchPriceID(e.target.value)}
+                                placeholder="e.g. Rp 16.800.000"
+                                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#A89053]"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Display calculated label preview */}
+                          {(newBatchDateID || newBatchDateEN) && (
+                            <div className="text-[10px] text-slate-500 font-mono flex items-center gap-2 pt-1 border-t border-slate-100">
+                              <span>Label Keberangkatan: <strong>{newBatchDateID}</strong></span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const customVal = prompt("Masukkan custom label tanggal:", newBatchDateID);
+                                  if (customVal !== null) {
+                                    setNewBatchDateID(customVal);
+                                  }
+                                }}
+                                className="text-[#0284C7] hover:underline text-[9px]"
+                              >
+                                (Edit Manual)
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between pt-1">
+                          {editingBatchId ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingBatchId(null);
+                                setNewBatchDateID("");
+                                setNewBatchDateEN("");
+                                setNewBatchDurationID("");
+                                setNewBatchPriceID("");
+                              }}
+                              className="text-[10px] text-rose-600 font-bold uppercase hover:underline"
+                            >
+                              Batal Edit
+                            </button>
+                          ) : <div />}
+
+                          <button
+                            type="button"
+                            onClick={handleAddOrUpdateBatch}
+                            className="bg-[#0F2C59] hover:bg-[#0284C7] text-white px-4 py-2 rounded-lg font-mono text-[10px] uppercase tracking-wider font-bold transition-all cursor-pointer inline-flex items-center gap-1.5"
+                          >
+                            <Plus size={12} />
+                            <span>{editingBatchId ? "Simpan Perubahan Batch" : "Tambah Batch Ke Tabel"}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="bg-sky-50/70 border border-sky-200/80 rounded-xl p-4 space-y-3">
+                      <div className="text-center">
+                        <p className="text-xs font-semibold text-[#0F2C59]">
+                          Keberangkatan Setiap Hari Aktif
+                        </p>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Jadwal tanggal spesifik disembunyikan. Silakan tentukan harga utama paket keberangkatan setiap hari di bawah ini.
+                        </p>
+                      </div>
+
+                      <div className="max-w-xs mx-auto">
+                        <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold text-center">
+                          Harga per Pax (IDR) *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={otPriceID}
+                          onChange={(e) => setOtPriceID(e.target.value)}
+                          placeholder="e.g. Rp 16.800.000"
+                          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053] text-center font-bold text-[#0284C7] text-xs"
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
