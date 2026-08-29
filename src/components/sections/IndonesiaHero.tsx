@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Heading } from "@/components/ui/Heading";
 import { Text } from "@/components/ui/Text";
 import { useLanguage } from "@/context/LanguageContext";
+import { Compass } from "lucide-react";
 
 export function IndonesiaHero() {
   const { t } = useLanguage();
@@ -39,16 +40,17 @@ export function IndonesiaHero() {
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
           className="flex flex-col items-center justify-start md:justify-center text-center px-6"
         >
-          <span className="font-mono text-[8px] xs:text-[10px] md:text-[11px] tracking-[0.2em] xs:tracking-[0.4em] whitespace-nowrap uppercase text-white font-semibold mb-6 px-4 xs:px-5 py-2 bg-black/30 backdrop-blur-md border border-white/20 rounded-full shadow-lg">
-            {t("hero_subtitle")}
+          <span className="inline-flex items-center gap-2 font-mono text-[8px] xs:text-[10px] md:text-[11px] tracking-[0.2em] xs:tracking-[0.4em] whitespace-nowrap uppercase text-white font-semibold mb-6 px-4 xs:px-5 py-2.5 bg-black/30 backdrop-blur-md border border-white/20 rounded-full shadow-lg">
+            <Compass className="w-3.5 h-3.5 text-sky-400 animate-[spin_20s_linear_infinite]" />
+            <span>{t("hero_subtitle")}</span>
           </span>
 
-          <Heading variant="display" className="text-white drop-shadow-lg !text-[28px] xs:!text-[34px] md:!text-7xl lg:!text-[8.5rem] !leading-tight md:!leading-none">
+          <Heading variant="display" className="text-white drop-shadow-lg !text-[26px] xs:!text-[32px] md:!text-5xl lg:!text-[4.5rem] xl:!text-[5.5rem] !leading-tight">
             {t("hero_heading_1")} <br />
             <span className="font-sans font-light italic tracking-tight uppercase text-white/90">{t("hero_heading_2")}</span>
           </Heading>
 
-          <Text variant="large" className="text-white/90 font-light max-w-lg balance mt-8 drop-shadow-md">
+          <Text variant="large" className="text-white/90 font-light max-w-md md:max-w-lg balance mt-6 md:mt-8 drop-shadow-md !text-xs xs:!text-sm md:!text-base lg:!text-lg">
             {t("hero_description")}
           </Text>
 

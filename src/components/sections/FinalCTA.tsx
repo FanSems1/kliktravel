@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { Heading } from "@/components/ui/Heading";
 import { WaveTransition } from "@/components/ui/WaveTransition";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Maximize2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiFetch } from "@/lib/api";
 
@@ -42,6 +42,41 @@ export function FinalCTA() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const [moments, setMoments] = useState(DEFAULT_MOMENTS);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [isZoomed, setIsZoomed] = useState<boolean>(false);
+
+  const openLightbox = (index: number) => {
+    setSelectedImageIndex(index);
+    setIsZoomed(false);
+  };
+  const closeLightbox = () => {
+    setSelectedImageIndex(null);
+    setIsZoomed(false);
+  };
+
+  const prevLightboxImage = () => {
+    if (selectedImageIndex === null) return;
+    setSelectedImageIndex((prev) => (prev! === 0 ? moments.length - 1 : prev! - 1));
+    setIsZoomed(false);
+  };
+
+  const nextLightboxImage = () => {
+    if (selectedImageIndex === null) return;
+    setSelectedImageIndex((prev) => (prev! === moments.length - 1 ? 0 : prev! + 1));
+    setIsZoomed(false);
+  };
+
+  // Keyboard navigation for escape key and arrow keys
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedImageIndex === null) return;
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft") prevLightboxImage();
+      if (e.key === "ArrowRight") nextLightboxImage();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedImageIndex]);
 
   useEffect(() => {
     const loadGallery = async () => {
@@ -190,6 +225,7 @@ export function FinalCTA() {
           {moments.map((moment, idx) => (
             <div
               key={idx}
+              onClick={() => openLightbox(idx)}
               className="snap-start shrink-0 w-[85vw] sm:w-[60vw] md:w-[45vw] lg:w-[35vw] xl:w-[28vw] flex-none bg-[#F4F4F0] border border-charcoal/10 p-5 md:p-7 shadow-sm group cursor-pointer"
             >
               {/* Framed Image Container */}
@@ -201,8 +237,13 @@ export function FinalCTA() {
                 />
                 <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-500" />
 
+                {/* Zoom hover indicator */}
+                <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/20">
+                  <Maximize2 size={16} />
+                </div>
+
                 {/* Centered Text Overlay */}
-                <div className="absolute inset-0 flex items-center justify-center p-8 text-center">
+                <div className="absolute inset-0 flex items-center justify-center p-8 text-center z-10">
                   <h3 className="text-white font-sans text-sm md:text-base lg:text-lg tracking-[0.15em] uppercase font-light leading-relaxed drop-shadow-md">
                     {locale === "id" ? moment.titleID : moment.titleEN}
                   </h3>
@@ -255,6 +296,92 @@ export function FinalCTA() {
         </motion.div>
 
       </div>
+
+      {/* Lightbox Modal */}
+      <AnimatePresence>
+        {selectedImageIndex !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-12 select-none"
+            onClick={closeLightbox}
+          >
+            {/* Close Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                closeLightbox();
+              }}
+              className="absolute top-6 right-6 text-white/70 hover:text-white p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all z-50 cursor-pointer"
+              aria-label="Close Lightbox"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Prev Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                prevLightboxImage();
+              }}
+              className="absolute left-4 md:left-8 text-white/70 hover:text-white p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all z-50 cursor-pointer"
+              aria-label="Previous Image"
+            >
+              <ChevronLeft size={28} />
+            </button>
+
+            {/* Next Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                nextLightboxImage();
+              }}
+              className="absolute right-4 md:right-8 text-white/70 hover:text-white p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all z-50 cursor-pointer"
+              aria-label="Next Image"
+            >
+              <ChevronRight size={28} />
+            </button>
+
+            {/* Image & Caption Container */}
+            <motion.div
+              key={selectedImageIndex}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+              className="max-w-5xl w-full max-h-[90vh] flex flex-col items-center justify-center text-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div 
+                className={`relative w-full max-h-[75vh] aspect-[16/10] rounded-2xl overflow-hidden shadow-2xl bg-charcoal/20 transition-all duration-300 ${
+                  isZoomed ? "max-h-[85vh] scale-[1.15] md:scale-[1.25] overflow-auto cursor-zoom-out" : "cursor-zoom-in"
+                }`}
+                onClick={() => setIsZoomed(!isZoomed)}
+              >
+                <img
+                  src={moments[selectedImageIndex].image}
+                  alt={locale === "id" ? moments[selectedImageIndex].titleID : moments[selectedImageIndex].titleEN}
+                  className={`w-full h-full transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                    isZoomed ? "object-cover scale-150" : "object-contain"
+                  }`}
+                />
+              </div>
+              
+              {!isZoomed && (
+                <div className="text-white max-w-xl mt-6 transition-all duration-300">
+                  <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[#0284C7] font-bold block mb-2">
+                    {locale === "id" ? "Detail Momen" : "Moment Detail"}
+                  </span>
+                  <h3 className="font-serif text-lg md:text-xl text-white tracking-[0.1em] uppercase font-light leading-relaxed">
+                    {locale === "id" ? moments[selectedImageIndex].titleID : moments[selectedImageIndex].titleEN}
+                  </h3>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Wave transition into the footer */}
       <WaveTransition colorClass="text-charcoal" className="bg-ivory mt-12" />

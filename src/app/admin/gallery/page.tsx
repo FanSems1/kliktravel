@@ -281,11 +281,6 @@ export default function AdminGalleryPage() {
   // Submit Form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.titleID.trim()) {
-      showToast(isIndo ? "Judul/Lokasi (ID) wajib diisi" : "Title/Location (ID) is required", "error");
-      return;
-    }
-
     const targetImages = selectedImages.filter(url => url.trim() !== "");
     if (targetImages.length === 0) {
       showToast(isIndo ? "Mohon unggah atau pilih minimal satu gambar" : "Please upload or select at least one image", "error");
@@ -746,11 +741,10 @@ export default function AdminGalleryPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">
-                  {isIndo ? "Judul / Lokasi (ID) *" : "Title / Location (ID) *"}
+                  {isIndo ? "Judul / Lokasi (ID)" : "Title / Location (ID)"}
                 </label>
                 <input
                   type="text"
-                  required
                   value={formData.titleID}
                   onChange={(e) => setFormData(prev => ({ ...prev, titleID: e.target.value }))}
                   placeholder="e.g. Raja Ampat, Papua Barat"
