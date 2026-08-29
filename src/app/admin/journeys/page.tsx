@@ -612,14 +612,16 @@ export default function AdminJourneysPage() {
         const lowestPriceEN = validPricesEN[0];
         setOtPriceEN(lowestPriceEN.toLowerCase().includes("rp") || lowestPriceEN.toLowerCase().includes("from") ? lowestPriceEN : `From ${lowestPriceEN}`);
       }
-      setOtDurationID(otBatches[0].durationID || "5 Hari 4 Malam");
-      setOtDurationEN(otBatches[0].durationEN || otBatches[0].durationID || "5 Days 4 Nights");
+      if (!isEditingOpenTrip) {
+        setOtDurationID(otBatches[0].durationID || "5 Hari 4 Malam");
+        setOtDurationEN(otBatches[0].durationEN || otBatches[0].durationID || "5 Days 4 Nights");
+      }
       setOtDepartureDateID(otBatches.map(b => b.dateStrID).join(", "));
       setOtDepartureDateEN(otBatches.map(b => b.dateStrEN || b.dateStrID).join(", "));
       if (otBatches[0].fromDate) setOtDepartureDateFrom(otBatches[0].fromDate);
       if (otBatches[0].toDate) setOtDepartureDateTo(otBatches[0].toDate);
     }
-  }, [otBatches]);
+  }, [otBatches, isEditingOpenTrip]);
 
   // Auto-calculate newBatchToDate based on newBatchFromDate and otDurationID
   useEffect(() => {
@@ -1058,8 +1060,8 @@ export default function AdminJourneysPage() {
         const formattedPrice = s.price ? `Rp ${s.price.toLocaleString("id-ID")}` : "";
         const statusMap = s.status === "close" ? "Closed" : "Available";
 
-        let durID = "5 Hari 4 Malam";
-        let durEN = "5 Days 4 Nights";
+        let durID = cId.duration || pkg.duration || "5 Hari 4 Malam";
+        let durEN = cEn.duration || cId.duration || pkg.duration || "5 Days 4 Nights";
         let dtID = "";
         let dtEN = "";
 
@@ -1198,7 +1200,7 @@ export default function AdminJourneysPage() {
       };
     });
 
-    const calculatedSchedules = otIsEveryday 
+    const calculatedSchedules = otIsEveryday
       ? [{ startDate: "-", endDate: "-", price: parseInt(otPriceID.replace(/[^0-9]/g, ""), 10) || 0, quota: 99, status: "open" as const, sortOrder: 0 }]
       : schedules;
 
@@ -1725,10 +1727,10 @@ export default function AdminJourneysPage() {
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Judul Paket (ID) *</label>
                     <input type="text" required value={cjTitleID} onChange={e => setCjTitleID(e.target.value)} placeholder="e.g. Kejayaan Musim Semi Jepang" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
                   </div>
-                  <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Subtitle / Tagline (ID)</label>
+                  {/* <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Detail Sub Destination</label>
                     <input type="text" value={cjSubtitleID} onChange={e => setCjSubtitleID(e.target.value)} placeholder="e.g. Petualangan mewah 5 hari mengelilingi sakura" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
-                  </div>
+                  </div> */}
                 </div>
               ) : (
                 <div className="space-y-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
@@ -2068,6 +2070,10 @@ export default function AdminJourneysPage() {
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Nama Paket (ID) *</label>
                     <input type="text" required value={otNameID} onChange={e => setOtNameID(e.target.value)} placeholder="e.g. Tokyo" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
                   </div>
+                  {/* <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Detail Sub Destination</label>
+                    <textarea rows={2} value={otTaglineID} onChange={e => setOtTaglineID(e.target.value)} placeholder="e.g. Manjakan diri Anda dengan keindahan alam Nusantara yang tiada duanya..." className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-[#A89053] resize-y" />
+                  </div> */}
                   <div>
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Hari (ID) *</label>
                     <input type="text" required value={otDurationID} onChange={e => setOtDurationID(e.target.value)} placeholder="e.g. 5 Hari 4 Malam" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
@@ -2112,6 +2118,10 @@ export default function AdminJourneysPage() {
                   <div>
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Package Name (EN)</label>
                     <input type="text" value={otNameEN} onChange={e => setOtNameEN(e.target.value)} placeholder="e.g. Tokyo" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Subtitle / Tagline (EN)</label>
+                    <textarea rows={2} value={otTaglineEN} onChange={e => setOtTaglineEN(e.target.value)} placeholder="e.g. Immerse yourself in the unmatched natural beauty..." className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-[#A89053] resize-y" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Hari (EN)</label>
