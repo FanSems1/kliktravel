@@ -12,6 +12,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { localizedRegions, RegionDestination } from "@/data/destinations";
 import { localizedTourPackages, TourPackageDetail } from "@/data/tours";
 import { apiFetch } from "@/lib/api";
+import { itineraryTranslations, translateCommonTerms } from "@/lib/itineraryTranslation";
 
 const subDestinationImages: Record<string, string> = {
   bali: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=1200",
@@ -365,19 +366,45 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                   exclusions: (locale === "id" ? (active.exclusions || match.exclusions) : (active.exclusionsEN || active.exclusions || match.exclusionsEN || match.exclusions)) || [],
                   schedules: match.schedules || active.schedules || [],
                   batches: match.batches || active.batches || [],
-                  itinerary: (itinSource || []).map((d: any) => ({
-                    day: d.day,
-                    title: locale === "id" ? d.title : (d.titleEN || d.titleEn || d.title),
-                    titleEN: d.titleEN || d.titleEn || d.title,
-                    activities: (locale === "id" ? d.activities : (d.activitiesEN || d.activitiesEn || d.activities)) || [],
-                    activitiesEN: d.activitiesEN || d.activitiesEn || d.activities,
-                    description: locale === "id" ? d.description : (d.descriptionEN || d.descriptionEn || d.description),
-                    descriptionEN: d.descriptionEN || d.descriptionEn || d.description,
-                    hotel: locale === "id" ? d.hotel : (d.hotelEN || d.hotelEn || d.hotel),
-                    hotelEN: d.hotelEN || d.hotelEn || d.hotel,
-                    image: d.image,
-                    images: d.images
-                  }))
+                  itinerary: (itinSource || []).map((d: any) => {
+                    const dayNum = d.day;
+                    const tourSlug = match.slug || "";
+                    const translations = itineraryTranslations[tourSlug]?.[dayNum];
+                    
+                    const title = locale === "id"
+                      ? d.title
+                      : (translations?.title || d.titleEN || d.titleEn || d.title);
+                    const titleEN = translations?.title || d.titleEN || d.titleEn || d.title;
+
+                    const activities = locale === "id"
+                      ? d.activities
+                      : (translations?.activities || d.activitiesEN || d.activitiesEn || d.activities);
+                    const activitiesEN = translations?.activities || d.activitiesEN || d.activitiesEn || d.activities;
+
+                    const description = locale === "id"
+                      ? d.description
+                      : (translations?.description || d.descriptionEN || d.descriptionEn || d.description);
+                    const descriptionEN = translations?.description || d.descriptionEN || d.descriptionEn || d.description;
+
+                    const hotel = locale === "id"
+                      ? d.hotel
+                      : (translations?.hotel || d.hotelEN || d.hotelEn || d.hotel);
+                    const hotelEN = translations?.hotel || d.hotelEN || d.hotelEn || d.hotel;
+
+                    return {
+                      day: dayNum,
+                      title: translateCommonTerms(title, locale === "en"),
+                      titleEN: translateCommonTerms(titleEN, true),
+                      activities: (activities || []).map((act: string) => translateCommonTerms(act, locale === "en")),
+                      activitiesEN: (activitiesEN || []).map((act: string) => translateCommonTerms(act, true)),
+                      description: translateCommonTerms(description, locale === "en"),
+                      descriptionEN: translateCommonTerms(descriptionEN, true),
+                      hotel: translateCommonTerms(hotel, locale === "en"),
+                      hotelEN: translateCommonTerms(hotelEN, true),
+                      image: d.image,
+                      images: d.images
+                    };
+                  })
                 };
               });
             }
@@ -415,15 +442,34 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                   highlights: (locale === "id" ? match.highlights : (match.highlightsEN || match.highlights)) || [],
                   inclusions: (locale === "id" ? match.inclusions : (match.inclusionsEN || match.inclusions)) || [],
                   exclusions: (locale === "id" ? match.exclusions : (match.exclusionsEN || match.exclusions)) || [],
-                  itinerary: (match.itinerary || []).map((d: any) => ({
-                    day: d.day,
-                    title: locale === "id" ? d.title : (d.titleEN || d.title),
-                    activities: (locale === "id" ? d.activities : (d.activitiesEN || d.activities)) || [],
-                    description: locale === "id" ? d.description : (d.descriptionEN || d.description),
-                    hotel: locale === "id" ? d.hotel : (d.hotelEN || d.hotel),
-                    image: d.image,
-                    images: d.images
-                  }))
+                  itinerary: (match.itinerary || []).map((d: any) => {
+                    const dayNum = d.day;
+                    const tourSlug = match.slug || "";
+                    const translations = itineraryTranslations[tourSlug]?.[dayNum];
+
+                    const title = locale === "id"
+                      ? d.title
+                      : (translations?.title || d.titleEN || d.title);
+                    const activities = locale === "id"
+                      ? d.activities
+                      : (translations?.activities || d.activitiesEN || d.activities);
+                    const description = locale === "id"
+                      ? d.description
+                      : (translations?.description || d.descriptionEN || d.description);
+                    const hotel = locale === "id"
+                      ? d.hotel
+                      : (translations?.hotel || d.hotelEN || d.hotel);
+
+                    return {
+                      day: dayNum,
+                      title: translateCommonTerms(title, locale === "en"),
+                      activities: (activities || []).map((act: string) => translateCommonTerms(act, locale === "en")),
+                      description: translateCommonTerms(description, locale === "en"),
+                      hotel: translateCommonTerms(hotel, locale === "en"),
+                      image: d.image,
+                      images: d.images
+                    };
+                  })
                 }));
               }
             }
@@ -446,20 +492,37 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
         setAllMatchingOpenTrips(matchingPackages);
 
-        // 4. Generate Featured Tours resolving dynamic images from open trips or keyword dictionary
-        const otherRegions = currentRegions.filter(r => r.slug !== slug);
-        const shuffledRegions = [...otherRegions].sort(() => 0.5 - Math.random());
-        const selectedRegions = shuffledRegions.slice(0, 3);
-        const tours = selectedRegions.map(r => {
-          const randomSub = r.subDestinations[Math.floor(Math.random() * r.subDestinations.length)];
-          const subSlugKey = randomSub?.slug || "bali";
+        // 4. Generate Featured Tours: Pick 3 random sub-destinations from all available sub-destinations
+        const allOtherSubDestinations: any[] = [];
+        currentRegions.forEach(r => {
+          if (r.subDestinations && Array.isArray(r.subDestinations)) {
+            r.subDestinations.forEach(sub => {
+              if (sub.slug !== subSlug) {
+                allOtherSubDestinations.push({
+                  regionSlug: r.slug,
+                  regionName: r.name,
+                  subSlug: sub.slug,
+                  name: sub.name,
+                  image: sub.image
+                });
+              }
+            });
+          }
+        });
+
+        // Shuffle and pick 3 random sub-destinations
+        const shuffledSubDestinations = [...allOtherSubDestinations].sort(() => 0.5 - Math.random());
+        const selectedSubDestinations = shuffledSubDestinations.slice(0, 3);
+
+        const tours = selectedSubDestinations.map(item => {
+          const subSlugKey = item.subSlug || "bali";
 
           // Find dynamic open trip matching this subdestination or region
-          const matchingTrip = allOpenTripsList.find(p => p.subSlug === subSlugKey || p.slug === subSlugKey || p.regionSlug === r.slug);
+          const matchingTrip = allOpenTripsList.find(p => p.subSlug === subSlugKey || p.slug === subSlugKey || p.regionSlug === item.regionSlug);
 
           // Fallback keyword search
           let keywordImage = "";
-          const combined = `${subSlugKey} ${r.slug} ${randomSub?.name || ""}`.toLowerCase();
+          const combined = `${subSlugKey} ${item.regionSlug} ${item.name || ""}`.toLowerCase();
           if (combined.includes("hongkong") || combined.includes("hong-kong") || combined.includes("macau") || combined.includes("shenzhen")) {
             keywordImage = "https://images.unsplash.com/photo-1506970845246-18f21d533b20?q=80&w=1200";
           } else if (combined.includes("tokyo") || combined.includes("japan") || combined.includes("kyoto") || combined.includes("osaka")) {
@@ -476,23 +539,28 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
             keywordImage = "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=1200";
           } else if (combined.includes("bajo") || combined.includes("komodo")) {
             keywordImage = "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=1200";
+          } else if (combined.includes("bintan")) {
+            keywordImage = "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?q=80&w=1200";
+          } else if (combined.includes("bromo")) {
+            keywordImage = "https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?q=80&w=1200";
+          } else if (combined.includes("raja") || combined.includes("ampat")) {
+            keywordImage = "https://images.unsplash.com/photo-1516690561799-46d8f74f9abf?q=80&w=1200";
           }
 
           const resolvedImage =
             matchingTrip?.featuredImage ||
             matchingTrip?.image ||
-            randomSub?.image ||
-            r.image ||
+            item.image ||
             subDestinationImages[subSlugKey] ||
-            subDestinationImages[r.slug] ||
+            subDestinationImages[item.regionSlug] ||
             keywordImage ||
             "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200";
 
           return {
-            regionSlug: r.slug,
-            regionName: r.name,
+            regionSlug: item.regionSlug,
+            regionName: item.regionName,
             subSlug: subSlugKey,
-            name: randomSub?.name || r.name,
+            name: item.name,
             image: resolvedImage
           };
         });
@@ -924,8 +992,8 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                     key={idx}
                     onClick={() => setActiveImage(imgUrl)}
                     className={`relative w-24 h-16 md:w-28 md:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${displayMainImage === imgUrl
-                        ? "border-teal-600 ring-2 ring-teal-500/20 opacity-100 scale-95"
-                        : "border-transparent opacity-70 hover:opacity-100"
+                      ? "border-teal-600 ring-2 ring-teal-500/20 opacity-100 scale-95"
+                      : "border-transparent opacity-70 hover:opacity-100"
                       }`}
                   >
                     <img
@@ -1017,7 +1085,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
 
           {/* Navy "Lihat Semua Tanggal" Button */}
-          <button 
+          <button
             onClick={() => {
               setModalSelectedDateIdx(selectedDateIdx);
               const activeItem = departureDatesList[selectedDateIdx] || departureDatesList[0];
@@ -1049,10 +1117,10 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                   key={idx}
                   onClick={() => setSelectedDateIdx(idx)}
                   className={`shrink-0 px-5 py-2.5 rounded-xl text-center transition-all cursor-pointer border flex flex-col items-center justify-center ${isSelected
-                      ? "bg-[#0284C7] border-[#0284C7] text-white shadow-sm"
-                      : isFull || isClosed
-                        ? "bg-slate-50 border-slate-200 text-slate-400 opacity-70"
-                        : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"
+                    ? "bg-[#0284C7] border-[#0284C7] text-white shadow-sm"
+                    : isFull || isClosed
+                      ? "bg-slate-50 border-slate-200 text-slate-400 opacity-70"
+                      : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"
                     }`}
                 >
                   <span className="block text-[10px] uppercase font-medium tracking-wide opacity-80">
@@ -1065,9 +1133,9 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                     {b && b.priceID && b.priceID !== "-"
                       ? (locale === "id" ? b.priceID : (b.priceEN || b.priceID))
                       : (isEveryday
-                          ? (locale === "id" ? "Tersedia Tiap Hari" : "Available Everyday")
-                          : `${item.count} ${locale === "id" ? "Keberangkatan" : "Departure"}`
-                        )
+                        ? (locale === "id" ? "Tersedia Tiap Hari" : "Available Everyday")
+                        : `${item.count} ${locale === "id" ? "Keberangkatan" : "Departure"}`
+                      )
                     }
                   </span>
                   {b && (isFull || isClosed) && (
@@ -1087,11 +1155,11 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
         <div className="mt-4 text-xs font-sans text-slate-600 font-medium">
           {locale === "id"
             ? (departureDatesList[selectedDateIdx]?.date === "Tiap Hari" || departureDatesList[selectedDateIdx]?.date === "Everyday"
-                ? "Keberangkatan tersedia setiap hari:"
-                : `Terdapat 1 keberangkatan pada ${departureDatesList[selectedDateIdx]?.date || "tanggal ini"}:`)
+              ? "Keberangkatan tersedia setiap hari:"
+              : `Terdapat 1 keberangkatan pada ${departureDatesList[selectedDateIdx]?.date || "tanggal ini"}:`)
             : (departureDatesList[selectedDateIdx]?.date === "Tiap Hari" || departureDatesList[selectedDateIdx]?.date === "Everyday"
-                ? "Departures available everyday:"
-                : `1 departure available on ${departureDatesList[selectedDateIdx]?.date || "this date"}:`)}
+              ? "Departures available everyday:"
+              : `1 departure available on ${departureDatesList[selectedDateIdx]?.date || "this date"}:`)}
         </div>
       </section>
 
@@ -1139,8 +1207,8 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                   {/* Timeline Node */}
                   <div className="relative z-10 shrink-0">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-mono font-bold text-xs transition-all duration-300 shadow-sm shrink-0 border-2 ${activeDay === day.day
-                        ? "bg-sky-600 text-white border-white ring-4 ring-sky-500/20"
-                        : "bg-white text-slate-400 border-slate-200"
+                      ? "bg-sky-600 text-white border-white ring-4 ring-sky-500/20"
+                      : "bg-white text-slate-400 border-slate-200"
                       }`}>
                       D{day.day}
                     </div>
@@ -1229,26 +1297,6 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
         {/* Right Side: Inclusions & Exclusions */}
         <div className="lg:col-span-4 flex flex-col gap-8">
-
-          {/* WhatsApp CTA Card */}
-          <div className="bg-slate-950 text-white rounded-3xl p-6 md:p-8 shadow-xl text-center relative overflow-hidden border border-slate-800">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 to-transparent pointer-events-none" />
-            <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-sky-400 font-bold block mb-2 relative z-10">Layanan VIP</span>
-            <h3 className="font-serif text-xl md:text-2xl font-bold tracking-wide mb-4 relative z-10">{locale === "id" ? "Konsultasi Luxury" : "Luxury Consultation"}</h3>
-            <p className="font-sans text-slate-300 text-xs leading-relaxed mb-6 font-light relative z-10">
-              {locale === "id"
-                ? "Butuh penyesuaian kelas penerbangan, upgrade hotel bintang 5, atau private tour? Tim Klik Travel ID siap melayani."
-                : "Need adjustments for flight classes, 5★ hotel upgrades, or bespoke private tours? Our team is ready."}
-            </p>
-            <a
-              href={`https://wa.me/6281230011027?text=${vipWhatsappMessage}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white py-3.5 px-6 rounded-xl font-sans font-bold text-xs tracking-widest uppercase transition-all duration-300 relative z-10 shadow-md hover:scale-[1.02] cursor-pointer"
-            >
-              <span>{locale === "id" ? "Hubungi Kami" : "Contact Us"}</span>
-            </a>
-          </div>
 
           {/* Inclusions Card */}
           <div className="bg-white border border-slate-200/70 rounded-3xl p-6 md:p-8 shadow-sm">
@@ -1518,7 +1566,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                   {displayTourName}
                 </p>
               </div>
-              <button 
+              <button
                 onClick={() => setIsDateModalOpen(false)}
                 className="w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
               >
@@ -1551,7 +1599,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
               return (
                 <div className="flex-1 overflow-y-auto py-3 scrollbar-thin flex flex-col">
-                  
+
                   {/* Month Navigation */}
                   <div className="flex items-center justify-between bg-slate-50 border border-slate-200/70 rounded-2xl px-4 py-2.5 mb-4 shrink-0">
                     <button
@@ -1629,11 +1677,9 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                                 setModalSelectedDateIdx(matchingBatch.index);
                               }
                             }}
-                            className={`w-9 h-9 rounded-full flex flex-col items-center justify-center font-sans text-xs transition-all relative ${cellBgClass} ${
-                              !isStart ? "text-slate-500 hover:bg-slate-50 cursor-default" : "cursor-pointer hover:scale-110"
-                            } ${
-                              isCellSelected ? "ring-2 ring-sky-500 ring-offset-2 z-20" : ""
-                            }`}
+                            className={`w-9 h-9 rounded-full flex flex-col items-center justify-center font-sans text-xs transition-all relative ${cellBgClass} ${!isStart ? "text-slate-500 hover:bg-slate-50 cursor-default" : "cursor-pointer hover:scale-110"
+                              } ${isCellSelected ? "ring-2 ring-sky-500 ring-offset-2 z-20" : ""
+                              }`}
                           >
                             <span>{day}</span>
                           </button>
@@ -1662,9 +1708,8 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                     return (
                       <div className="mt-3 p-4 rounded-2xl border border-sky-100 bg-sky-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 animate-in fade-in duration-200">
                         <div className="flex items-start gap-3">
-                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
-                            isSelectable ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-600"
-                          }`}>
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${isSelectable ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-600"
+                            }`}>
                             <Calendar className="w-4.5 h-4.5" />
                           </div>
                           <div>
@@ -1672,11 +1717,10 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                               <span className="font-sans font-bold text-sm text-[#0F2C59]">
                                 {selectedItem.date}
                               </span>
-                              <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                                isSelectable ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
-                              }`}>
-                                {isSelectable 
-                                  ? (locale === "id" ? "Tersedia" : "Available") 
+                              <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${isSelectable ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
+                                }`}>
+                                {isSelectable
+                                  ? (locale === "id" ? "Tersedia" : "Available")
                                   : (isFull ? (locale === "id" ? "Penuh" : "Full") : (locale === "id" ? "Tutup" : "Closed"))
                                 }
                               </span>
@@ -1749,7 +1793,6 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                 rel="noopener noreferrer"
                 className="font-bold text-[#0F2C59] hover:text-sky-600 transition-colors cursor-pointer"
               >
-                {locale === "id" ? "Konsultasi VIP →" : "VIP Request →"}
               </a>
             </div>
 

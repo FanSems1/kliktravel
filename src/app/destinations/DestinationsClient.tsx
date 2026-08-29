@@ -25,11 +25,44 @@ const regionHeroImages: Record<string, string> = {
 
 const defaultFeaturedImage = "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=2000";
 
+const subDestinationImages: Record<string, string> = {
+  bali: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=800",
+  bromo: "https://images.unsplash.com/photo-1627894483216-2138af692e32?q=80&w=800",
+  "labuan-bajo": "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=800",
+  "raja-ampat": "https://images.unsplash.com/photo-1584286595398-a59f21d313f5?q=80&w=800",
+  bintan: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?q=80&w=800",
+  bangkok: "https://images.unsplash.com/photo-1508009603885-50cf7c579365?q=80&w=800",
+  phuket: "https://images.unsplash.com/photo-1581023773539-755d78a8bc84?q=80&w=800",
+  "chiang-mai": "https://images.unsplash.com/photo-1590243455953-62588147dff5?q=80&w=800",
+  hanoi: "https://images.unsplash.com/photo-1596766468761-db1d5f2a1b94?q=80&w=800",
+  "ho-chi-minh": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?q=80&w=800",
+  "da-nang": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?q=80&w=800",
+  seoul: "https://images.unsplash.com/photo-1538678235213-982eb4b7261a?q=80&w=800",
+  busan: "https://images.unsplash.com/photo-1601627918341-a67b93df2bb5?q=80&w=800",
+  jeju: "https://images.unsplash.com/photo-1582862908861-122e23b2dc0b?q=80&w=800",
+  tokyo: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=800",
+  kyoto: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=800",
+  osaka: "https://images.unsplash.com/photo-1590559899731-a382839e5549?q=80&w=800",
+  beijing: "https://images.unsplash.com/photo-1543872084-c7bd3822856f?q=80&w=800",
+  shanghai: "https://images.unsplash.com/photo-1474181487882-5abf3f016c2d?q=80&w=800",
+  chengdu: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?q=80&w=800",
+  delhi: "https://images.unsplash.com/photo-1587474260584-136574528ed5?q=80&w=800",
+  mumbai: "https://images.unsplash.com/photo-1570168007204-dfb528c6858f?q=80&w=800",
+  jaipur: "https://images.unsplash.com/photo-1599661559875-1dc9a9b24479?q=80&w=800",
+  europe: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?q=80&w=800",
+  america: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?q=80&w=800",
+  australia: "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?q=80&w=800",
+  hongkong: "https://images.unsplash.com/photo-1506970845246-18f21d533b20?q=80&w=800",
+  macau: "https://images.unsplash.com/photo-1558285516-f002a281d2a5?q=80&w=800",
+  shenzhen: "https://images.unsplash.com/photo-1547841243-eacb14453cd9?q=80&w=800",
+};
+
 export function DestinationsClient() {
   const { t, locale } = useLanguage();
   const [regions, setRegions] = useState<RegionDestination[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [openTripsMap, setOpenTripsMap] = useState<Record<string, { image?: string }>>({});
   const itemsPerPage = 9;
 
   const isIndo = locale === "id";
@@ -41,6 +74,37 @@ export function DestinationsClient() {
       
       try {
         const data = await apiFetch<any[]>(`/destinations?locale=${locale}`).catch(() => null);
+
+        // Fetch open trips and journeys to match sub-destinations featured images dynamically
+        const [openTrips, journeys] = await Promise.all([
+          apiFetch<any[]>(`/open-trips?locale=${locale}`).catch(() => []),
+          apiFetch<any[]>(`/journeys?locale=${locale}`).catch(() => [])
+        ]);
+
+        const combinedTrips = [
+          ...(openTrips && Array.isArray(openTrips) ? openTrips : []),
+          ...(journeys && Array.isArray(journeys) ? journeys : [])
+        ];
+
+        const otMap: Record<string, { image?: string }> = {};
+        if (combinedTrips.length > 0) {
+          combinedTrips.forEach((ot) => {
+            const cId = ot.contentId || ot.contentID || {};
+            const cEn = ot.contentEn || ot.contentEN || {};
+            const c = locale === "en" ? (Object.keys(cEn).length > 0 ? cEn : cId) : (Object.keys(cId).length > 0 ? cId : cEn);
+            
+            const otSubSlug = (ot.subSlug || c?.subSlug || cId?.subSlug || cEn?.subSlug || ot.slug || "").toLowerCase();
+            const otImage = ot.featuredImage || ot.image || c?.featuredImage || c?.image || cId?.featuredImage || cEn?.featuredImage || "";
+
+            if (otSubSlug) {
+              otMap[otSubSlug] = {
+                image: otImage,
+              };
+            }
+          });
+          setOpenTripsMap(otMap);
+        }
+
         if (data && Array.isArray(data) && data.length > 0) {
           const mapped: RegionDestination[] = data.map((r) => {
             let gradient = r.featuredImageGradient || "from-[#E0F2FE] to-[#7DD3FC]";
@@ -52,13 +116,25 @@ export function DestinationsClient() {
             }
 
             const subDestinations = (r.subDestinations || []).map((s: any) => {
-              let subName = s.name || s.nameId || s.nameEn || "";
-              if (subName.includes("||")) {
-                subName = subName.split("||")[0];
+              let subName = "";
+              let subImage = "";
+
+              const nameFields = [s.name, s.nameId, s.nameEn].filter(Boolean);
+              const fieldWithImage = nameFields.find((n: string) => typeof n === "string" && n.includes("||"));
+              if (fieldWithImage) {
+                const parts = fieldWithImage.split("||");
+                subImage = parts[1];
               }
+
+              const localeName = locale === "en" 
+                ? (s.nameEn || s.nameId || s.name || "") 
+                : (s.nameId || s.nameEn || s.name || "");
+              subName = localeName.split("||")[0].trim();
+
               return {
                 name: subName,
-                slug: s.slug
+                slug: s.slug,
+                image: subImage || s.image || ""
               };
             });
 
@@ -216,26 +292,51 @@ export function DestinationsClient() {
                           {region.subtitle}
                         </p>
 
-                        {/* Sub-destinations Pills */}
+                        {/* Sub-destinations Highlights: Interactive Mini-Card Slider */}
                         {region.subDestinations && region.subDestinations.length > 0 && (
-                          <div className="space-y-2 pt-2 border-t border-slate-100">
-                            <span className="font-mono text-[9px] uppercase tracking-wider text-slate-400 font-bold block">
-                              {isIndo ? "Sorotan Destinasi:" : "Destination Highlights:"}
-                            </span>
-                            <div className="flex flex-wrap gap-1.5">
-                              {region.subDestinations.slice(0, 4).map((sub, idx) => (
-                                <span
-                                  key={idx}
-                                  className="px-2.5 py-1 bg-slate-50 border border-slate-200/80 rounded-lg text-[10px] font-sans text-slate-700 font-medium"
-                                >
-                                  {sub.name}
-                                </span>
-                              ))}
-                              {region.subDestinations.length > 4 && (
-                                <span className="px-2 py-1 text-[10px] font-mono text-slate-400 font-bold">
-                                  +{region.subDestinations.length - 4}
-                                </span>
-                              )}
+                          <div className="space-y-2.5 pt-3 border-t border-slate-100">
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono text-[9px] uppercase tracking-wider text-slate-400 font-bold flex items-center gap-1.5">
+                                <Compass size={12} className="text-[#0284C7]" />
+                                {isIndo ? "Sorotan Destinasi:" : "Destination Highlights:"}
+                              </span>
+                              <span className="font-mono text-[9px] text-[#0284C7] font-semibold">
+                                {region.subDestinations.length} {isIndo ? "Spot" : "Spots"}
+                              </span>
+                            </div>
+
+                            {/* Mini Visual Cards Horizontal Slider */}
+                            <div className="flex items-center gap-2.5 overflow-x-auto pb-1.5 pt-0.5 scrollbar-none no-scrollbar snap-x snap-mandatory -mx-1 px-1">
+                              {region.subDestinations.map((sub, idx) => {
+                                const fallbackImages = [
+                                  "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=400",
+                                  "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=400",
+                                  "https://images.unsplash.com/photo-1508009603885-50cf7c579365?q=80&w=400",
+                                  "https://images.unsplash.com/photo-1596766468761-db1d5f2a1b94?q=80&w=400",
+                                ];
+                                const otInfo = openTripsMap[sub.slug?.toLowerCase() || ""];
+                                const spotImage = otInfo?.image || sub.image || subDestinationImages[sub.slug?.toLowerCase() || ""] || fallbackImages[idx % fallbackImages.length];
+
+                                return (
+                                  <Link
+                                    key={idx}
+                                    href={`/destinations/${region.slug}/${sub.slug}`}
+                                    className="group/spot shrink-0 w-[125px] aspect-[4/3] rounded-xl overflow-hidden relative shadow-sm border border-slate-200/80 bg-slate-900 snap-start transition-transform duration-300 hover:scale-[1.03]"
+                                  >
+                                    <img
+                                      src={spotImage}
+                                      alt={sub.name}
+                                      className="absolute inset-0 w-full h-full object-cover group-hover/spot:scale-110 transition-transform duration-500 opacity-90"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+                                    <div className="absolute bottom-0 left-0 right-0 p-2 z-10">
+                                      <span className="font-sans text-[10px] font-bold text-white leading-tight uppercase tracking-tight block truncate drop-shadow-sm group-hover/spot:text-[#38BDF8] transition-colors">
+                                        {sub.name}
+                                      </span>
+                                    </div>
+                                  </Link>
+                                );
+                              })}
                             </div>
                           </div>
                         )}

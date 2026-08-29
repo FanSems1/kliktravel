@@ -1727,10 +1727,10 @@ export default function AdminJourneysPage() {
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Judul Paket (ID) *</label>
                     <input type="text" required value={cjTitleID} onChange={e => setCjTitleID(e.target.value)} placeholder="e.g. Kejayaan Musim Semi Jepang" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
                   </div>
-                  {/* <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Detail Sub Destination</label>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Detail Sub Destinasi</label>
                     <input type="text" value={cjSubtitleID} onChange={e => setCjSubtitleID(e.target.value)} placeholder="e.g. Petualangan mewah 5 hari mengelilingi sakura" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
-                  </div> */}
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
@@ -1738,10 +1738,10 @@ export default function AdminJourneysPage() {
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Package Title (EN)</label>
                     <input type="text" value={cjTitleEN} onChange={e => setCjTitleEN(e.target.value)} placeholder="e.g. Spring Splendor in Japan" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
                   </div>
-                  {/* <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Subtitle / Tagline (EN)</label>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Detail Sub Destination (EN)</label>
                     <input type="text" value={cjSubtitleEN} onChange={e => setCjSubtitleEN(e.target.value)} placeholder="e.g. 5-day luxury journey around cherry blossoms" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
-                  </div> */}
+                  </div>
                 </div>
               )}
 
@@ -2070,10 +2070,10 @@ export default function AdminJourneysPage() {
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Nama Paket (ID) *</label>
                     <input type="text" required value={otNameID} onChange={e => setOtNameID(e.target.value)} placeholder="e.g. Tokyo" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
                   </div>
-                  {/* <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Detail Sub Destination</label>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Detail Sub Destination (ID)</label>
                     <textarea rows={2} value={otTaglineID} onChange={e => setOtTaglineID(e.target.value)} placeholder="e.g. Manjakan diri Anda dengan keindahan alam Nusantara yang tiada duanya..." className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-[#A89053] resize-y" />
-                  </div> */}
+                  </div>
                   <div>
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Hari (ID) *</label>
                     <input type="text" required value={otDurationID} onChange={e => setOtDurationID(e.target.value)} placeholder="e.g. 5 Hari 4 Malam" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
@@ -2119,10 +2119,10 @@ export default function AdminJourneysPage() {
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Package Name (EN)</label>
                     <input type="text" value={otNameEN} onChange={e => setOtNameEN(e.target.value)} placeholder="e.g. Tokyo" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />
                   </div>
-                  {/* <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Subtitle / Tagline (EN)</label>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Detail Sub Destination (EN)</label>
                     <textarea rows={2} value={otTaglineEN} onChange={e => setOtTaglineEN(e.target.value)} placeholder="e.g. Immerse yourself in the unmatched natural beauty..." className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-[#A89053] resize-y" />
-                  </div> */}
+                  </div>
                   <div>
                     <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1 font-bold">Hari (EN)</label>
                     <input type="text" value={otDurationEN} onChange={e => setOtDurationEN(e.target.value)} placeholder="e.g. 5 Days 4 Nights" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#A89053]" />

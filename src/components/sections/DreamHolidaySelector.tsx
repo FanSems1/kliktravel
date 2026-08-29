@@ -101,8 +101,28 @@ export function DreamHolidaySelector() {
               titleEN: p.nameEN || p.name || "",
               destinationID: p.regionName || p.regionSlug || "",
               destinationEN: p.regionName || p.regionSlug || "",
-              datesID: p.departureDate || p.datesID || p.departureDates || "TBA",
-              datesEN: p.departureDateEN || p.departureDate || p.datesEN || p.departureDates || "TBA",
+              datesID: (() => {
+                const d = (p.departureDate || p.datesID || p.departureDates || "").trim();
+                if (!d) return "TBA";
+                if (d === "-" || d.toLowerCase() === "everyday" || d.toLowerCase() === "daily" || d.toLowerCase() === "setiap hari") {
+                  return "Berangkat Setiap Hari";
+                }
+                if (d.includes(",") || d.includes(";") || d.length > 30) {
+                  return "Tersedia Beberapa Tanggal Keberangkatan";
+                }
+                return d;
+              })(),
+              datesEN: (() => {
+                const d = (p.departureDateEN || p.departureDate || p.datesEN || p.departureDates || "").trim();
+                if (!d) return "TBA";
+                if (d === "-" || d.toLowerCase() === "everyday" || d.toLowerCase() === "daily" || d.toLowerCase() === "setiap hari") {
+                  return "Daily Departure";
+                }
+                if (d.includes(",") || d.includes(";") || d.length > 30) {
+                  return "Multiple Departure Dates Available";
+                }
+                return d;
+              })(),
               periodKey,
               airline: p.airline || p.airlineName || "",
               durationID: p.duration || "5 Hari 4 Malam",

@@ -185,9 +185,13 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
 
         if (selectedMonthFilter) {
           if (!otInfo?.departureDate) return false;
-          const parsed = parseMonthsFromDateStr(otInfo.departureDate, locale === "id");
-          if (!parsed.includes(selectedMonthFilter)) {
-            return false;
+          const rawDate = (otInfo.departureDate || "").trim();
+          const isEveryday = rawDate === "-" || rawDate.toLowerCase() === "setiap hari" || rawDate.toLowerCase() === "everyday" || rawDate.toLowerCase() === "daily";
+          if (!isEveryday) {
+            const parsed = parseMonthsFromDateStr(otInfo.departureDate, locale === "id");
+            if (!parsed.includes(selectedMonthFilter)) {
+              return false;
+            }
           }
         }
 
@@ -475,24 +479,6 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
           
           <div className="max-w-[1600px] mx-auto relative">
             
-            {/* Left/Right Buttons */}
-            {filteredSubDestinations.length > 3 && (
-              <div className="absolute left-2 md:left-8 top-[35%] -translate-y-1/2 z-20 pointer-events-none w-full max-w-[1600px] flex justify-between px-2 md:px-0">
-                <button 
-                  onClick={scrollLeft}
-                  className="w-10 h-10 md:w-12 md:h-12 bg-white border border-[#0F2C59]/10 rounded-full flex items-center justify-center text-[#0F2C59] shadow-md hover:bg-gray-50 transition-colors pointer-events-auto shrink-0"
-                >
-                  <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
-                </button>
-                <button 
-                  onClick={scrollRight}
-                  className="w-10 h-10 md:w-12 md:h-12 bg-white border border-[#0F2C59]/10 rounded-full flex items-center justify-center text-[#0F2C59] shadow-md hover:bg-gray-50 transition-colors pointer-events-auto shrink-0 mr-4 md:mr-16"
-                >
-                  <ChevronRight className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
-                </button>
-              </div>
-            )}
-
             {filteredSubDestinations.length === 0 ? (
               <div className="max-w-md mx-auto text-center py-16 px-6 bg-white border border-[#0F2C59]/10 rounded-3xl shadow-sm">
                 <p className="font-sans text-[#0F2C59]/60 text-sm mb-6 leading-relaxed">
@@ -512,14 +498,9 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                 </button>
               </div>
             ) : (
-              /* Sub-Destinations Grid/Carousel Container */
+              /* Sub-Destinations Grid Container */
               <div 
-                ref={scrollContainerRef}
-                className={
-                  filteredSubDestinations.length <= 3
-                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 pb-8 px-6 md:px-12 max-w-7xl mx-auto"
-                    : "grid grid-rows-2 grid-flow-col auto-cols-[85vw] sm:auto-cols-[50vw] md:auto-cols-[35vw] lg:auto-cols-[25vw] overflow-x-auto gap-6 md:gap-8 pb-8 snap-x snap-mandatory scrollbar-none no-scrollbar scroll-smooth px-6 md:px-12 max-w-7xl mx-auto"
-                }
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 pb-8 px-6 md:px-12 max-w-7xl mx-auto"
               >
                 {filteredSubDestinations.map((sub, idx) => {
                   const mockImages = [
@@ -535,9 +516,7 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                     <Link 
                       href={`/destinations/${region.slug}/${sub.slug}`}
                       key={sub.slug || idx} 
-                      className={`snap-start shrink-0 flex flex-col group cursor-pointer ${
-                        filteredSubDestinations.length <= 3 ? "w-full max-w-sm mx-auto" : "w-full"
-                      }`}
+                      className="w-full flex flex-col group cursor-pointer"
                     >
                       {/* Card Image */}
                       <div className="w-full aspect-[4/3] rounded-2xl relative overflow-hidden mb-6 bg-charcoal shadow-md border border-slate-100">
@@ -589,20 +568,29 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                       
                       {(() => {
                         const isFull = otInfo?.status === "Closed" || otInfo?.status === "inactive" || otInfo?.status === "FULL" || otInfo?.status === "Draft" || otInfo?.status === "draft";
+                        const rawDate = (otInfo?.departureDate || "").trim();
+                        const isEveryday = rawDate === "-" || rawDate.toLowerCase() === "setiap hari" || rawDate.toLowerCase() === "everyday" || rawDate.toLowerCase() === "daily";
+                        
+                        const statusLabel = isFull
+                          ? (locale === "id" ? "Pendaftaran Ditutup / Kuota Penuh" : "Fully Booked / Registration Closed")
+                          : (isEveryday
+                              ? (locale === "id" ? "Pendaftaran Dibuka" : "Registration Open")
+                              : (locale === "id" ? "Tersedia beberapa tanggal keberangkatan" : "Multiple departure dates available"));
+
+                        const displayDate = isEveryday
+                          ? (locale === "id" ? "Keberangkatan Setiap Hari" : "Daily Departure")
+                          : rawDate;
+
                         return (
                           <div className="flex flex-col gap-1.5 text-[#0F2C59]/80 font-sans text-xs md:text-sm">
                             <div className="flex items-center gap-2">
                               <span className={`w-1.5 h-1.5 rounded-full ${isFull ? "bg-rose-500" : "bg-[#0284C7]"}`} />
-                              <span>
-                                {isFull
-                                  ? (locale === "id" ? "Pendaftaran Ditutup / Kuota Penuh" : "Fully Booked / Registration Closed")
-                                  : (locale === "id" ? "Tersedia beberapa tanggal keberangkatan" : "Multiple departure dates available")}
-                              </span>
+                              <span>{statusLabel}</span>
                             </div>
-                            {otInfo?.departureDate && (
+                            {displayDate && (
                               <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono pl-3.5">
                                 <Clock size={13} className="text-[#0284C7] shrink-0" />
-                                <span className="truncate">{otInfo.departureDate}</span>
+                                <span className="truncate">{displayDate}</span>
                               </div>
                             )}
                           </div>

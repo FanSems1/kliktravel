@@ -7,6 +7,7 @@ import { localizedJourneys, Journey } from "@/data/journeys";
 import { ChevronDown, ArrowRight, Check, X, Loader2, ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiFetch } from "@/lib/api";
+import { itineraryTranslations, translateCommonTerms } from "@/lib/itineraryTranslation";
 
 interface JourneyDetailClientProps {
   slug: string;
@@ -50,15 +51,23 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
             introDescription: active.introDescription || cId.introDescription || active.subtitle || "",
             countriesCount: matchCj.countriesCount || 1,
             chapters: active.chapters || cId.chapters || [],
-            itinerary: (active.itinerary || cId.itinerary || []).map((d: any) => ({
-              day: d.day,
-              title: d.title,
-              description: d.description,
-              image: d.image,
-              images: d.images,
-              hotel: d.hotel,
-              activities: d.activities
-            })),
+            itinerary: (active.itinerary || cId.itinerary || []).map((d: any) => {
+              const dayNum = typeof d.day === "number" ? d.day : parseInt(d.day) || 1;
+              const translations = itineraryTranslations[slug]?.[dayNum];
+              const title = locale === "id" ? d.title : (translations?.title || d.titleEN || d.titleEn || d.title);
+              const description = locale === "id" ? d.description : (translations?.description || d.descriptionEN || d.descriptionEn || d.description);
+              const hotel = locale === "id" ? d.hotel : (translations?.hotel || d.hotelEN || d.hotelEn || d.hotel);
+              const activities = locale === "id" ? d.activities : (translations?.activities || d.activitiesEN || d.activitiesEn || d.activities);
+              return {
+                day: d.day,
+                title: translateCommonTerms(title, locale === "en"),
+                description: translateCommonTerms(description, locale === "en"),
+                image: d.image,
+                images: d.images,
+                hotel: translateCommonTerms(hotel, locale === "en"),
+                activities: (activities || []).map((act: string) => translateCommonTerms(act, locale === "en"))
+              };
+            }),
             highlights: active.highlights || cId.highlights || [],
             accommodations: active.accommodations || cId.accommodations || [],
             flights: active.flights || cId.flights || { airline: "", route: [] },
@@ -84,14 +93,22 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
           const activePrice = isEn ? (cEn.price || cId.price) : cId.price;
 
           const rawPrice = Number(matchOt.priceRaw || cId.priceRaw || (activePrice ? activePrice.replace(/[^0-9]/g, "") : 0));
-          const itin = (cId.itinerary || []).map((d: any) => ({
-            day: locale === "id" ? `Hari 0${d.day}` : `Day 0${d.day}`,
-            title: isEn ? (d.titleEN || d.title) : d.title,
-            description: isEn ? (d.descriptionEN || d.description) : d.description,
-            image: d.image,
-            images: d.images,
-            hotel: d.hotel
-          }));
+          const itin = (cId.itinerary || []).map((d: any) => {
+            const dayNum = typeof d.day === "number" ? d.day : parseInt(d.day) || 1;
+            const translations = itineraryTranslations[slug]?.[dayNum];
+            const title = locale === "id" ? d.title : (translations?.title || d.titleEN || d.titleEn || d.title);
+            const description = locale === "id" ? d.description : (translations?.description || d.descriptionEN || d.descriptionEn || d.description);
+            const hotel = locale === "id" ? d.hotel : (translations?.hotel || d.hotelEN || d.hotelEn || d.hotel);
+
+            return {
+              day: locale === "id" ? `Hari 0${d.day}` : `Day 0${d.day}`,
+              title: translateCommonTerms(title, locale === "en"),
+              description: translateCommonTerms(description, locale === "en"),
+              image: d.image,
+              images: d.images,
+              hotel: translateCommonTerms(hotel, locale === "en")
+            };
+          });
 
           const mapped: Journey = {
             id: matchOt.id,
@@ -153,14 +170,22 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
               introDescription: (isEn ? matchSavedOt.taglineEN : matchSavedOt.tagline) || "",
               countriesCount: 1,
               chapters: [],
-              itinerary: (matchSavedOt.itinerary || []).map((d: any) => ({
-                day: locale === "id" ? `Hari 0${d.day}` : `Day 0${d.day}`,
-                title: isEn ? (d.titleEN || d.title) : d.title,
-                description: isEn ? (d.descriptionEN || d.description) : d.description,
-                image: d.image,
-                images: d.images,
-                hotel: d.hotel
-              })),
+              itinerary: (matchSavedOt.itinerary || []).map((d: any) => {
+                const dayNum = typeof d.day === "number" ? d.day : parseInt(d.day) || 1;
+                const translations = itineraryTranslations[slug]?.[dayNum];
+                const title = locale === "id" ? d.title : (translations?.title || d.titleEN || d.titleEn || d.title);
+                const description = locale === "id" ? d.description : (translations?.description || d.descriptionEN || d.descriptionEn || d.description);
+                const hotel = locale === "id" ? d.hotel : (translations?.hotel || d.hotelEN || d.hotelEn || d.hotel);
+
+                return {
+                  day: locale === "id" ? `Hari 0${d.day}` : `Day 0${d.day}`,
+                  title: translateCommonTerms(title, locale === "en"),
+                  description: translateCommonTerms(description, locale === "en"),
+                  image: d.image,
+                  images: d.images,
+                  hotel: translateCommonTerms(hotel, locale === "en")
+                };
+              }),
               highlights: (isEn ? (matchSavedOt.highlightsEN || matchSavedOt.highlights) : matchSavedOt.highlights) || [],
               accommodations: [],
               flights: { airline: "", route: [] },

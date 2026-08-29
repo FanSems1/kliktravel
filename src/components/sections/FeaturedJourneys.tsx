@@ -156,8 +156,28 @@ export function FeaturedJourneys() {
               daysEN: p.duration || "5 DAYS",
               price: displayPrice,
               image: p.featuredImage || "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=1200",
-              datesID: p.departureDate || p.datesID || p.departureDates || "TBA",
-              datesEN: p.departureDateEN || p.departureDate || p.datesEN || p.departureDates || "TBA",
+              datesID: (() => {
+                const d = (p.departureDate || p.datesID || p.departureDates || "").trim();
+                if (!d) return "TBA";
+                if (d === "-" || d.toLowerCase() === "everyday" || d.toLowerCase() === "daily" || d.toLowerCase() === "setiap hari") {
+                  return "Berangkat Setiap Hari";
+                }
+                if (d.includes(",") || d.includes(";") || d.length > 30) {
+                  return "Tersedia Beberapa Tanggal Keberangkatan";
+                }
+                return d;
+              })(),
+              datesEN: (() => {
+                const d = (p.departureDateEN || p.departureDate || p.datesEN || p.departureDates || "").trim();
+                if (!d) return "TBA";
+                if (d === "-" || d.toLowerCase() === "everyday" || d.toLowerCase() === "daily" || d.toLowerCase() === "setiap hari") {
+                  return "Daily Departure";
+                }
+                if (d.includes(",") || d.includes(";") || d.length > 30) {
+                  return "Multiple Departure Dates Available";
+                }
+                return d;
+              })(),
               slug: p.slug || p.subSlug || "",
               regionSlug: p.regionSlug || "indonesia",
               status: p.status || "Available"

@@ -33,12 +33,12 @@ export function IndonesiaHero() {
       </motion.div>
 
       {/* Hero Content */}
-      <div className="relative z-10 w-full h-full flex flex-col items-center justify-start pt-28 xs:pt-32 sm:pt-40 md:justify-center md:pt-24 pb-12">
+      <div className="relative z-10 w-full h-full flex flex-col items-center justify-center pt-20 pb-12">
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-          className="flex flex-col items-center justify-start md:justify-center text-center px-6"
+          className="flex flex-col items-center justify-center text-center px-6"
         >
           <span className="inline-flex items-center gap-2 font-mono text-[8px] xs:text-[10px] md:text-[11px] tracking-[0.2em] xs:tracking-[0.4em] whitespace-nowrap uppercase text-white font-semibold mb-6 px-4 xs:px-5 py-2.5 bg-black/30 backdrop-blur-md border border-white/20 rounded-full shadow-lg">
             <Compass className="w-3.5 h-3.5 text-sky-400 animate-[spin_20s_linear_infinite]" />
