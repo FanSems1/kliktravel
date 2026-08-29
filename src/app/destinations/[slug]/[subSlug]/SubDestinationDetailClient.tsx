@@ -605,8 +605,8 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               }
             }
 
-            let durID = "5 Hari 4 Malam";
-            let durEN = "5 Days 4 Nights";
+            let durID = primaryTrip.duration || "5 Hari 4 Malam";
+            let durEN = primaryTrip.duration || "5 Days 4 Nights";
             let dtID = "";
             let dtEN = "";
 
