@@ -202,8 +202,13 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
   useEffect(() => {
     async function loadRegion() {
       try {
-        // 1. Fetch destinations to check isActive and status
-        const publicDestinations = await apiFetch<any[]>(`/destinations?locale=${locale}`).catch(() => null);
+        // Fetch locales in parallel so that we can extract images from the English locale API if the current locale is different
+        const [publicDestinations, data, dataEn] = await Promise.all([
+          apiFetch<any[]>(`/destinations?locale=${locale}`).catch(() => null),
+          apiFetch<any>(`/destinations/${slug}?locale=${locale}`).catch(() => null),
+          locale !== "en" ? apiFetch<any>(`/destinations/${slug}?locale=en`).catch(() => null) : Promise.resolve(null)
+        ]);
+
         let adminDest: any = null;
         if (publicDestinations && Array.isArray(publicDestinations)) {
           adminDest = publicDestinations.find((d: any) => d.slug === slug || d.key === slug);
@@ -224,9 +229,9 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
           return;
         }
 
-        const data = await apiFetch<any>(`/destinations/${slug}?locale=${locale}`).catch(() => null) || adminDest;
-        if (data) {
-          let gradient = data.featuredImageGradient || "from-[#E0F2FE] to-[#7DD3FC]";
+        const activeData = data || adminDest;
+        if (activeData) {
+          let gradient = activeData.featuredImageGradient || "from-[#E0F2FE] to-[#7DD3FC]";
           let image = "";
           if (gradient.includes("||")) {
             const parts = gradient.split("||");
@@ -234,18 +239,32 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
             image = parts[1];
           }
 
-          const rawSubs = data.subDestinations || [];
+          // Build a mapping of sub-destination slug -> image URL from English name
+          const imageMap: Record<string, string> = {};
+          const enSubs = dataEn?.subDestinations || [];
+          enSubs.forEach((s: any) => {
+            const nameFields = [s.name, s.nameId, s.nameEn].filter(Boolean);
+            const fieldWithImage = nameFields.find((n: string) => typeof n === "string" && n.includes("||"));
+            if (fieldWithImage) {
+              const parts = fieldWithImage.split("||");
+              imageMap[s.slug] = parts[1];
+            }
+          });
+
+          const rawSubs = activeData.subDestinations || [];
           const subDestinations = rawSubs
             .filter((s: any) => s.status !== "off" && s.isActive !== false)
             .map((s: any) => {
               let subName = "";
-              let subImage = "";
+              let subImage = imageMap[s.slug] || "";
               
               const nameFields = [s.name, s.nameId, s.nameEn].filter(Boolean);
-              const fieldWithImage = nameFields.find(n => n.includes("||"));
+              const fieldWithImage = nameFields.find((n: string) => typeof n === "string" && n.includes("||"));
               if (fieldWithImage) {
                 const parts = fieldWithImage.split("||");
-                subImage = parts[1];
+                if (!subImage) {
+                  subImage = parts[1];
+                }
               }
 
               const localeName = locale === "en" ? (s.nameEn || s.nameId || s.name || "") : (s.nameId || s.nameEn || s.name || "");
@@ -510,7 +529,7 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                     "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?q=80&w=800",
                   ];
                   const otInfo = openTripsMap[sub.slug.toLowerCase()];
-                  const image = otInfo?.image || sub.image || subDestinationImages[sub.slug] || mockImages[idx % mockImages.length];
+                  const image = otInfo?.image || sub.image || "";
 
                   return (
                     <Link 
@@ -519,13 +538,23 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                       className="w-full flex flex-col group cursor-pointer"
                     >
                       {/* Card Image */}
-                      <div className="w-full aspect-[4/3] rounded-2xl relative overflow-hidden mb-6 bg-charcoal shadow-md border border-slate-100">
-                        <img 
-                          src={image} 
-                          alt={sub.name} 
-                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                        />
-                        <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500" />
+                      <div className="w-full aspect-[4/3] rounded-2xl relative overflow-hidden mb-6 bg-charcoal shadow-md border border-slate-100 flex items-center justify-center">
+                        {image ? (
+                          <>
+                            <img 
+                              src={image} 
+                              alt={sub.name} 
+                              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            />
+                            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500" />
+                          </>
+                        ) : (
+                          <div className="absolute inset-0 bg-gradient-to-br from-[#E0F2FE] to-[#7DD3FC] flex items-center justify-center">
+                            <span className="text-[#0F2C59]/40 font-sans text-xs uppercase tracking-wider font-bold">
+                              {locale === "id" ? "Foto Belum Tersedia" : "Image TBA"}
+                            </span>
+                          </div>
+                        )}
                         
                         <div className="absolute bottom-0 left-0 bg-[#0284C7] text-white text-[10px] md:text-xs font-sans font-bold uppercase tracking-wider px-4 md:px-5 py-2 md:py-2.5">
                           {locale === "id" ? "PAKET TOUR" : "TOUR PACKAGE"}
@@ -567,24 +596,31 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                       )}
                       
                       {(() => {
+                        const hasDetail = !!otInfo;
                         const isFull = otInfo?.status === "Closed" || otInfo?.status === "inactive" || otInfo?.status === "FULL" || otInfo?.status === "Draft" || otInfo?.status === "draft";
                         const rawDate = (otInfo?.departureDate || "").trim();
                         const isEveryday = rawDate === "-" || rawDate.toLowerCase() === "setiap hari" || rawDate.toLowerCase() === "everyday" || rawDate.toLowerCase() === "daily";
                         
-                        const statusLabel = isFull
-                          ? (locale === "id" ? "Pendaftaran Ditutup / Kuota Penuh" : "Fully Booked / Registration Closed")
-                          : (isEveryday
-                              ? (locale === "id" ? "Pendaftaran Dibuka" : "Registration Open")
-                              : (locale === "id" ? "Tersedia beberapa tanggal keberangkatan" : "Multiple departure dates available"));
+                        const statusLabel = !hasDetail
+                          ? "TBA"
+                          : (isFull
+                              ? (locale === "id" ? "Pendaftaran Ditutup / Kuota Penuh" : "Fully Booked / Registration Closed")
+                              : (isEveryday
+                                  ? (locale === "id" ? "Pendaftaran Dibuka" : "Registration Open")
+                                  : (locale === "id" ? "Tersedia beberapa tanggal keberangkatan" : "Multiple departure dates available")));
 
                         const displayDate = isEveryday
                           ? (locale === "id" ? "Keberangkatan Setiap Hari" : "Daily Departure")
                           : rawDate;
 
+                        const dotColor = !hasDetail
+                          ? "bg-slate-400"
+                          : (isFull ? "bg-rose-500" : "bg-[#0284C7]");
+
                         return (
                           <div className="flex flex-col gap-1.5 text-[#0F2C59]/80 font-sans text-xs md:text-sm">
                             <div className="flex items-center gap-2">
-                              <span className={`w-1.5 h-1.5 rounded-full ${isFull ? "bg-rose-500" : "bg-[#0284C7]"}`} />
+                              <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
                               <span>{statusLabel}</span>
                             </div>
                             {displayDate && (

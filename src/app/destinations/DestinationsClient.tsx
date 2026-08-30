@@ -73,7 +73,10 @@ export function DestinationsClient() {
       const fallbacks = localizedRegions[locale === "en" ? "en" : "id"] || localizedRegions.id;
       
       try {
-        const data = await apiFetch<any[]>(`/destinations?locale=${locale}`).catch(() => null);
+        const [data, dataEn] = await Promise.all([
+          apiFetch<any[]>(`/destinations?locale=${locale}`).catch(() => null),
+          locale !== "en" ? apiFetch<any[]>(`/destinations?locale=en`).catch(() => []) : Promise.resolve(null)
+        ]);
 
         // Fetch open trips and journeys to match sub-destinations featured images dynamically
         const [openTrips, journeys] = await Promise.all([
@@ -105,6 +108,21 @@ export function DestinationsClient() {
           setOpenTripsMap(otMap);
         }
 
+        const imageMap: Record<string, string> = {};
+        if (dataEn && Array.isArray(dataEn)) {
+          dataEn.forEach((r: any) => {
+            const enSubs = r.subDestinations || [];
+            enSubs.forEach((s: any) => {
+              const nameFields = [s.name, s.nameId, s.nameEn].filter(Boolean);
+              const fieldWithImage = nameFields.find((n: string) => typeof n === "string" && n.includes("||"));
+              if (fieldWithImage) {
+                const parts = fieldWithImage.split("||");
+                imageMap[s.slug] = parts[1];
+              }
+            });
+          });
+        }
+
         if (data && Array.isArray(data) && data.length > 0) {
           const mapped: RegionDestination[] = data.map((r) => {
             let gradient = r.featuredImageGradient || "from-[#E0F2FE] to-[#7DD3FC]";
@@ -117,13 +135,15 @@ export function DestinationsClient() {
 
             const subDestinations = (r.subDestinations || []).map((s: any) => {
               let subName = "";
-              let subImage = "";
+              let subImage = imageMap[s.slug] || "";
 
               const nameFields = [s.name, s.nameId, s.nameEn].filter(Boolean);
               const fieldWithImage = nameFields.find((n: string) => typeof n === "string" && n.includes("||"));
               if (fieldWithImage) {
                 const parts = fieldWithImage.split("||");
-                subImage = parts[1];
+                if (!subImage) {
+                  subImage = parts[1];
+                }
               }
 
               const localeName = locale === "en" 
@@ -308,26 +328,28 @@ export function DestinationsClient() {
                             {/* Mini Visual Cards Horizontal Slider */}
                             <div className="flex items-center gap-2.5 overflow-x-auto pb-1.5 pt-0.5 scrollbar-none no-scrollbar snap-x snap-mandatory -mx-1 px-1">
                               {region.subDestinations.map((sub, idx) => {
-                                const fallbackImages = [
-                                  "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=400",
-                                  "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=400",
-                                  "https://images.unsplash.com/photo-1508009603885-50cf7c579365?q=80&w=400",
-                                  "https://images.unsplash.com/photo-1596766468761-db1d5f2a1b94?q=80&w=400",
-                                ];
                                 const otInfo = openTripsMap[sub.slug?.toLowerCase() || ""];
-                                const spotImage = otInfo?.image || sub.image || subDestinationImages[sub.slug?.toLowerCase() || ""] || fallbackImages[idx % fallbackImages.length];
+                                const spotImage = otInfo?.image || sub.image || "";
 
                                 return (
                                   <Link
                                     key={idx}
                                     href={`/destinations/${region.slug}/${sub.slug}`}
-                                    className="group/spot shrink-0 w-[125px] aspect-[4/3] rounded-xl overflow-hidden relative shadow-sm border border-slate-200/80 bg-slate-900 snap-start transition-transform duration-300 hover:scale-[1.03]"
+                                    className="group/spot shrink-0 w-[125px] aspect-[4/3] rounded-xl overflow-hidden relative shadow-sm border border-slate-200/80 bg-slate-900 snap-start transition-transform duration-300 hover:scale-[1.03] flex items-center justify-center"
                                   >
-                                    <img
-                                      src={spotImage}
-                                      alt={sub.name}
-                                      className="absolute inset-0 w-full h-full object-cover group-hover/spot:scale-110 transition-transform duration-500 opacity-90"
-                                    />
+                                    {spotImage ? (
+                                      <img
+                                        src={spotImage}
+                                        alt={sub.name}
+                                        className="absolute inset-0 w-full h-full object-cover group-hover/spot:scale-110 transition-transform duration-500 opacity-90"
+                                      />
+                                    ) : (
+                                      <div className="absolute inset-0 bg-gradient-to-br from-[#E0F2FE] to-[#7DD3FC] flex items-center justify-center p-2 text-center">
+                                        <span className="text-[#0F2C59]/40 font-sans text-[8px] uppercase tracking-wider font-bold">
+                                          TBA
+                                        </span>
+                                      </div>
+                                    )}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                                     <div className="absolute bottom-0 left-0 right-0 p-2 z-10">
                                       <span className="font-sans text-[10px] font-bold text-white leading-tight uppercase tracking-tight block truncate drop-shadow-sm group-hover/spot:text-[#38BDF8] transition-colors">
