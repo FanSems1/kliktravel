@@ -106,7 +106,7 @@ export function InquireClient() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0284C7]/10 text-[#0284C7] font-mono text-[11px] font-bold tracking-[0.2em] uppercase"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0284C7]/10 text-[#0284C7] typography-caption uppercase"
           >
             <Sparkles size={13} />
             <span>{isEn ? "Tailor-Made Trip Consultation" : "Konsultasi Perjalanan Impian"}</span>
@@ -116,7 +116,7 @@ export function InquireClient() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-[#0F2C59] tracking-tight leading-tight"
+            className="typography-hero text-[#0F2C59] tracking-tight leading-tight"
           >
             {isEn ? "Plan Your Unforgettable Journey" : "Rancang Perjalanan Impian Anda"}
           </motion.h1>
@@ -125,7 +125,7 @@ export function InquireClient() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-sm sm:text-base text-slate-600 font-sans max-w-2xl mx-auto leading-relaxed"
+            className="typography-body text-slate-600 max-w-2xl mx-auto"
           >
             {isEn 
               ? "Tell us your travel vision. Our travel specialists will craft a customized itinerary suited to your dates, budget, and style."
@@ -153,10 +153,10 @@ export function InquireClient() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0F2C59]/90 via-[#0F2C59]/30 to-transparent" />
                 <div className="absolute bottom-5 left-5 right-5 text-white">
-                  <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-sky-300 font-bold block mb-1">
+                  <span className="typography-caption !text-sky-300 block mb-1">
                     {isEn ? "Personalized Travel" : "Layanan Kustom"}
                   </span>
-                  <h3 className="font-serif text-xl sm:text-2xl font-bold leading-snug">
+                  <h3 className="typography-card !text-white leading-snug">
                     {isEn ? "Explore Without Boundaries" : "Jelajahi Dunia dengan Nyaman & Tenang"}
                   </h3>
                 </div>
@@ -169,7 +169,7 @@ export function InquireClient() {
                     <ShieldCheck size={20} />
                   </div>
                   <div>
-                    <h4 className="font-sans text-sm font-bold text-[#0F2C59]">
+                    <h4 className="typography-body font-bold text-[#0F2C59]">
                       {isEn ? "Trusted & Transparency" : "100% Terpercaya & Transparan"}
                     </h4>
                     <p className="font-sans text-xs text-slate-500 mt-0.5 leading-relaxed">
@@ -185,7 +185,7 @@ export function InquireClient() {
                     <UserCheck size={20} />
                   </div>
                   <div>
-                    <h4 className="font-sans text-sm font-bold text-[#0F2C59]">
+                    <h4 className="typography-body font-bold text-[#0F2C59]">
                       {isEn ? "Professional Tour Leaders" : "Pendampingan Tour Leader Ramah"}
                     </h4>
                     <p className="font-sans text-xs text-slate-500 mt-0.5 leading-relaxed">
@@ -201,7 +201,7 @@ export function InquireClient() {
                     <Compass size={20} />
                   </div>
                   <div>
-                    <h4 className="font-sans text-sm font-bold text-[#0F2C59]">
+                    <h4 className="typography-body font-bold text-[#0F2C59]">
                       {isEn ? "Flexible Itinerary" : "Itinerary Fleksibel & Bebas Atur"}
                     </h4>
                     <p className="font-sans text-xs text-slate-500 mt-0.5 leading-relaxed">
@@ -253,10 +253,10 @@ export function InquireClient() {
             <div className="bg-white rounded-3xl p-6 sm:p-8 lg:p-10 shadow-xl border border-slate-200/80">
               
               <div className="border-b border-slate-100 pb-6 mb-6">
-                <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#0F2C59]">
+                <h3 className="typography-card text-[#0F2C59]">
                   {isEn ? "Formulir Konsultasi Perjalanan" : "Formulir Konsultasi Perjalanan"}
                 </h3>
-                <p className="font-sans text-xs sm:text-sm text-slate-500 mt-1">
+                <p className="typography-body text-slate-500 mt-1">
                   {isEn 
                     ? "Fill in the details below and we will automatically format your WhatsApp inquiry."
                     : "Isi rincian di bawah ini untuk terhubung langsung dengan konsultan perjalanan kami."}

@@ -22,7 +22,7 @@ body {
 }
 
 @utility typography-hero {
-  @apply font-serif text-3xl md:text-5xl lg:text-[3.5rem] font-bold tracking-tight text-[#0F2C59] leading-tight md:leading-[1.2];
+  @apply font-serif text-3xl md:text-5xl lg:text-[3.5rem] font-normal tracking-tight text-[#0F2C59] leading-tight md:leading-[1.2];
 }
 
 @utility typography-section {
@@ -51,6 +51,10 @@ body {
 
 @utility typography-price {
   @apply font-sans text-[15px] md:text-base lg:text-lg font-bold text-[#A89053] tracking-wide;
+}
+
+@utility typography-section-spacing {
+  @apply py-16 md:py-24;
 }
 
 @layer utilities {

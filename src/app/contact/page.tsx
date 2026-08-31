@@ -31,11 +31,11 @@ export default function ContactPage() {
           KLIK TRAVEL ID CONTACT
         </span>
 
-        <h1 className="font-serif text-2xl md:text-3xl text-[#0F2C59] font-normal leading-snug mb-3">
+        <h1 className="typography-section text-[#0F2C59] mb-3">
           {locale === "id" ? "Menghubungkan ke WhatsApp..." : "Connecting to WhatsApp..."}
         </h1>
 
-        <p className="font-sans text-xs md:text-sm text-[#0F2C59]/70 leading-relaxed mb-8">
+        <p className="typography-body text-[#0F2C59]/70 mb-8">
           {locale === "id"
             ? "Anda sedang dialihkan ke WhatsApp resmi Klik Travel ID (+62 812-3001-1027) untuk berkonsultasi dengan Travel Expert kami."
             : "You are being redirected to the official WhatsApp of Klik Travel ID (+62 812-3001-1027) to speak with our Travel Expert."}

@@ -1017,7 +1017,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               </div>
 
               {/* Main Title */}
-              <h1 className="font-sans font-bold text-2xl md:text-3xl text-slate-900 leading-snug mb-3">
+              <h1 className="typography-package-title text-slate-900 mb-3">
                 {displayTourName}
               </h1>
 
@@ -1032,7 +1032,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               <div className="w-full h-[1px] bg-slate-200 mb-4" />
 
               {/* Description Paragraph */}
-              <p className="font-sans text-slate-700 text-xs md:text-sm leading-relaxed mb-6 font-normal">
+              <p className="typography-body text-slate-700 mb-6">
                 {getDetailedDescription(slug, subSlug, locale, currentRegionName, tourDetail.tagline)}
               </p>
             </div>
@@ -1043,7 +1043,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                 <span className="block font-mono text-[9px] uppercase tracking-widest text-slate-500 font-bold whitespace-nowrap">
                   {locale === "id" ? "MULAI DARI" : "STARTING FROM"}
                 </span>
-                <span className="block font-sans font-extrabold text-xl md:text-2xl text-[#0284C7] whitespace-nowrap">
+                <span className="block typography-price text-[#0284C7] whitespace-nowrap">
                   {formattedPrice}
                 </span>
               </div>
@@ -1172,10 +1172,10 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
           {/* Highlights Card */}
           <div className="bg-white border border-slate-200/70 rounded-3xl p-6 md:p-8 shadow-sm">
             <div className="flex flex-col gap-1 mb-6 pb-3 border-b border-slate-100">
-              <span className="font-mono text-[9px] uppercase tracking-widest text-sky-600 font-bold">
+              <span className="typography-caption !text-[#0284C7] block">
                 {locale === "id" ? "ATRAKSI TERKULTIVASI" : "CURATED ATTRACTIONS"}
               </span>
-              <h2 className="font-serif font-bold text-xl md:text-2xl text-slate-900">{t("itinerary_highlights")}</h2>
+              <h2 className="typography-section !text-[#0F2C59]">{t("itinerary_highlights")}</h2>
             </div>
             <div className="flex flex-row overflow-x-auto md:flex-nowrap divide-x-0 md:divide-x divide-slate-100 scrollbar-none gap-4 md:gap-0 pb-2 md:pb-0 w-full">
               {tourDetail.highlights.map((hl, idx) => (
@@ -1193,10 +1193,10 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
           {/* Daily Itinerary */}
           <div>
             <div className="flex flex-col gap-1 mb-8">
-              <span className="font-mono text-[9px] uppercase tracking-widest text-sky-600 font-bold">
+              <span className="typography-caption !text-[#0284C7] block">
                 {locale === "id" ? "RANCANGAN PERJALANAN" : "JOURNEY ROADMAP"}
               </span>
-              <h2 className="font-serif font-bold text-2xl text-slate-900">{t("detail_itinerary")}</h2>
+              <h2 className="typography-section !text-[#0F2C59]">{t("detail_itinerary")}</h2>
             </div>
 
             {/* Timeline Wrapper */}
@@ -1351,10 +1351,10 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
       <section className="max-w-7xl mx-auto px-6 md:px-12 mt-16">
         <div className="bg-white border border-slate-200/70 rounded-3xl p-8 md:p-12 shadow-sm">
           <div className="flex flex-col gap-1 mb-8 pb-4 border-b border-slate-100">
-            <span className="font-mono text-[9px] uppercase tracking-widest text-sky-600 font-bold">
+            <span className="typography-caption !text-[#0284C7] block">
               {locale === "id" ? "REGULASI PERJALANAN" : "TRAVEL REGULATION"}
             </span>
-            <h2 className="font-serif font-bold text-2xl text-slate-900">
+            <h2 className="typography-section !text-[#0F2C59]">
               {locale === "id" ? "SYARAT DAN KETENTUAN" : "TERMS AND CONDITIONS"}
             </h2>
           </div>

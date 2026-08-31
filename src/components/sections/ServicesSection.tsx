@@ -47,7 +47,7 @@ export function ServicesSection() {
   };
 
   return (
-    <section className="py-24 bg-[#0F2C59] text-white relative overflow-hidden">
+    <section className="typography-section-spacing bg-[#0F2C59] text-white relative overflow-hidden">
       
       {/* Background Subtle Pattern/Overlay */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(56,189,248,0.08),transparent_50%)]" />
@@ -63,13 +63,13 @@ export function ServicesSection() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
           className="text-center max-w-2xl mx-auto mb-20"
         >
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#38BDF8] block mb-4 font-semibold">
+          <span className="typography-caption !text-[#38BDF8] block mb-4">
             {t("services_tag")}
           </span>
-          <h2 className="text-3xl md:text-4xl font-serif text-white tracking-tight mb-4">
+          <h2 className="typography-section text-white tracking-tight mb-4">
             {t("services_title")}
           </h2>
-          <p className="font-sans text-white/70 text-sm md:text-base font-light leading-relaxed">
+          <p className="typography-body text-white/70">
             {t("services_desc")}
           </p>
         </motion.div>
@@ -105,8 +105,8 @@ export function ServicesSection() {
                   <Users className="w-6 h-6" />
                 </div>
                 
-                <h3 className="font-serif text-3xl text-white tracking-wide mb-4">Open Trip</h3>
-                <p className="font-sans text-white/80 text-sm font-light leading-relaxed mb-8 min-h-[60px]">
+                <h3 className="typography-card text-white tracking-wide mb-4">Open Trip</h3>
+                <p className="typography-body text-white/80 mb-8 min-h-[60px]">
                   {locale === "id" 
                     ? "Bergabung dengan perjalanan yang sudah terjadwal dan nikmati liburan bersama peserta lainnya. Pilihan destinasi menarik dengan harga yang lebih terjangkau."
                     : "Join scheduled group trips and enjoy vacations with other participants. Attractive destination choices at more affordable prices."}
@@ -119,7 +119,7 @@ export function ServicesSection() {
                       <div className="mt-[3px] w-4 h-4 rounded-full bg-[#38BDF8]/20 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] shrink-0">
                         <Check className="w-2.5 h-2.5" />
                       </div>
-                      <span className="font-sans text-xs text-white/70 font-light leading-relaxed">{feature}</span>
+                      <span className="typography-body !text-white/70">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -128,7 +128,7 @@ export function ServicesSection() {
               {/* Action Button */}
               <Link 
                 href="/destinations" 
-                className="inline-flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.25em] font-bold text-[#38BDF8] group-hover:text-white transition-colors duration-300 w-max mt-auto"
+                className="typography-button inline-flex items-center gap-3 !text-[#38BDF8] group-hover:text-white transition-colors duration-300 w-max mt-auto"
               >
                 <span>{locale === "id" ? "Jelajahi Open Trip" : "Explore Open Trip"}</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-2 transition-transform duration-300" />
@@ -158,8 +158,8 @@ export function ServicesSection() {
                   <Sparkles className="w-6 h-6" />
                 </div>
                 
-                <h3 className="font-serif text-3xl text-white tracking-wide mb-4">Private Trip</h3>
-                <p className="font-sans text-white/80 text-sm font-light leading-relaxed mb-8 min-h-[60px]">
+                <h3 className="typography-card text-white tracking-wide mb-4">Private Trip</h3>
+                <p className="typography-body text-white/80 mb-8 min-h-[60px]">
                   {locale === "id" 
                     ? "Rencanakan perjalanan sesuai kebutuhan Anda. Tentukan destinasi, tanggal, itinerary, dan jumlah peserta sesuai keinginan."
                     : "Plan travel according to your needs. Set the destination, dates, itinerary, and number of participants to your liking."}
@@ -172,7 +172,7 @@ export function ServicesSection() {
                       <div className="mt-[3px] w-4 h-4 rounded-full bg-[#38BDF8]/20 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] shrink-0">
                         <Check className="w-2.5 h-2.5" />
                       </div>
-                      <span className="font-sans text-xs text-white/70 font-light leading-relaxed">{feature}</span>
+                      <span className="typography-body !text-white/70">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -181,7 +181,7 @@ export function ServicesSection() {
               {/* Action Button */}
               <Link 
                 href="/private-trip" 
-                className="inline-flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.25em] font-bold text-[#38BDF8] group-hover:text-white transition-colors duration-300 w-max mt-auto"
+                className="typography-button inline-flex items-center gap-3 !text-[#38BDF8] group-hover:text-white transition-colors duration-300 w-max mt-auto"
               >
                 <span>{locale === "id" ? "Rancang Private Trip" : "Design Private Trip"}</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-2 transition-transform duration-300" />
@@ -198,12 +198,12 @@ export function ServicesSection() {
           transition={{ duration: 1.2, delay: 0.3 }}
           className="mt-24 text-center max-w-3xl mx-auto border-t border-white/10 pt-14"
         >
-          <p className="font-serif text-xl md:text-2xl italic text-white mb-4">
+          <p className="typography-card !italic text-white mb-4">
             {locale === "id" 
               ? "\"Kami percaya bahwa setiap perjalanan adalah sebuah cerita.\""
               : "\"We believe that every single journey is an individual story.\""}
           </p>
-          <p className="font-sans text-xs md:text-sm text-white/70 tracking-[0.2em] uppercase font-light leading-relaxed">
+          <p className="typography-body !text-white/70 uppercase tracking-[0.2em]">
             {locale === "id" 
               ? "Kami berkomitmen memberikan pelayanan terbaik, harga yang kompetitif, dan pengalaman yang aman."
               : "We are committed to providing the best service, competitive rates, and a safe travel experience."}

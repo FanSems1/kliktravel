@@ -79,7 +79,7 @@ export function PrivacyClient() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-50 border border-sky-100/60 text-[#0284C7] text-[10px] font-mono tracking-wider uppercase mb-5"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-50 border border-sky-100/60 text-[#0284C7] typography-caption uppercase mb-5"
           >
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>{isEn ? "Privacy & Data Protection" : "Privasi & Perlindungan Data"}</span>
@@ -92,7 +92,7 @@ export function PrivacyClient() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-3xl md:text-4xl lg:text-5xl font-serif text-[#0F2C59] font-bold tracking-tight mb-4"
+            className="typography-hero text-[#0F2C59] tracking-tight mb-4"
           >
             {isEn ? "Privacy Policy" : "Kebijakan Privasi"}
           </motion.h1>
@@ -100,7 +100,7 @@ export function PrivacyClient() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-slate-500 text-sm md:text-base font-light leading-relaxed"
+            className="typography-body text-slate-500"
           >
             {isEn
               ? "Your trust is our utmost priority. Read below to understand how Klik Travel ID protects and respects your personal information."
@@ -123,12 +123,12 @@ export function PrivacyClient() {
                 <span className="font-serif text-2xl font-extrabold text-sky-400 select-none leading-none">
                   0{idx + 1}
                 </span>
-                <h2 className="text-lg md:text-xl font-serif text-[#0F2C59] font-bold tracking-tight">
+                <h2 className="typography-card text-[#0F2C59] tracking-tight">
                   {section.title.replace(/^\d+\.\s*/, "")}
                 </h2>
               </div>
               <div className="md:col-span-8">
-                <p className="text-slate-500 text-xs md:text-sm leading-relaxed font-light">
+                <p className="typography-body text-slate-500">
                   {section.content}
                 </p>
               </div>

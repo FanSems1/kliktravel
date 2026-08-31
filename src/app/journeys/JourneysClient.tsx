@@ -169,13 +169,13 @@ export function JourneysClient() {
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             className="max-w-3xl"
           >
-            <span className="font-mono text-xs tracking-[0.4em] uppercase text-white/80 font-bold block mb-4">
+            <span className="typography-caption !text-white/80 block mb-4">
               {locale === "id" ? "PENGALAMAN TERKURASI" : "EDITORIAL TRAVEL EXPERIENCES"}
             </span>
-            <h1 className="font-serif text-5xl md:text-7xl font-normal text-white tracking-wide mb-8 leading-tight drop-shadow-sm">
+            <h1 className="typography-hero !text-white tracking-wide mb-8 leading-tight drop-shadow-sm">
               {t("journeys_title")}
             </h1>
-            <p className="font-serif italic text-lg md:text-2xl text-white/90 leading-relaxed max-w-2xl drop-shadow-sm">
+            <p className="typography-subheading italic text-white/90 max-w-2xl drop-shadow-sm">
               {t("journeys_subtitle")}
             </p>
           </motion.div>
@@ -210,7 +210,7 @@ export function JourneysClient() {
             ))
           ) : (
             <div className="col-span-12 text-center py-20">
-              <p className="font-serif italic text-xl text-charcoal/50">
+              <p className="typography-subheading italic text-charcoal/50">
                 {locale === "id" ? "Tidak ada perjalanan yang sesuai dengan filter Anda." : "No journeys match your selected filters."}
               </p>
               <button 

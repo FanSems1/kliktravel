@@ -152,13 +152,13 @@ export default function FAQPage() {
 
         {/* Header Hero Section */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-[#0284C7] block mb-3">
+          <span className="typography-caption !text-[#0284C7] block mb-3">
             {isIndo ? "PUSAT BANTUAN" : "HELP CENTER"}
           </span>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-[#0F2C59] tracking-tight leading-tight mb-6">
+          <h1 className="typography-hero text-[#0F2C59] tracking-tight leading-tight mb-6">
             {isIndo ? "Pertanyaan Umum" : "Frequently Asked Questions"}
           </h1>
-          <p className="font-sans text-base md:text-lg text-[#0F2C59]/80 leading-relaxed font-light">
+          <p className="typography-body text-[#0F2C59]/80">
             {isIndo
               ? "Temukan jawaban cepat seputar pemesanan, pembayaran, jenis perjalanan, dan kebijakan Klik Travel ID."
               : "Find quick answers regarding bookings, payments, travel categories, and Klik Travel ID policies."}
@@ -189,10 +189,10 @@ export default function FAQPage() {
                     {cat.icon}
                   </div>
                   <div>
-                    <span className="font-sans text-xs font-mono tracking-wider uppercase block opacity-40 mb-0.5">
+                    <span className="typography-caption uppercase block opacity-40 mb-0.5">
                       {cat.id}
                     </span>
-                    <span className="font-serif text-base font-normal block leading-tight">
+                    <span className="typography-card block leading-tight">
                       {isIndo ? cat.titleID : cat.titleEN}
                     </span>
                   </div>
@@ -203,7 +203,7 @@ export default function FAQPage() {
 
           {/* RIGHT SIDE: Accordions List */}
           <div className="lg:col-span-8 bg-white border border-[#0F2C59]/10 rounded-3xl p-6 md:p-8 shadow-sm">
-            <h2 className="font-serif text-2xl text-[#0F2C59] mb-6 flex items-center gap-3">
+            <h2 className="typography-section text-[#0F2C59] mb-6 flex items-center gap-3">
               <HelpCircle className="w-6 h-6 text-[#A89053] shrink-0" />
               <span>{isIndo ? currentCategory.titleID : currentCategory.titleEN}</span>
             </h2>
@@ -220,13 +220,13 @@ export default function FAQPage() {
                       onClick={() => setActiveFaq(isOpen ? null : index)}
                       className="w-full p-6 flex items-center justify-between text-left gap-4 cursor-pointer focus:outline-none"
                     >
-                      <span className="font-serif text-base md:text-lg text-[#0F2C59]">
+                      <span className="typography-card text-[#0F2C59]">
                         {item.q}
                       </span>
                       <ChevronDown className={`text-[#A89053] shrink-0 transition-transform duration-500 ${isOpen ? "rotate-180" : ""
                         }`} />
                     </button>
-
+ 
                     <AnimatePresence initial={false}>
                       {isOpen && (
                         <motion.div
@@ -235,7 +235,7 @@ export default function FAQPage() {
                           exit={{ height: 0, opacity: 0 }}
                           transition={{ duration: 0.3, ease: "easeInOut" }}
                         >
-                          <div className="px-6 pb-6 pt-0 border-t border-slate-100/50 font-sans text-xs md:text-sm text-[#0F2C59]/70 leading-relaxed font-light">
+                          <div className="px-6 pb-6 pt-0 border-t border-slate-100/50 typography-body text-[#0F2C59]/70">
                             <p className="whitespace-pre-line pt-4">
                               {item.a}
                             </p>
@@ -255,13 +255,13 @@ export default function FAQPage() {
         <div className="mt-20 bg-charcoal rounded-3xl p-8 md:p-12 text-center text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-tr from-black/20 via-transparent to-white/5 pointer-events-none" />
           <div className="relative z-10 max-w-xl mx-auto">
-            <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-white/50 block mb-4">
+            <span className="typography-caption !text-white/50 block mb-4">
               {isIndo ? "TETAP BUTUH BANTUAN?" : "STILL NEED HELP?"}
             </span>
-            <h3 className="font-serif text-3xl font-normal leading-tight mb-4">
+            <h3 className="typography-section text-white mb-4">
               {isIndo ? "Punya Pertanyaan Lain?" : "Have More Questions?"}
             </h3>
-            <p className="font-sans text-xs md:text-sm text-white/70 leading-relaxed font-light mb-8">
+            <p className="typography-body text-white/70 mb-8">
               {isIndo
                 ? "Tim support kami siap membantu menjawab pertanyaan khusus seputar destinasi, pemesanan kustom, atau korporasi."
                 : "Our support team is ready to help answer specific questions about destinations, custom booking, or corporate trips."}

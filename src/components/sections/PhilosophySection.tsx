@@ -79,7 +79,7 @@ export function PhilosophySection() {
             {t("philosophy_tag")}
           </span>
 
-          <Heading variant="display" className="text-4xl md:text-6xl lg:text-7xl leading-tight font-sans tracking-tight font-light mb-16 text-balance drop-shadow-sm">
+          <Heading variant="display" className="!text-white text-4xl md:text-6xl lg:text-7xl leading-tight font-sans tracking-tight font-light mb-16 text-balance drop-shadow-sm">
             {locale === "id" ? (
               <>
                 Perjalanan seharusnya tidak <br className="hidden md:block" />

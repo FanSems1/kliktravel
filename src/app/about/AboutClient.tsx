@@ -78,7 +78,7 @@ export function AboutClient() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#A89053]/10 border border-[#A89053]/30 text-[#A89053] text-xs font-mono tracking-[0.3em] font-semibold uppercase mb-6 backdrop-blur-sm"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#A89053]/10 border border-[#A89053]/30 text-[#A89053] typography-caption uppercase mb-6 backdrop-blur-sm"
             >
               <Compass className="w-3.5 h-3.5 animate-spin-slow" />
               <span>{locale === "id" ? "Tentang Klik Travel ID" : "About Klik Travel ID"}</span>
@@ -88,15 +88,15 @@ export function AboutClient() {
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.1 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-serif tracking-tight text-[#0F2C59] leading-[1.12] mb-6 font-medium"
+              className="typography-hero text-[#0F2C59] tracking-tight mb-6"
             >
               {locale === "id" ? (
                 <>
-                  Mewujudkan Perjalanan Impian dengan <span className="italic font-normal text-[#A89053] font-serif">Sentuhan Personal</span>
+                  Mewujudkan Perjalanan Impian dengan <span className="italic text-[#A89053]">Sentuhan Personal</span>
                 </>
               ) : (
                 <>
-                  Crafting Dream Journeys with <span className="italic font-normal text-[#A89053] font-serif">A Personal Touch</span>
+                  Crafting Dream Journeys with <span className="italic text-[#A89053]">A Personal Touch</span>
                 </>
               )}
             </motion.h1>
@@ -105,7 +105,7 @@ export function AboutClient() {
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-slate-600 text-base md:text-lg max-w-xl leading-relaxed font-light mb-10"
+              className="typography-body text-slate-600 max-w-xl mb-10"
             >
               {locale === "id"
                 ? "Kami hadir untuk mendefinisikan ulang cara Anda menjelajahi dunia. Dari destinasi eksotis Nusantara hingga petualangan mancanegara, setiap perjalanan dirancang khusus untuk kenyamanan dan kenangan tak terlupakan."
@@ -255,7 +255,7 @@ export function AboutClient() {
                   : "Klik Travel ID is dedicated to delivering quality curated tour packages that harmonize seamless booking, guaranteed departure schedules, handpicked accommodations, and reliable airline partnerships."}
               </p>
 
-              <p className="text-slate-500 text-sm md:text-base leading-relaxed font-light mb-8">
+              <p className="typography-body text-slate-500 mb-8">
                 {locale === "id"
                   ? "Kami percaya bahwa setiap liburan haruslah menjadi sarana penyegaran jiwa tanpa kekhawatiran logistik. Dengan staf berpengalaman dan perwakilan lokal terpercaya, kenyamanan Anda adalah prioritas utama kami."
                   : "We believe travel should refresh your soul without logistical worries. Guided by seasoned travel experts and trusted local partners, your comfort and bliss remain our single highest priority."}

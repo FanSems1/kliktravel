@@ -216,7 +216,7 @@ export function PrivateTripClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.8 }}
-            className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-sky-300 mb-4 md:mb-6 block max-w-full leading-relaxed"
+            className="typography-caption !text-sky-300 mb-4 md:mb-6 block max-w-full"
           >
             {t("private_trip_tag")}
           </motion.span>
@@ -224,7 +224,7 @@ export function PrivateTripClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8 }}
-            className="font-serif text-5xl md:text-7xl text-white font-normal tracking-wide mb-6 leading-tight"
+            className="typography-hero !text-white tracking-wide mb-6 leading-tight"
           >
             {t("private_trip_title")}
           </motion.h1>
@@ -232,7 +232,7 @@ export function PrivateTripClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
-            className="font-sans text-white/90 text-sm md:text-lg max-w-2xl font-light mb-10 leading-relaxed"
+            className="typography-body !text-white/90 max-w-2xl mb-10"
           >
             {t("private_trip_desc")}
           </motion.p>
@@ -256,10 +256,10 @@ export function PrivateTripClient() {
             <div className="flex flex-col items-start text-left space-y-4 group">
               <span className="font-serif text-4xl text-[#A89053] font-light">01</span>
               <div className="h-[1px] w-12 bg-[#0284C7] group-hover:w-full transition-all duration-500" />
-              <h3 className="font-serif text-xl font-bold text-[#0F2C59] tracking-wide pt-2">
+              <h3 className="typography-card text-[#0F2C59] tracking-wide pt-2">
                 {t("private_trip_freedom_title")}
               </h3>
-              <p className="text-slate-500 text-sm font-light leading-relaxed">
+              <p className="typography-body text-slate-500">
                 {t("private_trip_freedom_desc")}
               </p>
             </div>
@@ -267,10 +267,10 @@ export function PrivateTripClient() {
             <div className="flex flex-col items-start text-left space-y-4 group">
               <span className="font-serif text-4xl text-[#A89053] font-light">02</span>
               <div className="h-[1px] w-12 bg-[#0284C7] group-hover:w-full transition-all duration-500" />
-              <h3 className="font-serif text-xl font-bold text-[#0F2C59] tracking-wide pt-2">
+              <h3 className="typography-card text-[#0F2C59] tracking-wide pt-2">
                 {t("private_trip_flexibility_title")}
               </h3>
-              <p className="text-slate-500 text-sm font-light leading-relaxed">
+              <p className="typography-body text-slate-500">
                 {t("private_trip_flexibility_desc")}
               </p>
             </div>
@@ -278,10 +278,10 @@ export function PrivateTripClient() {
             <div className="flex flex-col items-start text-left space-y-4 group">
               <span className="font-serif text-4xl text-[#A89053] font-light">03</span>
               <div className="h-[1px] w-12 bg-[#0284C7] group-hover:w-full transition-all duration-500" />
-              <h3 className="font-serif text-xl font-bold text-[#0F2C59] tracking-wide pt-2">
+              <h3 className="typography-card text-[#0F2C59] tracking-wide pt-2">
                 {t("private_trip_service_title")}
               </h3>
-              <p className="text-slate-500 text-sm font-light leading-relaxed">
+              <p className="typography-body text-slate-500">
                 {t("private_trip_service_desc")}
               </p>
             </div>
@@ -289,10 +289,10 @@ export function PrivateTripClient() {
             <div className="flex flex-col items-start text-left space-y-4 group">
               <span className="font-serif text-4xl text-[#A89053] font-light">04</span>
               <div className="h-[1px] w-12 bg-[#0284C7] group-hover:w-full transition-all duration-500" />
-              <h3 className="font-serif text-xl font-bold text-[#0F2C59] tracking-wide pt-2">
+              <h3 className="typography-card text-[#0F2C59] tracking-wide pt-2">
                 {t("private_trip_privacy_title")}
               </h3>
-              <p className="text-slate-500 text-sm font-light leading-relaxed">
+              <p className="typography-body text-slate-500">
                 {t("private_trip_privacy_desc")}
               </p>
             </div>
@@ -334,13 +334,13 @@ export function PrivateTripClient() {
       ) : popularPrivateDestinations.length > 0 ? (
         <section className="max-w-7xl mx-auto px-6 pt-24 md:pt-32 mb-32">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-[#0284C7] block mb-3">
+            <span className="typography-caption !text-[#0284C7] block mb-3">
               {t("private_trip_inspiration_tag")}
             </span>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-[#0F2C59] tracking-tight mb-6">
+            <h2 className="typography-section text-[#0F2C59] tracking-tight mb-6">
               {t("private_trip_inspiration_title")}
             </h2>
-            <p className="font-sans text-base md:text-lg text-[#0F2C59]/80 font-light leading-relaxed">
+            <p className="typography-body text-[#0F2C59]/80">
               {locale === "id" ? "Pilihan terfavorit pelanggan kami untuk inspirasi perjalanan berharga Anda." : "Our guest favorites to inspire your next extraordinary journey."}
             </p>
           </div>
@@ -399,14 +399,14 @@ export function PrivateTripClient() {
             </div>
             <div className="absolute inset-0 bg-gradient-to-br from-[#0284C7]/30 via-transparent to-[#0F2C59] pointer-events-none z-0" />
             
-            <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[#38BDF8] font-bold block mb-3 relative z-10">
+            <span className="typography-caption !text-[#38BDF8] block mb-3 relative z-10">
               {locale === "id" ? "RESERVASI EKSKLUSIF" : "EXCLUSIVE RESERVATION"}
             </span>
 
-            <h2 className="font-serif text-3xl md:text-4xl lg:text-4xl text-white mb-3 lg:mb-4 relative z-10 leading-tight">
+            <h2 className="typography-section text-white mb-3 lg:mb-4 relative z-10 leading-tight">
               {t("private_trip_form_title")}
             </h2>
-            <p className="font-sans text-white/75 text-xs sm:text-sm font-light mb-6 lg:mb-8 relative z-10 leading-relaxed">
+            <p className="typography-body text-white/75 mb-6 lg:mb-8 relative z-10">
               {t("private_trip_form_desc")}
             </p>
             <div className="space-y-4 relative z-10">
@@ -597,10 +597,10 @@ export function PrivateTripClient() {
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
               <div>
-                <span className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-[#0284C7] block mb-3">
+                <span className="typography-caption !text-[#0284C7] block mb-3">
                   {t("private_trip_testimonial_tag")}
                 </span>
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-[#0F2C59] tracking-tight leading-tight">
+                <h2 className="typography-section text-[#0F2C59] tracking-tight leading-tight">
                   {t("private_trip_testimonial_title")}
                 </h2>
               </div>

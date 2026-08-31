@@ -220,10 +220,10 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
   if (!journey) {
     return (
       <div className="min-h-screen bg-ivory flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="font-serif text-3xl text-[#0F2C59] mb-4">
+        <h2 className="typography-hero text-[#0F2C59] mb-4">
           {locale === "id" ? "Perjalanan Tidak Ditemukan" : "Journey Not Found"}
         </h2>
-        <p className="font-sans text-sm text-[#0F2C59]/70 max-w-md mb-8">
+        <p className="typography-body text-[#0F2C59]/70 max-w-md mb-8">
           {locale === "id" ? "Paket perjalanan yang Anda cari tidak tersedia atau telah dipindahkan." : "The travel package you are looking for is unavailable or has been moved."}
         </p>
         <Link
@@ -305,10 +305,10 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 1 }}
             >
-              <h2 className="font-serif text-4xl md:text-6xl text-foreground font-normal leading-tight mb-8">
+              <h2 className="typography-hero text-foreground mb-8">
                 {journey.introHeading}
               </h2>
-              <p className="font-sans text-lg md:text-xl text-foreground/70 font-light leading-relaxed max-w-2xl">
+              <p className="typography-body text-foreground/70 max-w-2xl">
                 {journey.introDescription}
               </p>
             </motion.div>
@@ -325,9 +325,9 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
                     <div className="absolute bottom-4 left-4 font-mono text-[9px] tracking-widest uppercase text-charcoal/40">Story Chapter</div>
                   </div>
                   <div className={`w-full ${chapter.layout === "full" ? "mt-8" : "md:w-1/2"}`}>
-                    <span className="font-mono text-[10px] tracking-[0.3em] text-earth-dark block mb-4">{chapter.id}</span>
-                    <h3 className="font-serif text-3xl text-foreground mb-4">{chapter.title}</h3>
-                    <p className="font-sans text-sm md:text-base text-foreground/70 font-light leading-relaxed">{chapter.text}</p>
+                    <span className="typography-caption !text-earth-dark block mb-4">{chapter.id}</span>
+                    <h3 className="typography-card text-foreground mb-4">{chapter.title}</h3>
+                    <p className="typography-body text-foreground/70">{chapter.text}</p>
                   </div>
                 </div>
               ))}
@@ -354,10 +354,10 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
                         className="w-full py-6 flex items-center justify-between text-left group"
                       >
                         <div className="flex items-center space-x-6 md:space-x-12">
-                          <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-earth-dark w-16 font-bold">
+                          <span className="typography-caption !text-earth-dark w-16 block font-bold">
                             {item.day}
                           </span>
-                          <span className="font-serif text-xl md:text-2xl text-foreground group-hover:text-earth-dark transition-colors">
+                          <span className="typography-card text-foreground group-hover:text-earth-dark transition-colors">
                             {item.title}
                           </span>
                         </div>
@@ -384,7 +384,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
                                 </div>
                               )}
 
-                              <p className="font-sans text-sm md:text-base text-foreground/70 leading-relaxed font-light">
+                              <p className="typography-body text-foreground/70">
                                 {item.description}
                               </p>
 
@@ -414,7 +414,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
                 {journey.highlights.map((highlight, idx) => (
                   <div key={idx} className="flex items-start space-x-4">
                     <div className="w-1.5 h-1.5 rounded-full bg-earth-dark mt-2 shrink-0" />
-                    <p className="font-serif text-lg text-foreground">{highlight}</p>
+                    <p className="typography-body font-medium text-foreground">{highlight}</p>
                   </div>
                 ))}
               </div>
@@ -436,8 +436,8 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
                     <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-earth-dark block mb-1">
                       {hotel.city}
                     </span>
-                    <h4 className="font-serif text-lg text-foreground mb-1">{hotel.name}</h4>
-                    <span className="font-sans text-xs text-charcoal/60 uppercase tracking-widest">{hotel.roomType}</span>
+                    <h4 className="typography-card text-foreground mb-1">{hotel.name}</h4>
+                    <span className="typography-caption !text-charcoal/60 block">{hotel.roomType}</span>
                   </div>
                 ))}
               </div>
@@ -457,7 +457,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
                 <div className="flex flex-col md:flex-row items-center md:space-x-4 space-y-4 md:space-y-0 text-center md:text-left">
                   {journey.flights.route.map((node, idx) => (
                     <React.Fragment key={idx}>
-                      <span className="font-serif text-xl text-foreground">{node}</span>
+                      <span className="typography-card text-foreground">{node}</span>
                       {idx < journey.flights.route.length - 1 && (
                         <ArrowRight className="text-charcoal/30 hidden md:block" size={20} />
                       )}
@@ -523,7 +523,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
                         onClick={() => setActiveFaq(isOpen ? null : index)}
                         className="w-full p-6 flex items-center justify-between text-left"
                       >
-                        <span className="font-serif text-lg text-foreground pr-8">
+                        <span className="typography-card text-foreground pr-8">
                           {faq.q}
                         </span>
                         <ChevronDown className={`text-earth-dark shrink-0 transition-transform duration-500 ${isOpen ? "rotate-180" : ""}`} />
@@ -536,7 +536,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
                             exit={{ height: 0, opacity: 0 }}
                             transition={{ duration: 0.3 }}
                           >
-                            <div className="px-6 pb-6 pt-2 text-sm text-foreground/70 font-light leading-relaxed">
+                            <div className="px-6 pb-6 pt-2 typography-body text-foreground/70">
                               {faq.a}
                             </div>
                           </motion.div>
@@ -620,7 +620,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
             <span className="font-mono text-[9px] uppercase tracking-widest text-[#0284C7] font-bold">
               {locale === "id" ? "REGULASI PERJALANAN" : "TRAVEL REGULATION"}
             </span>
-            <h2 className="font-serif font-normal text-2xl md:text-3xl text-foreground">
+            <h2 className="typography-section text-foreground">
               {locale === "id" ? "SYARAT DAN KETENTUAN" : "TERMS AND CONDITIONS"}
             </h2>
           </div>
@@ -774,7 +774,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
         <div className="absolute inset-0 image-texture opacity-30 mix-blend-overlay z-[2]" />
 
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 z-[3]">
-          <h2 className="font-serif text-5xl md:text-7xl text-white font-normal tracking-wide mb-12 drop-shadow-md">
+          <h2 className="typography-hero !text-white tracking-wide mb-12 drop-shadow-md">
             {t("detail_ready_to_go")}
           </h2>
           <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">

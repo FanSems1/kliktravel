@@ -8,7 +8,7 @@ export function AboutUsSection() {
   const { t, locale } = useLanguage();
 
   return (
-    <section className="py-20 md:py-24 bg-white text-foreground relative overflow-hidden">
+    <section className="typography-section-spacing bg-white text-foreground relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-6 md:px-12 lg:px-16">
         
         {/* About Intro Row */}
@@ -20,13 +20,13 @@ export function AboutUsSection() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="max-w-3xl relative z-10"
           >
-            <span className="font-mono text-[10px] tracking-[0.4em] uppercase font-semibold text-[#0284C7] block mb-4">
+            <span className="typography-caption !text-[#0284C7] block mb-4">
               {t("about_tag")}
             </span>
-            <h2 className="text-2xl md:text-3xl font-serif text-[#0F2C59] tracking-tight mb-6">
+            <h2 className="typography-section text-[#0F2C59] tracking-tight mb-6">
               {t("about_title")}
             </h2>
-            <div className="space-y-6 text-[#0F2C59]/80 font-sans text-base md:text-lg font-light leading-relaxed">
+            <div className="space-y-6 typography-body text-[#0F2C59]/80">
               <p>
                 {locale === "id" ? (
                   <>

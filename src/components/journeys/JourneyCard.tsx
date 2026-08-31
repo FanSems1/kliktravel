@@ -28,7 +28,7 @@ export function JourneyCard({ journey, index }: JourneyCardProps) {
     <div className="flex flex-col space-y-3">
       <div className="flex justify-between items-center gap-2">
         {(journey.durationLabel || journey.dates) && (
-          <span className="font-mono text-[9px] tracking-[0.25em] text-charcoal/60 uppercase font-semibold">
+          <span className="typography-caption !text-charcoal/60 block mb-1">
             {[journey.durationLabel, journey.dates].filter(Boolean).join(" • ")}
           </span>
         )}
@@ -45,19 +45,19 @@ export function JourneyCard({ journey, index }: JourneyCardProps) {
         )}
       </div>
       
-      <h3 className="font-serif text-2xl sm:text-3xl md:text-4xl text-foreground font-normal tracking-wide group-hover:text-[#0284C7] transition-colors duration-300 flex items-center justify-between">
+      <h3 className="typography-card text-foreground group-hover:text-[#0284C7] transition-colors duration-300 flex items-center justify-between">
         <span>{journey.title}</span>
         <ArrowRight size={20} className="opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-[#0284C7] ml-4" />
       </h3>
       
       {(journey.destination || journey.travelStyle) && (
-        <p className="font-sans text-xs uppercase tracking-widest text-[#0284C7] font-bold">
+        <p className="typography-caption !text-[#0284C7] block mt-1">
           {[journey.destination, journey.travelStyle].filter(Boolean).join(" — ")}
         </p>
       )}
 
       <div className="flex justify-between items-center pt-3 border-t border-charcoal/10 mt-3">
-        <span className="font-mono text-sm text-foreground/90 font-bold">
+        <span className="typography-price !text-sm text-foreground/90">
           {journey.price}
         </span>
         <span className="font-mono text-[9px] tracking-widest uppercase text-[#0284C7] opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-bold flex items-center space-x-1">
@@ -111,7 +111,7 @@ export function JourneyCard({ journey, index }: JourneyCardProps) {
           <div className="col-span-12 md:col-span-7 max-w-md">
             {details}
             {journey.introDescription && (
-              <p className="font-sans text-sm text-foreground/70 leading-relaxed font-light mt-4 md:mt-5 line-clamp-3">
+              <p className="typography-body text-foreground/70 mt-4 md:mt-5 line-clamp-3">
                 {journey.introDescription}
               </p>
             )}
@@ -189,11 +189,11 @@ export function JourneyCard({ journey, index }: JourneyCardProps) {
         
         <div className="col-span-12 md:col-span-8 flex flex-col justify-center">
           {(journey.durationLabel || journey.dates || journey.travelStyle) && (
-            <span className="font-mono text-[10px] tracking-[0.25em] text-[#0284C7] uppercase block mb-3 font-bold">
+            <span className="typography-caption !text-[#0284C7] block mb-3">
               {[journey.durationLabel, journey.dates, journey.travelStyle].filter(Boolean).join(" • ")}
             </span>
           )}
-          <h3 className="font-serif text-2xl sm:text-4xl md:text-6xl text-foreground font-normal tracking-wide leading-tight group-hover:text-[#0284C7] group-hover:translate-x-2 transition-all duration-300 flex items-center justify-between border-b border-charcoal/10 pb-6 mb-6">
+          <h3 className="typography-hero text-foreground group-hover:text-[#0284C7] group-hover:translate-x-2 transition-all duration-300 flex items-center justify-between border-b border-charcoal/10 pb-6 mb-6">
             <span>{journey.title}</span>
             <ArrowRight size={32} className="opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-[#0284C7]" />
           </h3>
@@ -201,7 +201,7 @@ export function JourneyCard({ journey, index }: JourneyCardProps) {
             <span className="font-mono text-xs tracking-[0.2em] uppercase text-charcoal/60">
               {journey.destination || ""}
             </span>
-            <span className="font-mono text-base text-foreground/90 font-bold">
+            <span className="typography-price !text-base text-foreground/90">
               {journey.price}
             </span>
           </div>

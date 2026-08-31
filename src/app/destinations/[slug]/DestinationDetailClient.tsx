@@ -399,10 +399,10 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
         <div className="absolute inset-0 image-texture opacity-35 mix-blend-overlay z-[2]" />
         
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 mt-16 z-[3]">
-          <h1 className="font-serif text-5xl md:text-8xl text-white font-normal tracking-wider mb-6 drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
+          <h1 className="typography-hero !text-white uppercase tracking-wider mb-6 drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
             {region.name.toUpperCase()}
           </h1>
-          <p className="font-sans text-sm md:text-lg text-white max-w-2xl font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+          <p className="typography-body !text-white max-w-2xl font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
             {region.subtitle}
           </p>
         </div>
@@ -412,10 +412,10 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
       <main className="w-full">
         {/* Top Header & Filter Pills */}
         <div className="max-w-7xl mx-auto px-6 md:px-12 pt-20 pb-8 text-left flex flex-col items-start w-full">
-          <h2 className="font-sans font-bold text-4xl md:text-5xl lg:text-6xl text-[#0F2C59] mb-4 tracking-tight">
+          <h2 className="typography-section text-[#0F2C59] mb-4 tracking-tight">
             Explore {region.name}
           </h2>
-          <p className="font-sans text-[#0F2C59]/70 text-sm md:text-base max-w-2xl mb-8 leading-relaxed">
+          <p className="typography-body text-[#0F2C59]/70 max-w-2xl mb-8">
             Ready to start your own getaway in {region.name}? From legendary history to award-winning nature, {region.name} has so much to explore.
           </p>
 
@@ -579,12 +579,12 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                       </div>
                       
                       {/* Card Text */}
-                      <h3 className="font-sans font-bold text-lg md:text-xl text-[#0F2C59] leading-snug mb-2 group-hover:text-[#0284C7] transition-colors pr-4">
+                      <h3 className="typography-package-title text-[#0F2C59] mb-2 group-hover:text-[#0284C7] transition-colors pr-4">
                         {locale === "id" ? `Paket Tour ${sub.name}` : `${sub.name} Tour Package`}
                       </h3>
 
                       {otInfo?.price && (
-                        <p className="font-sans font-bold text-sm md:text-base text-[#0284C7] mb-3">
+                        <p className="typography-price text-[#0284C7] mb-3">
                           {(() => {
                             const trimmed = otInfo.price.trim();
                             if (/^(mulai|from|rp|usd|idr)/i.test(trimmed)) {
@@ -658,13 +658,13 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#0284C7]/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
           
           <div className="max-w-4xl mx-auto text-center relative z-10 flex flex-col items-center">
-            <span className="text-[#38BDF8] font-sans text-xs md:text-sm font-bold uppercase tracking-[0.3em] mb-4 block">
+            <span className="typography-caption !text-[#38BDF8] block mb-4">
               {locale === "id" ? "Mulai Petualangan Anda" : "Start Your Adventure"}
             </span>
-            <h2 className="font-serif text-3xl md:text-5xl lg:text-6xl font-normal tracking-wide mb-6">
+            <h2 className="typography-section text-white tracking-wide mb-6">
               {locale === "id" ? `Rencanakan Liburan ke ${region.name}` : `Plan a Holiday to ${region.name}`}
             </h2>
-            <p className="font-sans text-white/80 text-sm md:text-base max-w-2xl mx-auto mb-10 font-light leading-relaxed">
+            <p className="typography-body text-white/80 max-w-2xl mx-auto mb-10">
               {locale === "id" 
                 ? `Dapatkan paket tour eksklusif, rekomendasi akomodasi terbaik, dan itinerary yang disesuaikan khusus untuk Anda. Konsultasikan impian liburan Anda bersama Klik Travel ID.`
                 : `Get exclusive tour packages, top accommodation recommendations, and customized itineraries tailored just for you. Consult your dream vacation with Klik Travel ID.`}

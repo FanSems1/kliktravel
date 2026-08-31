@@ -67,7 +67,7 @@ export function VisionMissionSection() {
   };
 
   return (
-    <section className="py-16 md:py-20 bg-[#F8FAFC] relative overflow-hidden">
+    <section className="typography-section-spacing bg-[#F8FAFC] relative overflow-hidden">
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -79,10 +79,10 @@ export function VisionMissionSection() {
         {/* Header + Tabs in one row */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-10">
           <div>
-            <span className="font-mono text-[10px] tracking-[0.4em] uppercase font-semibold text-[#0284C7] block mb-4">
+            <span className="typography-caption !text-[#0284C7] block mb-4">
               {t("vision_tag")}
             </span>
-            <h2 className="text-2xl md:text-3xl font-serif text-[#0F2C59] tracking-tight">
+            <h2 className="typography-section text-[#0F2C59] tracking-tight">
               {t("vision_title")}
             </h2>
           </div>
@@ -141,10 +141,10 @@ export function VisionMissionSection() {
                 <div className="bg-[#0F2C59] p-8 md:p-10 flex flex-col justify-center relative">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(2,132,199,0.15),transparent_60%)]" />
                   <div className="relative z-10">
-                    <span className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-[#38BDF8] block mb-4">
+                    <span className="typography-caption !text-[#38BDF8] block mb-4">
                       {t("vision_tab_vision")}
                     </span>
-                    <p className="font-sans text-base md:text-lg text-white/95 leading-relaxed font-light">
+                    <p className="typography-body !text-white/95">
                       {locale === "id"
                         ? "Menjadi perusahaan tour & travel terpercaya di Indonesia yang menghadirkan pengalaman perjalanan berkualitas, aman, dan berkesan bagi setiap pelanggan."
                         : "To become the most trusted tour & travel company in Indonesia, rendering high-quality, secure, and memorable journeys for every single client."}
@@ -203,10 +203,10 @@ export function VisionMissionSection() {
 
                       {/* Text */}
                       <div className="p-6 md:p-8 md:col-span-3 flex flex-col justify-center">
-                        <h3 className="font-sans font-bold text-base md:text-lg text-[#0F2C59] mb-2">
+                        <h3 className="typography-card text-[#0F2C59] mb-2">
                           {locale === "id" ? m.titleID : m.titleEN}
                         </h3>
-                        <p className="font-sans text-sm md:text-base text-[#0F2C59]/80 font-light leading-relaxed">
+                        <p className="typography-body text-[#0F2C59]/80">
                           {locale === "id" ? m.textID : m.textEN}
                         </p>
 

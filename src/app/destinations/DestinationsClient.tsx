@@ -224,13 +224,13 @@ export function DestinationsClient() {
           {/* Hero Content aligned exactly like in the picture */}
           <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 w-full pt-16">
             <div className="max-w-3xl text-left">
-              <span className="block font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] text-white/90 font-bold mb-3">
+              <span className="typography-caption !text-white/90 block mb-3">
                 {isIndo ? "Jelajahi Dunia Bersama Kami" : "Explore The World With Us"}
               </span>
-              <h1 className="font-serif text-3xl sm:text-4xl md:text-6xl text-white font-normal uppercase tracking-widest mb-5 drop-shadow-md">
+              <h1 className="typography-hero !text-white uppercase tracking-widest mb-5 drop-shadow-md">
                 {isIndo ? "DESTINASI WISATA PILIHAN" : "CURATED DESTINATIONS"}
               </h1>
-              <p className="font-serif italic text-white/95 text-sm sm:text-base md:text-lg max-w-2xl font-light leading-relaxed drop-shadow-sm">
+              <p className="typography-body !text-white/95 !italic max-w-2xl">
                 {isIndo 
                   ? "Temukan keindahan tak terbatas dari berbagai belahan nusantara hingga destinasi internasional impian Anda." 
                   : "Discover infinite beauty from exotic archipelago gems to your dream international getaways."}
@@ -252,13 +252,13 @@ export function DestinationsClient() {
             <>
               {/* Section Header above Cards */}
               <div className="mb-12 text-center md:text-left">
-                <span className="font-mono text-[10px] md:text-xs uppercase tracking-[0.25em] text-[#0284C7] font-bold block mb-2">
+                <span className="typography-caption !text-[#0284C7] block mb-2">
                   {isIndo ? "PENGALAMAN TERKURASI" : "CURATED EXPERIENCES"}
                 </span>
-                <h2 className="text-2xl md:text-4xl font-serif font-bold text-[#0F2C59] tracking-tight mb-3">
+                <h2 className="typography-section text-[#0F2C59] tracking-tight mb-3">
                   {isIndo ? "Pilih Destinasi Impian Anda" : "Choose Your Dream Destination"}
                 </h2>
-                <p className="font-sans text-slate-500 text-sm md:text-base max-w-2xl font-light leading-relaxed">
+                <p className="typography-body text-slate-500 max-w-2xl">
                   {isIndo 
                     ? "Temukan berbagai pilihan paket open trip dan private tour eksklusif di lokasi-lokasi terpopuler dunia." 
                     : "Discover a wide selection of exclusive open trips and private tours in the world's most popular locations."}
@@ -300,7 +300,7 @@ export function DestinationsClient() {
                         )}
 
                         <div className="absolute bottom-4 left-6 right-6">
-                          <h2 className="text-2xl md:text-3xl font-serif font-bold text-white tracking-wide uppercase drop-shadow-md">
+                          <h2 className="typography-card !text-white uppercase tracking-wide drop-shadow-md">
                             {region.name}
                           </h2>
                         </div>
@@ -308,7 +308,7 @@ export function DestinationsClient() {
 
                       {/* Card Body */}
                       <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                        <p className="text-slate-600 text-xs md:text-sm font-normal line-clamp-3 leading-relaxed">
+                        <p className="typography-body text-slate-600 line-clamp-3">
                           {region.subtitle}
                         </p>
 
