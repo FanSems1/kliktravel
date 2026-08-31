@@ -7,17 +7,17 @@ import { ArrowRight, Heart } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 export function Footer() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const pathname = usePathname();
 
   if (pathname?.startsWith("/admin")) return null;
 
   return (
-    <footer className="bg-charcoal text-white pt-12 pb-12 border-t border-white/10 z-10 relative">
+    <footer className="bg-charcoal text-white pt-16 pb-12 border-t border-white/10 z-10 relative">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 mb-16">
           
           {/* Brand & Statement */}
           <div className="md:col-span-5 flex flex-col items-start pr-4">
@@ -25,16 +25,16 @@ export function Footer() {
               <img 
                 src="/kliktravelid.png" 
                 alt="Klik Travel ID" 
-                className="h-16 md:h-20 w-auto object-contain brightness-0 invert opacity-90"
+                className="h-14 md:h-16 w-auto object-contain brightness-0 invert opacity-90"
               />
             </Link>
-            <p className="font-sans text-sm text-white/70 max-w-sm font-light leading-relaxed mb-8">
+            <p className="typography-body !text-white/70 max-w-sm font-light mb-8">
               {t("footer_brand_desc")}
             </p>
             
             {/* Newsletter */}
             <div className="w-full max-w-md">
-              <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-white/50 block mb-3">
+              <span className="typography-caption !text-white/50 block mb-3">
                 {t("footer_newsletter_title")}
               </span>
               <form onSubmit={(e) => e.preventDefault()} className="flex border-b border-white/30 focus-within:border-white transition-colors pb-2">
@@ -43,7 +43,7 @@ export function Footer() {
                   placeholder={t("footer_newsletter_placeholder")} 
                   className="bg-transparent font-sans text-xs text-white placeholder-white/40 focus:outline-none w-full"
                 />
-                <button type="submit" aria-label="Subscribe" className="text-white/70 hover:text-white p-1">
+                <button type="submit" aria-label="Subscribe" className="text-white/70 hover:text-white p-1 cursor-pointer">
                   <ArrowRight size={16} />
                 </button>
               </form>
@@ -52,16 +52,11 @@ export function Footer() {
 
           {/* Explore Links */}
           <div className="md:col-span-2 md:col-start-7">
-            <h4 className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/40 mb-6">{t("footer_explore")}</h4>
+            <h4 className="typography-caption !text-white/40 mb-6">{t("footer_explore")}</h4>
             <ul className="space-y-3 font-sans text-xs uppercase tracking-wider">
               <li>
-                <Link href="/destinations" className="text-white/70 hover:text-white transition-colors">
+                <Link href="/journeys" className="text-white/70 hover:text-white transition-colors">
                   {t("nav_journeys")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/destinations" className="text-white/70 hover:text-white transition-colors">
-                  {t("nav_destinations")}
                 </Link>
               </li>
               <li>
@@ -69,12 +64,17 @@ export function Footer() {
                   {t("nav_experiences")}
                 </Link>
               </li>
+              <li>
+                <Link href="/destinations" className="text-white/70 hover:text-white transition-colors">
+                  {t("nav_destinations")}
+                </Link>
+              </li>
             </ul>
           </div>
 
           {/* Company Links */}
           <div className="md:col-span-2">
-            <h4 className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/40 mb-6">{t("footer_company")}</h4>
+            <h4 className="typography-caption !text-white/40 mb-6">{t("footer_company")}</h4>
             <ul className="space-y-3 font-sans text-xs uppercase tracking-wider">
               <li>
                 <Link href="/about" className="text-white/70 hover:text-white transition-colors">
@@ -82,9 +82,9 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="https://wa.me/6281230011027" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-white transition-colors">
-                  Contact
-                </a>
+                <Link href="/contact" className="text-white/70 hover:text-white transition-colors">
+                  {locale === "id" ? "Kontak Kami" : "Contact Us"}
+                </Link>
               </li>
               <li>
                 <Link href="/faq" className="text-white/70 hover:text-white transition-colors">
@@ -96,7 +96,7 @@ export function Footer() {
 
           {/* Social Links */}
           <div className="md:col-span-2">
-            <h4 className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/40 mb-6">{t("footer_social")}</h4>
+            <h4 className="typography-caption !text-white/40 mb-6">{t("footer_social")}</h4>
             <ul className="space-y-4 font-sans text-xs uppercase tracking-wider">
               <li>
                 <a href="#" className="flex items-center gap-3 text-white/70 hover:text-white transition-colors group">

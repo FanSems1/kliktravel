@@ -279,8 +279,8 @@ export function FinalCTA() {
 
           <div className="flex flex-col sm:flex-row gap-6 items-center">
             <Link
-              href="/destinations"
-              className="bg-charcoal text-white hover:bg-earth-dark text-xs uppercase tracking-[0.25em] font-sans py-4 px-10 rounded-full shadow-lg transition-all duration-300"
+              href="/journeys"
+              className="btn-primary"
             >
               {locale === "id" ? "Jelajahi Perjalanan" : "Explore Journeys"}
             </Link>
@@ -288,7 +288,7 @@ export function FinalCTA() {
               href="https://wa.me/6281230011027"
               target="_blank"
               rel="noopener noreferrer"
-              className="border border-charcoal/20 hover:border-charcoal hover:bg-charcoal/5 text-charcoal text-xs uppercase tracking-[0.25em] font-sans py-4 px-10 rounded-full transition-all duration-300 text-center"
+              className="btn-outline border-charcoal/20 hover:bg-charcoal/5 text-charcoal text-center"
             >
               {locale === "id" ? "Hubungi Travel Expert Kami" : "Talk to Our Travel Expert"}
             </a>

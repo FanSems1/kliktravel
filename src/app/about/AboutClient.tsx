@@ -120,7 +120,7 @@ export function AboutClient() {
             >
               <Link
                 href="/journeys"
-                className="inline-flex items-center gap-2 bg-[#0F2C59] text-white hover:bg-[#0F2C59]/90 px-6 py-3 rounded-full text-xs font-mono uppercase tracking-wider font-bold transition-all shadow-md hover:shadow-lg"
+                className="btn-secondary gap-2"
               >
                 <span>{locale === "id" ? "Jelajahi Destinasi" : "Explore Destinations"}</span>
                 <ArrowRight size={14} />

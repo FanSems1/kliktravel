@@ -144,6 +144,49 @@ export function Header() {
 
   const activeHoveredObj = hoveredRegion ? regions.find(r => r.slug === hoveredRegion) : null;
 
+  const getNavLinkClass = (href: string) => {
+    let isActive = false;
+    if (href === "/") {
+      isActive = pathname === "/";
+    } else if (href === "/journeys") {
+      isActive = pathname?.startsWith("/journeys");
+    } else if (href === "/private-trip") {
+      isActive = pathname === "/private-trip";
+    } else if (href === "/destinations") {
+      isActive = pathname === "/destinations" || (pathname?.startsWith("/destinations/") && !pathname?.startsWith("/destinations/"));
+    } else if (href === "/about") {
+      isActive = pathname === "/about";
+    }
+    
+    if (showDarkHeader) {
+      return isActive 
+        ? "text-[#0284C7] font-bold" 
+        : "text-[#0F2C59]/80 hover:text-[#0284C7]";
+    } else {
+      return isActive 
+        ? "text-white font-bold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]" 
+        : "text-white font-semibold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-white/90";
+    }
+  };
+
+  const getNavUnderlineClass = (href: string) => {
+    let isActive = false;
+    if (href === "/") {
+      isActive = pathname === "/";
+    } else if (href === "/journeys") {
+      isActive = pathname?.startsWith("/journeys");
+    } else if (href === "/private-trip") {
+      isActive = pathname === "/private-trip";
+    } else if (href === "/destinations") {
+      isActive = pathname === "/destinations";
+    } else if (href === "/about") {
+      isActive = pathname === "/about";
+    }
+    
+    const colorClass = showDarkHeader ? "bg-[#0284C7]" : "bg-white";
+    return `absolute bottom-0 left-0 w-full h-[1px] transform ${isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"} transition-transform duration-300 origin-left ${colorClass}`;
+  };
+
   return (
     <>
       <motion.header
@@ -172,38 +215,26 @@ export function Header() {
             <Link 
               href="/"
               onClick={handleHomeClick}
-              className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${
-                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white font-semibold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-white/90"
-              }`}
+              className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${getNavLinkClass("/")}`}
             >
               {t("nav_home")}
-              <span className={`absolute bottom-0 left-0 w-full h-[1px] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left ${
-                showDarkHeader ? "bg-[#0284C7]" : "bg-white"
-              }`} />
+              <span className={getNavUnderlineClass("/")} />
             </Link>
 
             <Link 
-              href="/destinations"
-              className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${
-                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white font-semibold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-white/90"
-              }`}
+              href="/journeys"
+              className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${getNavLinkClass("/journeys")}`}
             >
               {t("nav_journeys")}
-              <span className={`absolute bottom-0 left-0 w-full h-[1px] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left ${
-                showDarkHeader ? "bg-[#0284C7]" : "bg-white"
-              }`} />
+              <span className={getNavUnderlineClass("/journeys")} />
             </Link>
 
             <Link 
               href="/private-trip"
-              className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${
-                showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white font-semibold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-white/90"
-              }`}
+              className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${getNavLinkClass("/private-trip")}`}
             >
               {t("nav_experiences")}
-              <span className={`absolute bottom-0 left-0 w-full h-[1px] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left ${
-                showDarkHeader ? "bg-[#0284C7]" : "bg-white"
-              }`} />
+              <span className={getNavUnderlineClass("/private-trip")} />
             </Link>
 
             {/* Destinations / OPEN TRIP Hover Item */}
@@ -214,16 +245,12 @@ export function Header() {
             >
               <Link
                 href="/destinations"
-                className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 flex items-center space-x-1 cursor-pointer ${
-                  showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white font-semibold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-white/90"
-                }`}
+                className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 flex items-center space-x-1 cursor-pointer ${getNavLinkClass("/destinations")}`}
               >
                 <span>{t("nav_destinations")}</span>
                 <ChevronDown size={10} className={`transition-transform duration-300 ${isDestinationsHovered ? "rotate-180" : ""}`} />
               </Link>
-              <span className={`absolute bottom-0 left-0 w-full h-[1px] transform scale-x-0 ${isDestinationsHovered ? "scale-x-100" : "group-hover:scale-x-100"} transition-transform duration-300 origin-left ${
-                showDarkHeader ? "bg-[#0284C7]" : "bg-white"
-              }`} />
+              <span className={getNavUnderlineClass("/destinations")} />
 
               {/* Mega Menu Dropdown */}
               <AnimatePresence>
@@ -269,22 +296,13 @@ export function Header() {
               </AnimatePresence>
             </div>
 
-            {[
-              { key: "nav_about", href: "/about" }
-            ].map((item) => (
-              <Link 
-                key={item.href} 
-                href={item.href}
-                className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${
-                  showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white font-semibold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-white/90"
-                }`}
-              >
-                {t(item.key as keyof typeof import("@/data/translations").translations["id"])}
-                <span className={`absolute bottom-0 left-0 w-full h-[1px] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left ${
-                  showDarkHeader ? "bg-[#0284C7]" : "bg-white"
-                }`} />
-              </Link>
-            ))}
+            <Link 
+              href="/about"
+              className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${getNavLinkClass("/about")}`}
+            >
+              {t("nav_about")}
+              <span className={getNavUnderlineClass("/about")} />
+            </Link>
           </nav>
 
           {/* Desktop Actions */}
@@ -312,11 +330,7 @@ export function Header() {
             </button>
             <Link 
               href="/inquire"
-              className={`text-[9px] font-sans uppercase tracking-[0.2em] py-2.5 px-5 rounded-full shadow-md transition-all duration-300 ${
-                showDarkHeader 
-                  ? "bg-[#0284C7] text-white hover:bg-[#0369a1]" 
-                  : "bg-white text-[#0F2C59] hover:bg-white/90"
-              }`}
+              className="btn-primary !py-2.5 !px-5 !text-[9px]"
             >
               {t("nav_plan_journey")}
             </Link>
@@ -325,7 +339,7 @@ export function Header() {
           {/* Mobile Actions */}
           <div className="flex md:hidden items-center space-x-3.5">
             <Link 
-              href="/destinations"
+              href="/journeys"
               className={`font-sans text-[10px] uppercase tracking-wider transition-all duration-300 font-bold shrink-0 ${
                 showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)] hover:text-white/90"
               }`}
@@ -388,58 +402,66 @@ export function Header() {
           >
             <div className="absolute inset-0 image-texture opacity-10 pointer-events-none" />
 
-            <div className="flex flex-col space-y-3.5 text-left max-w-md mx-auto w-full z-10">
+            <div className="flex flex-col space-y-1 text-left max-w-md mx-auto w-full z-10">
               <Link 
                 href="/"
                 onClick={handleMobileHomeClick}
-                className="font-serif text-lg tracking-wider text-foreground/90 hover:text-[#0284C7] transition-colors block py-1"
+                className="font-sans text-xs uppercase tracking-[0.2em] font-semibold text-[#0F2C59] hover:text-[#0284C7] transition-colors py-3 border-b border-[#0F2C59]/10 flex items-center justify-between"
               >
-                {t("nav_home")}
+                <span>{t("nav_home")}</span>
+                <ArrowRight size={14} className="opacity-40" />
               </Link>
 
-
               <Link 
-                href="/destinations"
+                href="/journeys"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="font-serif text-lg tracking-wider text-foreground/90 hover:text-[#0284C7] transition-colors block py-1"
+                className="font-sans text-xs uppercase tracking-[0.2em] font-semibold text-[#0F2C59] hover:text-[#0284C7] transition-colors py-3 border-b border-[#0F2C59]/10 flex items-center justify-between"
               >
-                {t("nav_journeys")}
+                <span>{t("nav_journeys")}</span>
+                <ArrowRight size={14} className="opacity-40" />
               </Link>
 
               <Link 
                 href="/private-trip"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="font-serif text-lg tracking-wider text-foreground/90 hover:text-[#0284C7] transition-colors block py-1"
+                className="font-sans text-xs uppercase tracking-[0.2em] font-semibold text-[#0F2C59] hover:text-[#0284C7] transition-colors py-3 border-b border-[#0F2C59]/10 flex items-center justify-between"
               >
-                {t("nav_experiences")}
+                <span>{t("nav_experiences")}</span>
+                <ArrowRight size={14} className="opacity-40" />
               </Link>
 
               <Link 
                 href="/destinations"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="font-serif text-lg tracking-wider text-foreground/90 hover:text-[#0284C7] transition-colors block py-1"
+                className="font-sans text-xs uppercase tracking-[0.2em] font-semibold text-[#0F2C59] hover:text-[#0284C7] transition-colors py-3 border-b border-[#0F2C59]/10 flex items-center justify-between"
               >
-                {t("nav_destinations")}
+                <span>{t("nav_destinations")}</span>
+                <ArrowRight size={14} className="opacity-40" />
               </Link>
 
-              {[
-                { key: "nav_about", href: "/about" }
-              ].map((item) => (
-                <Link 
-                  key={item.href} 
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="font-serif text-lg tracking-wider text-foreground/90 hover:text-[#0284C7] transition-colors block py-1"
-                >
-                  {t(item.key as keyof typeof import("@/data/translations").translations["id"])}
-                </Link>
-              ))}
+              <Link 
+                href="/about"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="font-sans text-xs uppercase tracking-[0.2em] font-semibold text-[#0F2C59] hover:text-[#0284C7] transition-colors py-3 border-b border-[#0F2C59]/10 flex items-center justify-between"
+              >
+                <span>{t("nav_about")}</span>
+                <ArrowRight size={14} className="opacity-40" />
+              </Link>
+
+              <Link 
+                href="/contact"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="font-sans text-xs uppercase tracking-[0.2em] font-semibold text-[#0F2C59] hover:text-[#0284C7] transition-colors py-3 border-b border-[#0F2C59]/10 flex items-center justify-between"
+              >
+                <span>{locale === "id" ? "Kontak" : "Contact"}</span>
+                <ArrowRight size={14} className="opacity-40" />
+              </Link>
               
-              <div className="pt-4">
+              <div className="pt-6">
                 <Link 
                   href="/inquire"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="inline-block bg-charcoal text-[10px] text-white uppercase tracking-[0.25em] py-3 px-6 rounded-full shadow-lg"
+                  className="btn-primary w-full text-center"
                 >
                   {t("nav_plan_journey")}
                 </Link>

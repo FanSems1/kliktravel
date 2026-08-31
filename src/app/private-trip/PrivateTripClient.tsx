@@ -241,7 +241,7 @@ export function PrivateTripClient() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.8, duration: 0.8 }}
             onClick={() => document.getElementById("booking-form")?.scrollIntoView({ behavior: "smooth" })}
-            className="bg-[#0284C7] hover:bg-[#0ea5e9] text-white px-8 py-4 rounded-full font-sans font-bold text-xs md:text-sm tracking-widest uppercase transition-all duration-300 shadow-[0_0_20px_rgba(2,132,199,0.4)] hover:shadow-[0_0_30px_rgba(2,132,199,0.6)] hover:-translate-y-1 cursor-pointer"
+            className="btn-primary hover:-translate-y-1 shadow-[0_0_20px_rgba(2,132,199,0.4)] hover:shadow-[0_0_30px_rgba(2,132,199,0.6)] cursor-pointer"
           >
             {t("private_trip_btn_start")}
           </motion.button>
@@ -570,7 +570,7 @@ export function PrivateTripClient() {
               <button 
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-[#0F2C59] hover:bg-[#0284C7] text-white rounded-xl py-3.5 flex items-center justify-center gap-3 transition-all duration-300 font-sans font-bold text-sm tracking-widest uppercase mt-3 shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer disabled:opacity-60"
+                className="btn-secondary w-full gap-3 mt-3 hover:-translate-y-0.5 disabled:opacity-60 cursor-pointer"
               >
                 {isSubmitting ? (
                   <Loader2 size={18} className="animate-spin text-white" />

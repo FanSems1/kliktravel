@@ -423,7 +423,7 @@ export function InquireClient() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full py-4 px-6 bg-[#0284C7] hover:bg-[#0369a1] text-white font-sans text-sm font-bold uppercase tracking-wider rounded-xl shadow-lg shadow-sky-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer transform active:scale-[0.99]"
+                  className="btn-primary w-full shadow-lg shadow-sky-500/25 gap-2 cursor-pointer transform active:scale-[0.99]"
                 >
                   <Send size={18} />
                   <span>{isEn ? "Submit via WhatsApp" : "Kirim Konsultasi via WhatsApp"}</span>
