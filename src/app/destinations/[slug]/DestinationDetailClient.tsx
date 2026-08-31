@@ -399,8 +399,8 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
         <div className="absolute inset-0 image-texture opacity-35 mix-blend-overlay z-[2]" />
         
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 mt-16 z-[3]">
-          <h1 className="typography-hero !text-white uppercase tracking-wider mb-6 drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
-            {region.name.toUpperCase()}
+          <h1 className="typography-hero !text-white tracking-wide mb-6 drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
+            {region.name}
           </h1>
           <p className="typography-body !text-white max-w-2xl font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
             {region.subtitle}
@@ -412,6 +412,9 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
       <main className="w-full">
         {/* Top Header & Filter Pills */}
         <div className="max-w-7xl mx-auto px-6 md:px-12 pt-20 pb-8 text-left flex flex-col items-start w-full">
+          <span className="typography-caption !text-[#0284C7] block mb-2">
+            {locale === "id" ? "EKSPLORASI WILAYAH" : "REGIONAL EXPLORATION"}
+          </span>
           <h2 className="typography-section text-[#0F2C59] mb-4 tracking-tight">
             Explore {region.name}
           </h2>
@@ -584,7 +587,7 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                       </h3>
 
                       {otInfo?.price && (
-                        <p className="typography-price text-[#0284C7] mb-3">
+                        <p className="typography-price text-[#A89053] mb-3">
                           {(() => {
                             const trimmed = otInfo.price.trim();
                             if (/^(mulai|from|rp|usd|idr)/i.test(trimmed)) {

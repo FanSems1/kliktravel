@@ -21,7 +21,7 @@ interface Departure {
 const DEPARTURES: Departure[] = [
   {
     num: "01",
-    title: "3STAN AUTUMN EXPEDITION",
+    title: "3Stan Autumn Expedition",
     subtitle: "Uzbekistan, Kyrgyzstan & Kazakhstan",
     durationID: "9 Hari",
     durationEN: "9 Days",
@@ -32,7 +32,7 @@ const DEPARTURES: Departure[] = [
   },
   {
     num: "02",
-    title: "RAJA AMPAT PRIVATE SAILING",
+    title: "Raja Ampat Private Sailing",
     subtitle: "Raja Ampat, Papua Barat",
     durationID: "7 Hari",
     durationEN: "7 Days",
@@ -43,7 +43,7 @@ const DEPARTURES: Departure[] = [
   },
   {
     num: "03",
-    title: "TURKEY AUTUMN ENCHANTMENT",
+    title: "Turkey Autumn Enchantment",
     subtitle: "Istanbul, Cappadocia & Pamukkale",
     durationID: "10 Hari",
     durationEN: "10 Days",
@@ -54,7 +54,7 @@ const DEPARTURES: Departure[] = [
   },
   {
     num: "04",
-    title: "KYOTO AUTUMN LEAVES",
+    title: "Kyoto Autumn Leaves",
     subtitle: "Kyoto, Nara & Gunung Fuji",
     durationID: "8 Hari",
     durationEN: "8 Days",
@@ -70,7 +70,7 @@ export function UpcomingDepartures() {
 
   return (
     <section className="bg-charcoal text-white py-24 md:py-36 relative z-10">
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
         
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20 gap-6">
@@ -121,7 +121,7 @@ export function UpcomingDepartures() {
                   <h3 className="typography-package-title !text-white group-hover:!text-sky-200 transition-colors">
                     {departure.title}
                   </h3>
-                  <p className="typography-caption !text-white/60 mt-1">
+                  <p className="font-sans text-xs text-white/60 mt-1">
                     {departure.subtitle} • <span className="text-white/40">{locale === "id" ? departure.durationID : departure.durationEN}</span>
                   </p>
                 </div>
@@ -134,7 +134,7 @@ export function UpcomingDepartures() {
 
                 {/* Price & Action Arrow */}
                 <div className="col-span-12 sm:col-span-4 md:col-span-2 flex items-center justify-between sm:justify-end gap-6 pt-4 sm:pt-0">
-                  <div className="typography-price !text-[#38BDF8]">
+                  <div className="typography-price !text-[#A89053]">
                     {locale === "id" ? departure.price : departure.price.replace("JT", "M")}
                   </div>
                   <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:border-white group-hover:bg-white group-hover:text-charcoal transition-all duration-300">

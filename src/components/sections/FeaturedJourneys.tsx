@@ -274,7 +274,7 @@ export function FeaturedJourneys() {
 
   return (
     <section className="bg-ivory py-24 md:py-36 relative z-10 border-b border-charcoal/5 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
         
         {/* Section Header & Tabs */}
         <motion.div 
@@ -288,7 +288,7 @@ export function FeaturedJourneys() {
             <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-charcoal font-semibold block mb-4">
               {t("featured_tag")}
             </span>
-            <Heading variant="editorial" className="text-foreground text-2xl md:text-3xl mb-4">
+            <Heading variant="editorial" className="!text-[#0F2C59] tracking-tight mb-4">
               {t("featured_title")}
             </Heading>
             <Text variant="large" className="text-foreground/70 font-light max-w-xl">

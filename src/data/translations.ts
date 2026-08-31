@@ -83,7 +83,7 @@ export const translations = {
     footer_brand_desc: "Menghadirkan perjalanan pilihan ke berbagai destinasi di Indonesia dan negara lainnya, dengan pengalaman liburan yang berkualitas, aman, nyaman dan berkesan",
 
     // DreamHolidaySelector
-    dream_tag: "JELAJAHI DUNIA CIPTAKAN CERITA",
+    dream_tag: "JELAJAHI DUNIA • CIPTAKAN CERITA",
     dream_title: "Liburan Impianmu Dimulai Disini",
     dream_desc: "Temukan destinasi pilihan, tipe perjalanan yang sesuai, dan ciptakan pengalaman tak terlupakan bersama Klik Travel",
     dream_btn_all_destinations: "Jelajahi Semua Destinasi",
@@ -184,8 +184,8 @@ export const translations = {
     private_trip_form_placeholder_notes: "Ceritakan ekspektasi Anda (contoh: Membutuhkan chef pribadi untuk seafood & dinner di pantai sepi...)",
     private_trip_form_submit: "Konsultasi via WhatsApp",
     private_trip_form_head: "Formulir Konsultasi",
-    private_trip_testimonial_tag: "Testimonial",
-    private_trip_testimonial_title: "Pengalaman Tak Terlupakan",
+    private_trip_testimonial_tag: "ULASAN PELANGGAN",
+    private_trip_testimonial_title: "Pengalaman Bersama Klik Travel",
 
     // Detail / Itinerary Page
     detail_booking_form: "Formulir Pemesanan",
@@ -383,8 +383,8 @@ export const translations = {
     private_trip_form_placeholder_notes: "Share your expectations (e.g., Private chef needed for seafood & dinner on secluded beach...)",
     private_trip_form_submit: "Consult via WhatsApp",
     private_trip_form_head: "Consultation Form",
-    private_trip_testimonial_tag: "Testimonials",
-    private_trip_testimonial_title: "Unforgettable Moments",
+    private_trip_testimonial_tag: "GUEST TESTIMONIALS",
+    private_trip_testimonial_title: "Experience with Klik Travel",
 
     // Detail / Itinerary Page
     detail_booking_form: "Booking Form",

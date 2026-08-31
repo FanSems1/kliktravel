@@ -305,10 +305,10 @@ export function PrivateTripClient() {
       {isLoadingDestinations ? (
         <section className="max-w-7xl mx-auto px-6 pt-24 md:pt-32 mb-32">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-[#0284C7] block mb-3">
+            <span className="typography-caption !text-[#0284C7] block mb-3">
               {t("private_trip_inspiration_tag")}
             </span>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-[#0F2C59] tracking-tight mb-6">
+            <h2 className="typography-section text-[#0F2C59] tracking-tight mb-6">
               {t("private_trip_inspiration_title")}
             </h2>
             <p className="font-sans text-base md:text-lg text-[#0F2C59]/80 font-light leading-relaxed">
@@ -359,7 +359,7 @@ export function PrivateTripClient() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
                   <div className="absolute bottom-6 left-6 right-6 text-white">
-                    <h3 className="font-serif text-2xl font-normal tracking-wide mb-1">{item.name}</h3>
+                    <h3 className="font-sans font-semibold text-xl md:text-2xl tracking-wide mb-1">{item.name}</h3>
                   </div>
                 </div>
                 <div className="p-6 md:p-8 flex flex-col justify-between flex-1">
@@ -603,6 +603,11 @@ export function PrivateTripClient() {
                 <h2 className="typography-section text-[#0F2C59] tracking-tight leading-tight">
                   {t("private_trip_testimonial_title")}
                 </h2>
+                <p className="typography-body text-[#0F2C59]/80 mt-4 max-w-2xl">
+                  {locale === "id"
+                    ? "Dengarkan langsung pengalaman berkesan dari para traveler yang telah mempercayakan perjalanan berharga mereka bersama Klik Travel ID."
+                    : "Hear directly from travelers who have trusted Klik Travel ID to curate their extraordinary life journeys."}
+                </p>
               </div>
               
               {/* Carousel Arrows */}

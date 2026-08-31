@@ -57,7 +57,7 @@ export function JourneyCard({ journey, index }: JourneyCardProps) {
       )}
 
       <div className="flex justify-between items-center pt-3 border-t border-charcoal/10 mt-3">
-        <span className="typography-price !text-sm text-foreground/90">
+        <span className="typography-price !text-sm text-[#A89053]">
           {journey.price}
         </span>
         <span className="font-mono text-[9px] tracking-widest uppercase text-[#0284C7] opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-bold flex items-center space-x-1">
@@ -193,7 +193,7 @@ export function JourneyCard({ journey, index }: JourneyCardProps) {
               {[journey.durationLabel, journey.dates, journey.travelStyle].filter(Boolean).join(" • ")}
             </span>
           )}
-          <h3 className="typography-hero text-foreground group-hover:text-[#0284C7] group-hover:translate-x-2 transition-all duration-300 flex items-center justify-between border-b border-charcoal/10 pb-6 mb-6">
+          <h3 className="font-sans font-semibold text-xl md:text-2xl lg:text-3xl text-foreground group-hover:text-[#0284C7] group-hover:translate-x-2 transition-all duration-300 flex items-center justify-between border-b border-charcoal/10 pb-6 mb-6">
             <span>{journey.title}</span>
             <ArrowRight size={32} className="opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-[#0284C7]" />
           </h3>
@@ -201,7 +201,7 @@ export function JourneyCard({ journey, index }: JourneyCardProps) {
             <span className="font-mono text-xs tracking-[0.2em] uppercase text-charcoal/60">
               {journey.destination || ""}
             </span>
-            <span className="typography-price !text-base text-foreground/90">
+            <span className="typography-price !text-base text-[#A89053]">
               {journey.price}
             </span>
           </div>

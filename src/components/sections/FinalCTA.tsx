@@ -158,7 +158,7 @@ export function FinalCTA() {
   const bgOpacity = useTransform(scrollYProgress, [0, 0.5], [0, 0.4]);
 
   return (
-    <section ref={sectionRef} className="relative bg-ivory overflow-hidden z-10">
+    <section ref={sectionRef} className="relative bg-white overflow-hidden z-10">
 
       {/* Background Graphic with Parallax */}
       <motion.div
@@ -182,16 +182,8 @@ export function FinalCTA() {
             <span className="typography-caption !text-charcoal/60 block mb-4">
               {t("cta_tag")}
             </span>
-            <h2 className="typography-section text-charcoal uppercase tracking-[0.15em] font-normal">
-              {locale === "id" ? (
-                <>
-                  Momen <br className="hidden md:block" /> Bersama Kami
-                </>
-              ) : (
-                <>
-                  Our Moments <br className="hidden md:block" /> Together
-                </>
-              )}
+            <h2 className="typography-section text-charcoal uppercase tracking-[0.15em] font-normal whitespace-nowrap">
+              {locale === "id" ? "Momen Bersama Kami" : "Our Moments Together"}
             </h2>
           </div>
           {/* Navigation Arrows */}

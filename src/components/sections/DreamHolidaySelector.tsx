@@ -185,7 +185,7 @@ export function DreamHolidaySelector() {
   };
 
   return (
-    <section className="py-24 bg-[#F8FAFC] relative overflow-hidden">
+    <section className="py-24 bg-white relative overflow-hidden">
       {/* Background Subtle Accents */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-[#0284C7]/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#A89053]/5 rounded-full blur-3xl pointer-events-none translate-y-1/2 -translate-x-1/2" />
@@ -205,7 +205,7 @@ export function DreamHolidaySelector() {
             <span className="typography-caption block mb-3">
               {t("dream_tag")}
             </span>
-            <h2 className="typography-section !text-4xl sm:!text-5xl lg:!text-[3.5rem] tracking-tight leading-tight">
+            <h2 className="typography-section tracking-tight leading-tight">
               {t("dream_title")}
             </h2>
           </div>

@@ -9,10 +9,10 @@ export function AboutUsSection() {
 
   return (
     <section className="typography-section-spacing bg-white text-foreground relative overflow-hidden">
-      <div className="max-w-6xl mx-auto px-6 md:px-12 lg:px-16">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
         
         {/* About Intro Row */}
-        <div className="flex flex-col lg:flex-row items-start justify-between gap-12 relative">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-12 relative">
           <motion.div 
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}

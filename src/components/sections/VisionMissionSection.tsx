@@ -67,13 +67,13 @@ export function VisionMissionSection() {
   };
 
   return (
-    <section className="typography-section-spacing bg-[#F8FAFC] relative overflow-hidden">
+    <section className="typography-section-spacing bg-white relative overflow-hidden">
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-        className="max-w-5xl mx-auto px-6 md:px-12 lg:px-16"
+        className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16"
       >
 
         {/* Header + Tabs in one row */}
@@ -88,7 +88,7 @@ export function VisionMissionSection() {
           </div>
 
           {/* Tab switcher */}
-          <div className="flex bg-white border border-gray-200 rounded-full p-1 shadow-sm">
+          <div className="flex bg-slate-50 border border-slate-200/80 rounded-full p-1 shadow-xs">
             {(["visi", "misi"] as Tab[]).map((tab) => (
               <button
                 key={tab}

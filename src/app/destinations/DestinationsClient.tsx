@@ -225,10 +225,10 @@ export function DestinationsClient() {
           <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 w-full pt-16">
             <div className="max-w-3xl text-left">
               <span className="typography-caption !text-white/90 block mb-3">
-                {isIndo ? "Jelajahi Dunia Bersama Kami" : "Explore The World With Us"}
+                {isIndo ? "JELAJAHI DUNIA BERSAMA KAMI" : "EXPLORE THE WORLD WITH US"}
               </span>
-              <h1 className="typography-hero !text-white uppercase tracking-widest mb-5 drop-shadow-md">
-                {isIndo ? "DESTINASI WISATA PILIHAN" : "CURATED DESTINATIONS"}
+              <h1 className="typography-hero !text-white tracking-wide mb-5 drop-shadow-md">
+                {isIndo ? "Destinasi Wisata Pilihan" : "Curated Destinations"}
               </h1>
               <p className="typography-body !text-white/95 !italic max-w-2xl">
                 {isIndo 

@@ -14,7 +14,7 @@ export function Footer() {
 
   return (
     <footer className="bg-charcoal text-white pt-16 pb-12 border-t border-white/10 z-10 relative">
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
+      <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-16">
         
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 mb-16">

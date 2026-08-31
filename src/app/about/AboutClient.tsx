@@ -425,7 +425,7 @@ export function AboutClient() {
                       onClick={() => setActiveFaq(isOpen ? null : index)}
                       className="w-full p-6 text-left flex items-center justify-between gap-4 focus:outline-none cursor-pointer"
                     >
-                      <span className="font-serif text-lg md:text-xl font-medium text-[#0F2C59] leading-snug">
+                      <span className="font-sans font-semibold text-base md:text-lg text-[#0F2C59] leading-snug">
                         {faq.q}
                       </span>
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${

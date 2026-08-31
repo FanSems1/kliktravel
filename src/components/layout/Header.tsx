@@ -37,6 +37,11 @@ export function Header() {
   const [isDestinationsHovered, setIsDestinationsHovered] = useState(false);
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Dynamic Regions state
   const [regions, setRegions] = useState<RegionDestination[]>([]);
@@ -115,13 +120,16 @@ export function Header() {
     }
   };
 
-  const isSingleDestinationPage = pathname?.startsWith("/destinations/") && pathname.split("/").filter(Boolean).length === 2;
   const isHomePage = pathname === "/";
   const isPrivateTripPage = pathname === "/private-trip";
+  const isDestinationsIndexPage = pathname === "/destinations";
+  const isSingleDestinationPage = pathname?.startsWith("/destinations/") && pathname.split("/").filter(Boolean).length === 2;
 
-  const isDestinationsPage = pathname?.startsWith("/destinations");
+  // Pages with dark hero backgrounds at the top (where text needs to start as white)
+  const isDarkHeroPage = mounted && (isHomePage || isPrivateTripPage || isDestinationsIndexPage || isSingleDestinationPage);
 
-  const isLightPage = !isHomePage && !isSingleDestinationPage && !isDestinationsPage && !isPrivateTripPage;
+  // All other pages (including sub-destination detail pages like /destinations/thailand/4d-phuket-krabi-island-getaway) have light backgrounds and need dark header text
+  const isLightPage = !isDarkHeroPage;
 
   const showDarkHeader = isScrolled || isLightPage;
 
@@ -145,14 +153,16 @@ export function Header() {
 
   const getNavLinkClass = (href: string) => {
     let isActive = false;
-    if (href === "/") {
-      isActive = pathname === "/";
-    } else if (href === "/destinations") {
-      isActive = pathname?.startsWith("/destinations");
-    } else if (href === "/private-trip") {
-      isActive = pathname === "/private-trip";
-    } else if (href === "/about") {
-      isActive = pathname === "/about";
+    if (mounted) {
+      if (href === "/") {
+        isActive = pathname === "/";
+      } else if (href === "/destinations") {
+        isActive = pathname?.startsWith("/destinations");
+      } else if (href === "/private-trip") {
+        isActive = pathname === "/private-trip";
+      } else if (href === "/about") {
+        isActive = pathname === "/about";
+      }
     }
     
     if (showDarkHeader) {
@@ -168,14 +178,16 @@ export function Header() {
 
   const getNavUnderlineClass = (href: string) => {
     let isActive = false;
-    if (href === "/") {
-      isActive = pathname === "/";
-    } else if (href === "/destinations") {
-      isActive = pathname?.startsWith("/destinations");
-    } else if (href === "/private-trip") {
-      isActive = pathname === "/private-trip";
-    } else if (href === "/about") {
-      isActive = pathname === "/about";
+    if (mounted) {
+      if (href === "/") {
+        isActive = pathname === "/";
+      } else if (href === "/destinations") {
+        isActive = pathname?.startsWith("/destinations");
+      } else if (href === "/private-trip") {
+        isActive = pathname === "/private-trip";
+      } else if (href === "/about") {
+        isActive = pathname === "/about";
+      }
     }
     
     const colorClass = showDarkHeader ? "bg-[#0284C7]" : "bg-white";
@@ -336,6 +348,8 @@ export function Header() {
             <Link 
               href="/destinations"
               className={`font-sans text-[10px] uppercase tracking-wider transition-all duration-300 font-bold shrink-0 ${
+                isMobileMenuOpen ? "hidden" : ""
+              } ${
                 showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)] hover:text-white/90"
               }`}
             >
@@ -344,6 +358,8 @@ export function Header() {
             <Link 
               href="/private-trip"
               className={`font-sans text-[10px] uppercase tracking-wider transition-all duration-300 font-bold shrink-0 ${
+                isMobileMenuOpen ? "hidden" : ""
+              } ${
                 showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)] hover:text-white/90"
               }`}
             >

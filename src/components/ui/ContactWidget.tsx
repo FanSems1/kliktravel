@@ -9,8 +9,10 @@ export function ContactWidget() {
 
   if (pathname?.startsWith("/admin")) return null;
 
+  const isSubDestinationDetailPage = pathname?.startsWith("/destinations/") && pathname.split("/").filter(Boolean).length === 3;
+
   return (
-    <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-center pointer-events-none">
+    <div className={`fixed ${isSubDestinationDetailPage ? "bottom-[92px]" : "bottom-4"} right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-center pointer-events-none transition-all duration-300`}>
       <a
         href="https://wa.me/6281230011027"
         target="_blank"

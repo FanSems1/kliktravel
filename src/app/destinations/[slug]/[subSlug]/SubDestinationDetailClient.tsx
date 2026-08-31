@@ -1017,7 +1017,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               </div>
 
               {/* Main Title */}
-              <h1 className="typography-package-title text-slate-900 mb-3">
+              <h1 className="font-sans font-semibold text-2xl md:text-3xl text-slate-900 mb-3">
                 {displayTourName}
               </h1>
 
@@ -1043,7 +1043,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                 <span className="block font-mono text-[9px] uppercase tracking-widest text-slate-500 font-bold whitespace-nowrap">
                   {locale === "id" ? "MULAI DARI" : "STARTING FROM"}
                 </span>
-                <span className="block typography-price text-[#0284C7] whitespace-nowrap">
+                <span className="block typography-price text-[#A89053] whitespace-nowrap">
                   {formattedPrice}
                 </span>
               </div>
@@ -1169,22 +1169,26 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
         {/* Left Side: Highlights & Daily Details */}
         <div className="lg:col-span-8 flex flex-col gap-12">
 
-          {/* Highlights Card */}
           <div className="bg-white border border-slate-200/70 rounded-3xl p-6 md:p-8 shadow-sm">
-            <div className="flex flex-col gap-1 mb-6 pb-3 border-b border-slate-100">
-              <span className="typography-caption !text-[#0284C7] block">
-                {locale === "id" ? "ATRAKSI TERKULTIVASI" : "CURATED ATTRACTIONS"}
+            <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-100">
+              <div className="flex flex-col gap-1">
+                <span className="typography-caption !text-[#0284C7] block">
+                  {locale === "id" ? "DAYA TARIK UTAMA" : "CURATED ATTRACTIONS"}
+                </span>
+                <h2 className="typography-section !text-[#0F2C59]">{t("itinerary_highlights")}</h2>
+              </div>
+              <span className="lg:hidden font-mono text-[9px] text-[#0284C7] bg-[#E0F2FE] px-2.5 py-1 rounded-full font-bold tracking-wider shrink-0 flex items-center gap-1">
+                {locale === "id" ? "GESER" : "SWIPE"} &rarr;
               </span>
-              <h2 className="typography-section !text-[#0F2C59]">{t("itinerary_highlights")}</h2>
             </div>
-            <div className="flex flex-row overflow-x-auto md:flex-nowrap divide-x-0 md:divide-x divide-slate-100 scrollbar-none gap-4 md:gap-0 pb-2 md:pb-0 w-full">
+            <div className="flex flex-row overflow-x-auto lg:flex-nowrap divide-x-0 lg:divide-x divide-slate-100 scrollbar-none gap-4 lg:gap-0 pb-3 lg:pb-0 w-full snap-x snap-mandatory">
               {tourDetail.highlights.map((hl, idx) => (
-                <div key={idx} className="flex flex-col items-center justify-start px-2 shrink-0 md:flex-1 w-[130px] md:w-auto transition-all duration-300 hover:scale-[1.03] group text-center">
+                <div key={idx} className="flex flex-col items-center justify-start px-2 shrink-0 lg:flex-1 w-[115px] lg:w-auto snap-start transition-all duration-300 hover:scale-[1.03] group text-center">
                   <div className="w-10 h-10 rounded-full bg-sky-50/60 border border-sky-500/30 flex items-center justify-center shrink-0 text-sky-600 group-hover:bg-sky-600 group-hover:text-white transition-all shadow-sm mb-2.5">
                     {getHighlightIcon(hl)}
                   </div>
                   <span className="font-mono text-[8px] uppercase tracking-wider text-sky-600 font-bold block mb-1">Highlight 0{idx + 1}</span>
-                  <span className="font-sans text-[10px] md:text-[11px] text-slate-900 font-bold uppercase tracking-wider leading-tight text-center block w-full">{hl}</span>
+                  <span className="font-sans text-[10px] md:text-[11px] text-slate-900 font-bold uppercase tracking-wider leading-tight text-center block w-full line-clamp-2 h-9">{hl}</span>
                 </div>
               ))}
             </div>
@@ -1259,7 +1263,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                       <span className="font-mono text-[8px] uppercase tracking-widest text-sky-600 font-bold block mb-1">
                         {locale === "id" ? `PROGRAM HARI KE-${day.day}` : `DAY ${day.day} PROGRAM`}
                       </span>
-                      <h3 className="font-serif font-bold text-lg md:text-xl text-slate-900 mb-4">
+                      <h3 className="font-sans font-semibold text-lg md:text-xl text-slate-900 mb-4">
                         {locale === "id" ? day.title : (day.titleEN || (day as any).titleEn || day.title)}
                       </h3>
 
@@ -1295,14 +1299,14 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
         </div>
 
-        {/* Right Side: Inclusions & Exclusions */}
-        <div className="lg:col-span-4 flex flex-col gap-8">
+        {/* Right Side: Sticky Booking Sidebar & Inclusions/Exclusions */}
+        <div className="lg:col-span-4 flex flex-col gap-8 lg:sticky lg:top-28 h-fit">
 
           {/* Inclusions Card */}
           <div className="bg-white border border-slate-200/70 rounded-3xl p-6 md:p-8 shadow-sm">
             <div className="flex items-center gap-2.5 mb-5 pb-3 border-b border-slate-100">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <h3 className="font-serif font-bold text-base text-slate-900">{t("detail_inclusions")}</h3>
+              <h3 className="font-sans font-semibold text-base text-slate-900">{t("detail_inclusions")}</h3>
             </div>
             <div className="flex flex-col gap-4">
               {tourDetail.inclusions.map((inc, idx) => (
@@ -1320,7 +1324,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
           <div className="bg-white border border-slate-200/70 rounded-3xl p-6 md:p-8 shadow-sm">
             <div className="flex items-center gap-2.5 mb-5 pb-3 border-b border-slate-100">
               <span className="w-2 h-2 rounded-full bg-rose-500" />
-              <h3 className="font-serif font-bold text-base text-slate-900">{t("detail_exclusions")}</h3>
+              <h3 className="font-sans font-semibold text-base text-slate-900">{t("detail_exclusions")}</h3>
             </div>
             <div className="flex flex-col gap-4">
               {tourDetail.exclusions.map((exc, idx) => {
@@ -1355,7 +1359,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
               {locale === "id" ? "REGULASI PERJALANAN" : "TRAVEL REGULATION"}
             </span>
             <h2 className="typography-section !text-[#0F2C59]">
-              {locale === "id" ? "SYARAT DAN KETENTUAN" : "TERMS AND CONDITIONS"}
+              {locale === "id" ? "Syarat & Ketentuan" : "Terms & Conditions"}
             </h2>
           </div>
 
@@ -1497,10 +1501,10 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
       {featuredTours.length > 0 && (
         <section className="max-w-7xl mx-auto px-6 mt-32 mb-12">
           <div className="text-center mb-16">
-            <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-sky-600 font-bold block mb-4">
-              {locale === "id" ? "Eksplorasi Lebih Lanjut" : "Explore Further"}
+            <span className="typography-caption !text-[#0284C7] block mb-4">
+              {locale === "id" ? "EKSPLORASI LEBIH LANJUT" : "EXPLORE FURTHER"}
             </span>
-            <h2 className="typography-section !text-slate-900">
+            <h2 className="typography-section !text-[#0F2C59]">
               {t("detail_other_tours")}
             </h2>
           </div>
@@ -1799,6 +1803,27 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
           </div>
         </div>
       )}
+
+      {/* Mobile Sticky Floating Booking Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-5 py-4 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex items-center justify-between gap-4">
+        <div>
+          <span className="block font-mono text-[8px] uppercase tracking-widest text-slate-400 font-bold">
+            {locale === "id" ? "MULAI DARI" : "STARTING FROM"}
+          </span>
+          <span className="block typography-price text-[#A89053] !text-lg">
+            {formattedPrice}
+          </span>
+        </div>
+
+        <a
+          href={`https://wa.me/6281230011027?text=${whatsappMessage}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-[#0284C7] hover:bg-[#0369A1] text-white px-5 py-2.5 rounded-xl font-sans font-bold text-xs tracking-wider uppercase transition-all shadow-md cursor-pointer shrink-0"
+        >
+          {locale === "id" ? "Cek Ketersediaan" : "Check Availability"}
+        </a>
+      </div>
 
     </div>
   );
