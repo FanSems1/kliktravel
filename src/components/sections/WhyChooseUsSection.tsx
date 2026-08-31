@@ -64,10 +64,7 @@ export function WhyChooseUsSection() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
           className="text-center max-w-2xl mx-auto mb-16"
         >
-          <span className="font-mono text-[10px] tracking-[0.4em] uppercase font-semibold text-[#0284C7] block mb-4">
-            {t("why_tag")}
-          </span>
-          <h2 className="text-2xl md:text-3xl font-serif text-[#0F2C59] tracking-tight">
+          <h2 className="typography-section text-[#0F2C59] tracking-tight">
             {t("why_title")}
           </h2>
         </motion.div>
@@ -92,8 +89,8 @@ export function WhyChooseUsSection() {
               </div>
               
               {/* Text Info */}
-              <h4 className="font-serif text-lg md:text-xl font-medium text-[#0F2C59] mb-3">{item.title}</h4>
-              <p className="font-sans text-base md:text-lg text-[#0F2C59]/80 font-light leading-relaxed px-1">
+              <h4 className="typography-card mb-3">{item.title}</h4>
+              <p className="typography-body text-[#0F2C59]/80 px-1">
                 {item.description}
               </p>
             </motion.div>

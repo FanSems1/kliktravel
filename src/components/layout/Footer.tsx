@@ -69,11 +69,6 @@ export function Footer() {
                   {t("nav_experiences")}
                 </Link>
               </li>
-              <li>
-                <Link href="/journal" className="text-white/70 hover:text-white transition-colors">
-                  {t("nav_journal")}
-                </Link>
-              </li>
             </ul>
           </div>
 

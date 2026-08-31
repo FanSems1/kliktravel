@@ -259,7 +259,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-            className="font-serif text-5xl md:text-8xl text-white font-normal tracking-wider mb-6 drop-shadow-md"
+            className="typography-hero !text-white !text-5xl md:!text-8xl font-normal tracking-wider mb-6 drop-shadow-md"
           >
             {journey.title.toUpperCase()}
           </motion.h1>
@@ -561,24 +561,24 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
               </span>
               <ul className="space-y-6">
                 <li className="flex flex-col">
-                  <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-charcoal/40 mb-1">{t("detail_duration")}</span>
-                  <span className="font-serif text-2xl text-foreground">{journey.durationLabel}</span>
+                  <span className="typography-caption !text-charcoal/40 mb-1">{t("detail_duration")}</span>
+                  <span className="typography-card !text-2xl text-foreground">{journey.durationLabel}</span>
                 </li>
                 <li className="flex flex-col">
-                  <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-charcoal/40 mb-1">{t("detail_destinations_count")}</span>
-                  <span className="font-serif text-2xl text-foreground">
+                  <span className="typography-caption !text-charcoal/40 mb-1">{t("detail_destinations_count")}</span>
+                  <span className="typography-card !text-2xl text-foreground">
                     {journey.countriesCount < 2
                       ? (locale === "id" ? "1 Destinasi" : "1 Destination")
                       : `${journey.countriesCount} ${locale === "id" ? "Destinasi" : "Destinations"}`}
                   </span>
                 </li>
                 <li className="flex flex-col">
-                  <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-charcoal/40 mb-1">{t("detail_travel_period")}</span>
-                  <span className="font-serif text-2xl text-foreground">{journey.dates}</span>
+                  <span className="typography-caption !text-charcoal/40 mb-1">{t("detail_travel_period")}</span>
+                  <span className="typography-card !text-2xl text-foreground">{journey.dates}</span>
                 </li>
                 <li className="flex flex-col">
-                  <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-charcoal/40 mb-1">{t("detail_starting_price")}</span>
-                  <span className="font-serif text-2xl text-foreground">{journey.price}</span>
+                  <span className="typography-caption !text-charcoal/40 mb-1">{t("detail_starting_price")}</span>
+                  <span className="typography-price text-[#A89053] !text-2xl">{journey.price}</span>
                 </li>
               </ul>
             </div>
@@ -590,7 +590,7 @@ export function JourneyDetailClient({ slug }: JourneyDetailClientProps) {
                 <span className="font-mono text-[9px] tracking-[0.3em] uppercase text-white/60 mb-2">
                   {t("detail_reserve_journey")}
                 </span>
-                <span className="font-serif text-4xl mb-8">
+                <span className="typography-price text-[#A89053] !text-4xl mb-8">
                   {journey.price}
                 </span>
                 <Link

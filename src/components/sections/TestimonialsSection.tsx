@@ -134,7 +134,7 @@ export function TestimonialsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="font-mono text-xs uppercase tracking-[0.3em] font-semibold text-[#0284C7] block mb-3"
+              className="typography-caption !text-[#0284C7] block mb-3"
             >
               {locale === "id" ? "ULASAN PELANGGAN" : "GUEST TESTIMONIALS"}
             </motion.span>
@@ -144,7 +144,7 @@ export function TestimonialsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-2xl md:text-3xl font-serif text-[#0F2C59] tracking-tight leading-tight mb-6"
+              className="typography-section text-[#0F2C59] tracking-tight mb-6"
             >
               {locale === "id" ? "Pengalaman Bersama Klik Travel" : "Experience with Klik Travel"}
             </motion.h2>
@@ -154,7 +154,7 @@ export function TestimonialsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="font-sans text-[#0F2C59]/80 text-base md:text-lg font-light leading-relaxed"
+              className="typography-body text-[#0F2C59]/80"
             >
               {locale === "id"
                 ? "Dengarkan langsung pengalaman berkesan dari para traveler yang telah mempercayakan perjalanan berharga mereka bersama Klik Travel ID."

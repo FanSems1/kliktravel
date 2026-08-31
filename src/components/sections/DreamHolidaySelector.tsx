@@ -108,7 +108,7 @@ export function DreamHolidaySelector() {
                   return "Berangkat Setiap Hari";
                 }
                 if (d.includes(",") || d.includes(";") || d.length > 30) {
-                  return "Tersedia Beberapa Tanggal Keberangkatan";
+                  return "Pilihan Tanggal Keberangkatan";
                 }
                 return d;
               })(),
@@ -202,17 +202,17 @@ export function DreamHolidaySelector() {
         >
           {/* Left: Heading */}
           <div>
-            <span className="font-mono text-[10px] tracking-[0.35em] uppercase text-[#A89053] font-bold block mb-3">
+            <span className="typography-caption block mb-3">
               {t("dream_tag")}
             </span>
-            <h2 className="text-4xl sm:text-5xl lg:text-[4rem] font-serif text-[#0F2C59] tracking-tight leading-tight">
+            <h2 className="typography-section !text-4xl sm:!text-5xl lg:!text-[3.5rem] tracking-tight leading-tight">
               {t("dream_title")}
             </h2>
           </div>
           
           {/* Right: Description & Action */}
           <div className="flex flex-col lg:flex-row items-start lg:items-center w-full gap-8 xl:gap-12 xl:ml-12">
-            <p className="text-sm md:text-base text-[#0F2C59]/75 max-w-2xl font-sans font-light leading-relaxed">
+            <p className="typography-body text-slate-600/90 max-w-2xl">
               {t("dream_desc")}
             </p>
             <div className="flex items-center gap-6 flex-grow w-full mt-4 lg:mt-0">
@@ -495,7 +495,7 @@ export function DreamHolidaySelector() {
                                 <span>{statusLabel}</span>
                               </div>
                             </div>
-                            <h3 className="font-serif text-xl md:text-2xl font-normal text-[#0F2C59] leading-snug mb-3 group-hover:text-[#0284C7] transition-colors">
+                            <h3 className="typography-package-title mb-3 group-hover:text-[#0284C7] transition-colors">
                               {title}
                             </h3>
                             
@@ -511,10 +511,10 @@ export function DreamHolidaySelector() {
                         {/* Card Footer: Price & Direct Booking CTA */}
                         <div className="px-6 md:px-7 pb-6 pt-0 flex items-center justify-between border-t border-slate-100/80 mt-2">
                           <div>
-                            <span className="font-sans text-[9px] uppercase tracking-widest text-[#0F2C59]/50 block">
+                            <span className="typography-caption !text-[9px] text-[#0F2C59]/50 block mb-0.5">
                               {t("dream_card_from")}
                             </span>
-                            <span className="font-serif text-lg md:text-xl font-bold text-[#0F2C59]">
+                            <span className="typography-price text-[#A89053]">
                               {displayPrice}
                             </span>
                           </div>
@@ -544,10 +544,10 @@ export function DreamHolidaySelector() {
                     <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[#38BDF8] font-bold block mb-1">
                       {t("dream_custom_banner_tag")}
                     </span>
-                    <h4 className="font-serif text-2xl md:text-3xl">
+                    <h4 className="typography-section !text-2xl md:!text-3xl text-white">
                       {t("dream_custom_banner_title")}
                     </h4>
-                    <p className="font-sans text-xs md:text-sm text-white/80 font-light mt-1 max-w-xl">
+                    <p className="typography-body text-white/80 mt-1 max-w-xl">
                       {t("dream_custom_banner_desc")}
                     </p>
                   </div>

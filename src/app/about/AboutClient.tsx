@@ -230,12 +230,12 @@ export function AboutClient() {
               transition={{ duration: 0.9 }}
               className="lg:col-span-6 flex flex-col justify-center"
             >
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0F2C59]/5 text-[#0F2C59] text-xs font-mono tracking-[0.3em] font-semibold uppercase mb-6 border border-[#0F2C59]/10 w-fit">
+              <div className="typography-caption !text-[#0F2C59] inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0F2C59]/5 mb-6 border border-[#0F2C59]/10 w-fit">
                 <Compass className="w-3.5 h-3.5" />
                 <span>{locale === "id" ? "Filosofi Layanan" : "Service Philosophy"}</span>
               </div>
 
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-[#0F2C59] tracking-tight mb-6 leading-tight">
+              <h2 className="typography-section text-[#0F2C59] tracking-tight mb-6">
                 {locale === "id" ? (
                   <>
                     Komitmen Kami Terhadap <br />
@@ -249,7 +249,7 @@ export function AboutClient() {
                 )}
               </h2>
 
-              <p className="text-slate-600 text-base md:text-lg leading-relaxed font-light mb-6">
+              <p className="typography-body text-slate-600 mb-6">
                 {locale === "id"
                   ? "Klik Travel ID berdedikasi menyajikan paket tur kurasi pilihan yang menggabungkan kemudahan pendaftaran, jadwal terjamin (Guaranteed Departures), akomodasi hotel berbintang pilihan, serta penerbangan maskapai pilihan."
                   : "Klik Travel ID is dedicated to delivering quality curated tour packages that harmonize seamless booking, guaranteed departure schedules, handpicked accommodations, and reliable airline partnerships."}

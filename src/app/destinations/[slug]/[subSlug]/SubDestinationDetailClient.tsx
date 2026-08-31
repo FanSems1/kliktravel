@@ -1039,11 +1039,11 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
 
             {/* Price & Primary CTA Row */}
             <div className="pt-4 border-t border-slate-200/80 flex items-center justify-between gap-4 mt-auto">
-              <div>
-                <span className="block font-mono text-[9px] uppercase tracking-widest text-slate-500 font-bold">
-                  {locale === "id" ? "HARGA SPESIAL" : "SPECIAL PRICE"}
+              <div className="shrink-0">
+                <span className="block font-mono text-[9px] uppercase tracking-widest text-slate-500 font-bold whitespace-nowrap">
+                  {locale === "id" ? "MULAI DARI" : "STARTING FROM"}
                 </span>
-                <span className="block font-sans font-extrabold text-xl md:text-2xl text-[#0284C7]">
+                <span className="block font-sans font-extrabold text-xl md:text-2xl text-[#0284C7] whitespace-nowrap">
                   {formattedPrice}
                 </span>
               </div>
@@ -1500,7 +1500,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
             <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-sky-600 font-bold block mb-4">
               {locale === "id" ? "Eksplorasi Lebih Lanjut" : "Explore Further"}
             </span>
-            <h2 className="font-serif text-4xl md:text-5xl text-slate-900 font-normal tracking-wide">
+            <h2 className="typography-section !text-slate-900">
               {t("detail_other_tours")}
             </h2>
           </div>
@@ -1530,7 +1530,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                       <MapPin size={14} />
                       <span className="font-sans text-xs uppercase tracking-widest">{tour.regionName}</span>
                     </div>
-                    <h3 className="font-serif text-3xl text-white font-normal mb-1">
+                    <h3 className="typography-package-title !text-white !text-xl md:!text-2xl mb-1">
                       {tour.name}
                     </h3>
                   </div>
@@ -1559,7 +1559,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
               <div>
-                <h3 className="font-serif text-xl md:text-2xl font-bold text-[#0F2C59]">
+                <h3 className="typography-section !text-xl md:!text-2xl">
                   {locale === "id" ? "Jadwal Keberangkatan" : "Departure Schedules"}
                 </h3>
                 <p className="font-sans text-xs text-[#0F2C59]/60 mt-0.5">
@@ -1610,7 +1610,7 @@ export function SubDestinationDetailClient({ slug, subSlug }: SubDestinationDeta
                       <ChevronLeft className="w-5 h-5" />
                     </button>
 
-                    <div className="font-serif font-bold text-base md:text-lg text-[#0F2C59]">
+                    <div className="typography-card !text-base md:!text-lg">
                       {monthLabel}
                     </div>
 

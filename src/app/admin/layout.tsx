@@ -9,7 +9,6 @@ import {
   Map,
   Compass,
   Ship,
-  BookOpen,
   MessageSquare,
   Settings,
   Menu,
@@ -119,12 +118,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       nameEN: "Private Trips",
       href: "/admin/private-trips",
       icon: Ship,
-    },
-    {
-      name: "Jurnal Travel",
-      nameEN: "Travel Journal",
-      href: "/admin/journal",
-      icon: BookOpen,
     },
     {
       name: "Galeri Foto",

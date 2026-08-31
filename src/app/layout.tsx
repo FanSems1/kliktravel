@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Outfit } from "next/font/google";
+import { Playfair_Display, Poppins } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -12,9 +12,10 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
 });
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -32,7 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="id" className="scroll-smooth" data-scroll-behavior="smooth">
       <body
-        className={`${outfit.variable} ${playfair.variable} font-sans min-h-screen bg-ivory text-foreground antialiased flex flex-col selection:bg-[#A89053] selection:text-white`}
+        className={`${poppins.variable} ${playfair.variable} font-sans min-h-screen bg-ivory text-foreground antialiased flex flex-col selection:bg-[#A89053] selection:text-white`}
       >
         <LanguageProvider>
           <Header />

@@ -118,12 +118,11 @@ export function Header() {
   const isSingleDestinationPage = pathname?.startsWith("/destinations/") && pathname.split("/").filter(Boolean).length === 2;
   const isHomePage = pathname === "/";
   const isPrivateTripPage = pathname === "/private-trip";
-  const isJournalPage = pathname?.startsWith("/journal");
   const isJourneysPage = pathname?.startsWith("/journeys");
 
   const isDestinationsPage = pathname === "/destinations";
 
-  const isLightPage = !isHomePage && !isSingleDestinationPage && !isDestinationsPage && !isPrivateTripPage && !isJournalPage && !isJourneysPage;
+  const isLightPage = !isHomePage && !isSingleDestinationPage && !isDestinationsPage && !isPrivateTripPage && !isJourneysPage;
 
   const showDarkHeader = isScrolled || isLightPage;
 
@@ -234,69 +233,34 @@ export function Header() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 15 }}
                     transition={{ duration: 0.3 }}
-                    className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-[760px] bg-white border border-[#0F2C59]/10 rounded-2xl shadow-xl p-8 z-50 grid grid-cols-12 gap-8 text-left pointer-events-auto"
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-[320px] bg-white border border-[#0F2C59]/10 rounded-2xl shadow-xl p-5 z-50 text-left pointer-events-auto"
                   >
-                    {/* Left Panel: Preview/Info */}
-                    <div className="col-span-5 flex flex-col justify-between border-r border-[#0F2C59]/10 pr-6">
-                      <div>
-                        <span className="font-mono text-[9px] tracking-[0.3em] uppercase text-[#0F2C59]/50 block mb-2">
-                          {t("destinations_title")}
-                        </span>
-                        <h4 className="font-serif text-2xl text-[#0F2C59] font-normal mb-3">
-                          {activeHoveredObj ? activeHoveredObj.name : t("destinations_subtitle")}
-                        </h4>
-                        <p className="font-sans text-xs text-[#0F2C59]/70 leading-relaxed font-light line-clamp-3">
-                          {activeHoveredObj 
-                            ? activeHoveredObj.subtitle 
-                            : t("destinations_desc")}
-                        </p>
-                      </div>
-                      
-                      {/* Premium Image Featured */}
-                      <div className="w-full aspect-[4/3] rounded-xl overflow-hidden relative mt-6 shadow-sm group border border-slate-100">
-                        <img 
-                          src={activeHoveredObj?.image || activeHoveredObj?.featuredImageGradient || regionHeroImages[activeHoveredObj?.slug || ""] || defaultFeaturedImage} 
-                          alt="Featured Destination"
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0F2C59]/80 via-transparent to-transparent opacity-80" />
-                        <div className="absolute bottom-4 left-4 right-4 font-sans font-medium text-xs tracking-wide text-white uppercase">
-                          {activeHoveredObj ? `EXPLORE ${activeHoveredObj.name}` : t("destinations_featured")}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right Panel: Regions Grid */}
-                    <div className="col-span-7 flex flex-col justify-between pl-4">
-                      <div>
-                        <span className="font-mono text-[9px] tracking-[0.3em] uppercase text-[#0F2C59]/50 block mb-5">
-                          {t("destinations_regions")}
-                        </span>
-                        <div className="grid grid-cols-2 gap-y-4 gap-x-6">
-                          {regions.map((region) => (
-                            <Link
-                              key={region.slug}
-                              href={`/destinations/${region.slug}`}
-                              onMouseEnter={() => setHoveredRegion(region.slug)}
-                              onMouseLeave={() => setHoveredRegion(null)}
-                              className="group flex items-center justify-between font-sans text-sm text-[#0F2C59]/80 hover:text-[#0284C7] transition-all duration-300 py-1"
-                            >
-                              <span className="group-hover:translate-x-1 transition-transform duration-300 font-medium">
-                                {region.name}
-                              </span>
-                              <ArrowRight size={14} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
-                            </Link>
-                          ))}
-                        </div>
+                    <div className="flex flex-col">
+                      <span className="font-mono text-[9px] tracking-[0.3em] uppercase text-[#0F2C59]/50 block mb-3 px-1">
+                        {t("destinations_regions")}
+                      </span>
+                      <div className="flex flex-col space-y-1">
+                        {regions.map((region) => (
+                          <Link
+                            key={region.slug}
+                            href={`/destinations/${region.slug}`}
+                            className="group flex items-center justify-between font-sans text-xs uppercase tracking-wider font-semibold text-[#0F2C59]/85 hover:text-[#0284C7] transition-all duration-200 py-2.5 px-3 hover:bg-slate-50 rounded-xl"
+                          >
+                            <span className="group-hover:translate-x-1 transition-transform duration-200">
+                              {region.name}
+                            </span>
+                            <ArrowRight size={13} className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 text-[#0284C7]" />
+                          </Link>
+                        ))}
                       </div>
 
-                      <div className="border-t border-[#0F2C59]/10 pt-5 mt-6 flex justify-between items-center">
+                      <div className="border-t border-[#0F2C59]/5 pt-3.5 mt-3 flex justify-center">
                         <Link
                           href="/destinations"
-                          className="font-sans text-[10px] uppercase tracking-[0.2em] text-[#0F2C59] font-bold hover:text-[#0284C7] transition-colors flex items-center space-x-2 group"
+                          className="font-sans text-[9px] uppercase tracking-[0.2em] text-[#0F2C59]/60 font-bold hover:text-[#0284C7] hover:tracking-[0.22em] transition-all flex items-center space-x-1.5 group"
                         >
                           <span>{t("destinations_explore_all")}</span>
-                          <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
+                          <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
                         </Link>
                       </div>
                     </div>
@@ -306,8 +270,7 @@ export function Header() {
             </div>
 
             {[
-              { key: "nav_about", href: "/about" },
-              { key: "nav_journal", href: "/journal" }
+              { key: "nav_about", href: "/about" }
             ].map((item) => (
               <Link 
                 key={item.href} 
@@ -460,8 +423,7 @@ export function Header() {
               </Link>
 
               {[
-                { key: "nav_about", href: "/about" },
-                { key: "nav_journal", href: "/journal" }
+                { key: "nav_about", href: "/about" }
               ].map((item) => (
                 <Link 
                   key={item.href} 

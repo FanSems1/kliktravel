@@ -607,7 +607,7 @@ export function DestinationDetailClient({ slug }: DestinationDetailClientProps) 
                               ? (locale === "id" ? "Pendaftaran Ditutup / Kuota Penuh" : "Fully Booked / Registration Closed")
                               : (isEveryday
                                   ? (locale === "id" ? "Pendaftaran Dibuka" : "Registration Open")
-                                  : (locale === "id" ? "Tersedia beberapa tanggal keberangkatan" : "Multiple departure dates available")));
+                                  : (locale === "id" ? "Pilihan tanggal keberangkatan" : "Multiple departure dates available")));
 
                         const displayDate = isEveryday
                           ? (locale === "id" ? "Keberangkatan Setiap Hari" : "Daily Departure")

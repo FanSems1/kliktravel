@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils"
 
 interface TextProps extends React.HTMLAttributes<HTMLParagraphElement> {
   as?: "p" | "span" | "div"
-  variant?: "base" | "large" | "small" | "caption"
+  variant?: "base" | "large" | "small" | "caption" | "price"
   balance?: boolean
 }
 
@@ -17,11 +17,11 @@ export function Text({
   return (
     <Component
       className={cn(
-        "font-sans",
-        variant === "base" && "text-base leading-relaxed text-foreground/80",
-        variant === "large" && "text-lg md:text-2xl md:leading-relaxed text-foreground",
-        variant === "small" && "text-sm leading-relaxed text-foreground/70",
-        variant === "caption" && "text-xs tracking-widest uppercase text-foreground/50 font-medium",
+        variant === "base" && "typography-body",
+        variant === "large" && "typography-package-title",
+        variant === "small" && "typography-body text-slate-500/80 !text-xs",
+        variant === "caption" && "typography-caption",
+        variant === "price" && "typography-price",
         balance && "text-balance",
         className
       )}

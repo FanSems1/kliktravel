@@ -21,19 +21,19 @@ export function ExperienceSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <span className="font-mono text-xs tracking-[0.4em] uppercase text-charcoal font-semibold block mb-6">
+              <span className="typography-caption block mb-6">
                 {t("ethos_tag")}
               </span>
               
-              <Heading variant="editorial" className="text-foreground text-4xl md:text-5xl lg:text-6xl mb-5 leading-tight font-normal tracking-tight">
+              <Heading variant="display" className="text-foreground mb-5 leading-tight font-normal tracking-tight">
                 {t("ethos_heading_1")}
               </Heading>
               
-              <h3 className="font-sans text-xs md:text-sm lg:text-base tracking-[0.25em] uppercase text-foreground/60 mb-8 font-medium">
+              <h3 className="typography-caption !text-foreground/60 mb-8 font-medium">
                 {t("ethos_heading_2")}
               </h3>
               
-              <Text variant="large" className="text-foreground/75 font-light text-base md:text-lg leading-relaxed max-w-xl mb-8">
+              <Text variant="base" className="text-foreground/75 max-w-xl mb-8">
                 {t("ethos_desc_1")}
                 <br /><br />
                 {t("ethos_desc_2")}

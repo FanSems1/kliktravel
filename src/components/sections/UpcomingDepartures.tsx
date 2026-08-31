@@ -75,7 +75,7 @@ export function UpcomingDepartures() {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20 gap-6">
           <div>
-            <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/50 block mb-4">
+            <span className="typography-caption !text-white/50 block mb-4">
               {t("departures_tag")}
             </span>
             <Heading variant="display" className="text-white text-4xl md:text-6xl">
@@ -118,7 +118,7 @@ export function UpcomingDepartures() {
 
                 {/* Tour Info */}
                 <div className="col-span-12 sm:col-span-6 md:col-span-5 flex flex-col justify-center">
-                  <h3 className="font-serif text-xl md:text-2xl text-white group-hover:text-sky-200 transition-colors">
+                  <h3 className="typography-package-title !text-white group-hover:!text-sky-200 transition-colors">
                     {departure.title}
                   </h3>
                   <p className="font-sans text-xs text-white/60 uppercase tracking-wider mt-1">
@@ -134,7 +134,7 @@ export function UpcomingDepartures() {
 
                 {/* Price & Action Arrow */}
                 <div className="col-span-12 sm:col-span-4 md:col-span-2 flex items-center justify-between sm:justify-end gap-6 pt-4 sm:pt-0">
-                  <div className="font-mono text-sm font-semibold text-sky-200">
+                  <div className="typography-price !text-[#38BDF8]">
                     {locale === "id" ? departure.price : departure.price.replace("JT", "M")}
                   </div>
                   <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:border-white group-hover:bg-white group-hover:text-charcoal transition-all duration-300">

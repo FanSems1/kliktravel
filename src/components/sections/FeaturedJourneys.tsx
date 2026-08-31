@@ -163,7 +163,7 @@ export function FeaturedJourneys() {
                   return "Berangkat Setiap Hari";
                 }
                 if (d.includes(",") || d.includes(";") || d.length > 30) {
-                  return "Tersedia Beberapa Tanggal Keberangkatan";
+                  return "Pilihan Tanggal Keberangkatan";
                 }
                 return d;
               })(),
@@ -280,7 +280,7 @@ export function FeaturedJourneys() {
             </Heading>
             <Text variant="large" className="text-foreground/70 font-light max-w-xl">
               {locale === "id" 
-                ? "Perjalanan terkurasi yang dirancang khusus untuk menciptakan kenangan yang mendalam dan bermakna."
+                ? "Pilihan destinasi menarik untuk menemani liburan yang lebih mudah, aman, nyaman dan berkesan"
                 : "Curated journeys designed around places, people and experiences worth remembering."}
             </Text>
           </div>
@@ -447,13 +447,13 @@ export function FeaturedJourneys() {
                         <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-charcoal/80 mb-3 uppercase tracking-wider">
                           <span>{locale === "id" ? tour.datesID : tour.datesEN}</span>
                           <span>•</span>
-                          <span className="text-[#A89053] font-bold text-sm">{locale === "id" ? tour.price : tour.price.replace("JT", "M")}</span>
+                          <span className="typography-price text-[#A89053]">{locale === "id" ? tour.price : tour.price.replace("JT", "M")}</span>
                         </div>
                         
-                        <h3 className="font-serif text-2xl text-[#0F2C59] mb-3 leading-snug group-hover:text-[#A89053] transition-colors duration-300">
+                        <h3 className="typography-package-title mb-3 group-hover:text-[#A89053] transition-colors duration-300">
                           {locale === "id" ? tour.titleID : tour.titleEN}
                         </h3>
-                        <p className="font-sans text-sm text-foreground/70 leading-relaxed mb-6 line-clamp-2">
+                        <p className="typography-body mb-6 line-clamp-2">
                           {locale === "id" ? tour.subtitleID : tour.subtitleEN}
                         </p>
                         <div className="flex items-center text-[10px] font-mono uppercase tracking-widest text-[#0284C7] font-semibold mt-auto group-hover:text-[#0F2C59] transition-colors">
@@ -496,7 +496,7 @@ export function FeaturedJourneys() {
                         <div className="flex flex-wrap items-center gap-3 text-xs lg:text-sm font-mono text-charcoal/80 mb-3 uppercase tracking-wider">
                           <span>{locale === "id" ? mainTour.datesID : mainTour.datesEN}</span>
                           <span>•</span>
-                          <span className="text-[#A89053] font-bold text-sm lg:text-base">{locale === "id" ? mainTour.price : mainTour.price.replace("JT", "M")}</span>
+                          <span className="typography-price text-[#A89053] !text-lg lg:!text-xl">{locale === "id" ? mainTour.price : mainTour.price.replace("JT", "M")}</span>
                           {mainTour.status && (
                             <>
                               <span>•</span>
@@ -511,10 +511,10 @@ export function FeaturedJourneys() {
                           )}
                         </div>
                         
-                        <h3 className="font-serif text-2xl lg:text-3xl xl:text-4xl text-[#0F2C59] mb-3 leading-snug group-hover:text-[#A89053] transition-colors duration-300">
+                        <h3 className="typography-package-title mb-3 group-hover:text-[#A89053] transition-colors duration-300">
                           {locale === "id" ? mainTour.titleID : mainTour.titleEN}
                         </h3>
-                        <p className="font-sans text-sm text-foreground/70 leading-relaxed mb-6 line-clamp-2">
+                        <p className="typography-body mb-6 line-clamp-2">
                           {locale === "id" ? mainTour.subtitleID : mainTour.subtitleEN}
                         </p>
                         <div className="flex items-center text-[10px] font-mono uppercase tracking-widest text-[#0284C7] font-semibold mt-auto group-hover:text-[#0F2C59] transition-colors">
@@ -545,7 +545,7 @@ export function FeaturedJourneys() {
                           </div>
                           
                           <div className="w-full xl:w-7/12 flex flex-col justify-center">
-                            <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-charcoal/70 mb-2 uppercase tracking-wider">
+                            <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-charcoal/77 mb-2 uppercase tracking-wider">
                               <span>{locale === "id" ? tour.datesID : tour.datesEN}</span>
                               {tour.status && (
                                 <>
@@ -561,11 +561,11 @@ export function FeaturedJourneys() {
                               )}
                             </div>
                             
-                            <h3 className="font-serif text-xl xl:text-2xl text-[#0F2C59] mb-2 leading-tight group-hover:text-[#A89053] transition-colors duration-300">
+                            <h3 className="typography-package-title mb-2 group-hover:text-[#A89053] transition-colors duration-300">
                               {locale === "id" ? tour.titleID : tour.titleEN}
                             </h3>
                             
-                            <div className="text-[#A89053] font-mono text-sm lg:text-base font-bold tracking-wider mb-4">
+                            <div className="typography-price text-[#A89053] mb-4">
                               {locale === "id" ? tour.price : tour.price.replace("JT", "M")}
                             </div>
 

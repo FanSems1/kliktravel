@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { localizedRegions } from "@/data/destinations";
 import { localizedJourneys } from "@/data/journeys";
-import { journalArticles } from "@/data/journal";
 import { useLanguage } from "@/context/LanguageContext";
 
 interface SearchModalProps {
@@ -28,7 +27,7 @@ interface SearchModalProps {
 interface SearchResultItem {
   id: string;
   title: string;
-  category: "destination" | "journey" | "journal" | "page";
+  category: "destination" | "journey" | "page";
   categoryLabel: string;
   subtitle?: string;
   url: string;
@@ -106,12 +105,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         url: "/about",
         badge: "Info"
       },
-      {
-        title: isEn ? "Travel Journal & Guides" : "Catatan Perjalanan & Jurnal",
-        subtitle: isEn ? "Travel tips, photo essays & guides" : "Tips liburan, artikel & panduan destinasi",
-        url: "/journal",
-        badge: "Blog"
-      },
+
       {
         title: isEn ? "Trip Consultation & Inquiry" : "Konsultasi & Inquiry Perjalanan",
         subtitle: isEn ? "Direct consultation with travel specialists" : "Formulir & WhatsApp konsultasi perjalanan",
@@ -201,19 +195,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       });
     });
 
-    // 4. Journal Articles
-    journalArticles.forEach((art) => {
-      items.push({
-        id: `journal-${art.slug}`,
-        title: isEn ? art.titleEN : art.titleID,
-        category: "journal",
-        categoryLabel: isEn ? "Journal & Articles" : "Jurnal & Artikel",
-        subtitle: isEn ? art.excerptEN : art.excerptID,
-        url: `/journal/${art.slug}`,
-        image: art.image,
-        badge: isEn ? art.categoryEN : art.categoryID
-      });
-    });
+
 
     // Strict Filter: Remove any admin routes if any exist
     return items.filter((item) => !item.url.startsWith("/admin") && !item.url.includes("admin"));
@@ -229,8 +211,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         i.url === "/private-trip" || 
         i.url === "/destinations/indonesia" || 
         i.url === "/destinations/japan" ||
-        i.url === "/destinations/korea" ||
-        i.url === "/journal/golden-hours-of-bromo"
+        i.url === "/destinations/korea"
       );
     }
 
@@ -253,8 +234,6 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         return <MapPin size={16} className="text-[#0284C7]" />;
       case "journey":
         return <Compass size={16} className="text-amber-500" />;
-      case "journal":
-        return <BookOpen size={16} className="text-emerald-500" />;
       default:
         return <FileText size={16} className="text-purple-500" />;
     }
@@ -294,7 +273,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   setQuery(e.target.value);
                   setSelectedIndex(0);
                 }}
-                placeholder={isEn ? "Search destinations, open trips, journals..." : "Cari destinasi, paket open trip, jurnal..."}
+                placeholder={isEn ? "Search destinations, open trips..." : "Cari destinasi, paket open trip..."}
                 className="w-full bg-transparent font-sans text-base sm:text-lg text-slate-800 placeholder:text-slate-400 focus:outline-none font-medium"
               />
               {query && (

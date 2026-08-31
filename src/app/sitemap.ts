@@ -1,7 +1,6 @@
 import { MetadataRoute } from "next";
 import { indonesianRegions } from "@/data/destinations";
 import { journeys } from "@/data/journeys";
-import { journalArticles } from "@/data/journal";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kliktravel.id";
@@ -32,12 +31,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/journal`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.8,
     },
     {
       url: `${baseUrl}/private-trip`,
@@ -115,19 +108,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  // 5. Dynamic Journal Articles (/journal/[slug])
-  const journalRoutes: MetadataRoute.Sitemap = journalArticles.map((article) => ({
-    url: `${baseUrl}/journal/${article.slug}`,
-    lastModified: now,
-    changeFrequency: "monthly",
-    priority: 0.7,
-  }));
-
   return [
     ...staticRoutes,
     ...regionRoutes,
     ...subDestinationRoutes,
     ...journeyRoutes,
-    ...journalRoutes,
   ];
 }

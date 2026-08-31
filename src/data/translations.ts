@@ -6,7 +6,6 @@ export const translations = {
     nav_experiences: "Private Trip",
     nav_destinations: "Destinasi",
     nav_about: "Tentang Kami",
-    nav_journal: "Jurnal",
     nav_plan_journey: "Rancang Perjalanan",
 
     // Mega Menu & Destinations
@@ -83,9 +82,9 @@ export const translations = {
     footer_brand_desc: "Kurasi perjalanan terkurasi & open trip berkualitas melintasi kepulauan Indonesia dan sekitarnya. Kenyamanan & fleksibilitas untuk semua kalangan.",
 
     // DreamHolidaySelector
-    dream_tag: "EKSPEDISI TERKURASI",
-    dream_title: "Pilih Liburan Impian",
-    dream_desc: "Rencanakan liburan impian bersama Klik Travel ID. Temukan destinasi favorit, tentukan tipe perjalanan impian Anda, dan pilih tanggal keberangkatan yang telah dijamin kepastiannya.",
+    dream_tag: "JELAJAHI DUNIA CIPTAKAN CERITA",
+    dream_title: "Liburan Impianmu Dimulai Disini",
+    dream_desc: "Temukan destinasi pilihan, tipe perjalanan yang sesuai, dan ciptakan pengalaman tak terlupakan bersama Klik Travel",
     dream_btn_all_destinations: "Jelajahi Semua Destinasi",
     dream_tab_destinasi: "Destinasi",
     dream_tab_tipe: "Tipe Perjalanan",
@@ -107,8 +106,8 @@ export const translations = {
     dream_custom_banner_btn: "RANCANG PRIVATE TRIP →",
 
     // FeaturedJourneys
-    featured_tag: "PERJALANAN PILIHAN",
-    featured_title: "Pilihan Perjalanan Terkurasi",
+    featured_tag: "DESTINASI PILIHAN",
+    featured_title: "Temukan Destinasi Favoritmu",
     featured_tab_all: "Semua",
     featured_tab_open: "Open Trip",
     featured_tab_private: "Private Tour",
@@ -121,7 +120,6 @@ export const translations = {
     services_learn_more: "Pelajari Selengkapnya →",
 
     // WhyChooseUsSection
-    why_tag: "KENAPA KLIK TRAVEL?",
     why_title: "Kenapa Klik Travel?",
     why_desc: "",
 
@@ -206,7 +204,6 @@ export const translations = {
     nav_experiences: "Private Trip",
     nav_destinations: "Destinations",
     nav_about: "About Us",
-    nav_journal: "Journal",
     nav_plan_journey: "Plan Your Journey",
 
     // Mega Menu & Destinations
@@ -321,7 +318,6 @@ export const translations = {
     services_learn_more: "Learn More →",
 
     // WhyChooseUsSection
-    why_tag: "WHY KLIK TRAVEL?",
     why_title: "Why Klik Travel?",
     why_desc: "",
 

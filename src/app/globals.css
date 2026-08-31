@@ -12,13 +12,45 @@
   --color-charcoal: #0F2C59; /* Deep navy/charcoal text color for rich contrast */
   --color-earth: #38BDF8; /* Bright soft sky blue (accent/highlight) */
   --color-earth-dark: #0284C7; /* Darker sky blue */
-  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
+}
+
+@utility typography-hero {
+  @apply font-serif text-3xl md:text-5xl lg:text-[3.5rem] font-bold tracking-tight text-[#0F2C59] leading-tight md:leading-[1.2];
+}
+
+@utility typography-section {
+  @apply font-serif text-2xl md:text-3xl lg:text-4xl font-bold text-[#0F2C59] leading-snug;
+}
+
+@utility typography-card {
+  @apply font-sans text-sm md:text-base font-semibold text-[#0F2C59] leading-snug;
+}
+
+@utility typography-package-title {
+  @apply font-sans text-[15px] md:text-base lg:text-lg font-semibold text-[#0F2C59] tracking-normal leading-snug;
+}
+
+@utility typography-body {
+  @apply font-sans text-[13px] md:text-sm text-slate-600 font-normal leading-relaxed;
+}
+
+@utility typography-caption {
+  @apply font-sans text-[9px] md:text-[10px] uppercase tracking-[0.2em] text-[#A89053] font-semibold;
+}
+
+@utility typography-button {
+  @apply font-sans text-[10px] md:text-xs uppercase tracking-widest font-semibold;
+}
+
+@utility typography-price {
+  @apply font-sans text-[15px] md:text-base lg:text-lg font-bold text-[#A89053] tracking-wide;
 }
 
 @layer utilities {

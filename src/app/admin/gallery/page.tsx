@@ -79,7 +79,7 @@ export default function AdminGalleryPage() {
     captionEN: string;
     year: string;
   }>({
-    type: "VISUAL_JOURNAL",
+    type: "OUR_JOURNEYS",
     image: "",
     titleID: "",
     titleEN: "",
@@ -570,55 +570,21 @@ export default function AdminGalleryPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Target Section Switcher */}
+            {/* Target Section Indicator */}
             <div>
               <label className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-2 font-bold">
                 {isIndo ? "Target Section / Tampilan di Website *" : "Target Section on Website *"}
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label
-                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col space-y-1.5 ${formData.type === "VISUAL_JOURNAL"
-                    ? "border-[#0284C7] bg-sky-50/50 text-[#0F2C59]"
-                    : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600"
-                    }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm">📷 Galeri Ekspedisi</span>
-                    <input
-                      type="radio"
-                      name="gallery_type"
-                      value="VISUAL_JOURNAL"
-                      checked={formData.type === "VISUAL_JOURNAL"}
-                      onChange={() => setFormData(prev => ({ ...prev, type: "VISUAL_JOURNAL" }))}
-                      className="text-[#0284C7]"
-                    />
-                  </div>
-                  <span className="font-mono text-[9px] text-slate-500">
-                    Halaman /journal ("DOKUMENTASI FOTO Galeri Ekspedisi")
-                  </span>
-                </label>
-
-                <label
-                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col space-y-1.5 ${formData.type === "OUR_JOURNEYS"
-                    ? "border-[#0F2C59] bg-slate-100 text-[#0F2C59]"
-                    : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600"
-                    }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm">📸 Momen Bersama Kami</span>
-                    <input
-                      type="radio"
-                      name="gallery_type"
-                      value="OUR_JOURNEYS"
-                      checked={formData.type === "OUR_JOURNEYS"}
-                      onChange={() => setFormData(prev => ({ ...prev, type: "OUR_JOURNEYS" }))}
-                      className="text-[#0F2C59]"
-                    />
-                  </div>
+              <div className="p-4 rounded-2xl border-2 border-[#0F2C59] bg-slate-100 text-[#0F2C59] flex items-center justify-between">
+                <div className="flex flex-col space-y-1">
+                  <span className="font-bold text-sm">📸 Momen Bersama Kami</span>
                   <span className="font-mono text-[9px] text-slate-500">
                     Halaman Utama / ("GALLERY Momen Bersama Kami")
                   </span>
-                </label>
+                </div>
+                <span className="font-mono text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                  Aktif
+                </span>
               </div>
             </div>
 
@@ -832,15 +798,6 @@ export default function AdminGalleryPage() {
                 {isIndo ? `Semua Storefront (${items.length})` : `All Storefront (${items.length})`}
               </button>
               <button
-                onClick={() => setActiveStorefrontTab("VISUAL_JOURNAL")}
-                className={`px-3.5 py-2 rounded-xl font-mono text-xs uppercase tracking-wider font-bold transition-all cursor-pointer ${activeStorefrontTab === "VISUAL_JOURNAL"
-                  ? "bg-[#0284C7] text-white shadow-sm"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
-              >
-                {isIndo ? `Galeri Ekspedisi /journal (${countVJ})` : `Expedition /journal (${countVJ})`}
-              </button>
-              <button
                 onClick={() => setActiveStorefrontTab("OUR_JOURNEYS")}
                 className={`px-3.5 py-2 rounded-xl font-mono text-xs uppercase tracking-wider font-bold transition-all cursor-pointer ${activeStorefrontTab === "OUR_JOURNEYS"
                   ? "bg-slate-800 text-white shadow-sm"
@@ -890,8 +847,8 @@ export default function AdminGalleryPage() {
               </h3>
               <p className="font-sans text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
                 {isIndo
-                  ? 'Klik tombol "Tambah Foto Galeri" di atas untuk menambahkan foto baru yang langsung tampil di halaman / (Momen Bersama Kami) atau halaman /journal (Galeri Ekspedisi).'
-                  : 'Click the "Add Gallery Photo" button above to add new photos displayed on the home page or journal page.'}
+                  ? 'Klik tombol "Tambah Foto Galeri" di atas untuk menambahkan foto baru yang langsung tampil di halaman / (Momen Bersama Kami).'
+                  : 'Click the "Add Gallery Photo" button above to add new photos displayed on the home page.'}
               </p>
               <button
                 onClick={() => handleOpenAddModal()}
@@ -916,12 +873,9 @@ export default function AdminGalleryPage() {
                     />
                     <div className="absolute top-3 left-3">
                       <span
-                        className={`font-mono text-[9px] uppercase tracking-wider px-2.5 py-1 rounded-full font-bold shadow-md backdrop-blur-md ${item.type === "VISUAL_JOURNAL"
-                          ? "bg-[#0284C7] text-white"
-                          : "bg-[#0F2C59] text-white"
-                          }`}
+                        className="bg-[#0F2C59] text-white font-mono text-[9px] uppercase tracking-wider px-2.5 py-1 rounded-full font-bold shadow-md backdrop-blur-md"
                       >
-                        {item.type === "VISUAL_JOURNAL" ? "📷 Galeri Ekspedisi (/journal)" : "📸 Momen Bersama (Home /)"}
+                        📸 Momen Bersama (Home /)
                       </span>
                     </div>
                   </div>

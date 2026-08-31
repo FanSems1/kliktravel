@@ -179,10 +179,10 @@ export function FinalCTA() {
           className="flex flex-col md:flex-row md:items-end justify-between mb-12 border-b border-charcoal/10 pb-8 gap-8"
         >
           <div className="flex flex-col">
-            <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-charcoal/60 font-semibold mb-4 block">
+            <span className="typography-caption !text-charcoal/60 block mb-4">
               {t("cta_tag")}
             </span>
-            <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl text-charcoal uppercase tracking-[0.15em] font-normal">
+            <h2 className="typography-section text-charcoal uppercase tracking-[0.15em] font-normal">
               {locale === "id" ? (
                 <>
                   Momen <br className="hidden md:block" /> Bersama Kami

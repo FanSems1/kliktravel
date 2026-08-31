@@ -48,7 +48,6 @@ export default function AdminDashboardPage() {
   const { locale } = useLanguage();
   const [inquiries, setInquiries] = useState<any[]>([]);
   const [openTripsCount, setOpenTripsCount] = useState<number>(18);
-  const [journalCount, setJournalCount] = useState<number>(12);
   const [testimonialsCount, setTestimonialsCount] = useState<number>(34);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -105,17 +104,7 @@ export default function AdminDashboardPage() {
         console.error("Failed to fetch open trips count:", err);
       }
 
-      // 3. Fetch Journal Articles Count
-      try {
-        const articles = await apiFetch<any[]>("/admin/journal").catch(async () => {
-          return await apiFetch<any[]>("/journal");
-        });
-        if (articles && Array.isArray(articles)) {
-          setJournalCount(articles.length);
-        }
-      } catch (err) {
-        console.error("Failed to fetch journal count:", err);
-      }
+
 
       // 4. Fetch Testimonials Count
       try {
@@ -201,15 +190,7 @@ export default function AdminDashboardPage() {
       href: "/admin/private-trips",
       badge: "Eksklusif",
     },
-    {
-      titleID: "Jurnal & Artikel Travel",
-      titleEN: "Travel Journal & Articles",
-      descID: "Tulis dan publikasikan cerita petualangan dan panduan lokal.",
-      descEN: "Publish editorial stories and destination guides.",
-      count: `${journalCount} Artikel Published`,
-      href: "/admin/journal",
-      badge: "Editorial",
-    },
+
     {
       titleID: "Testimoni Pelanggan",
       titleEN: "Customer Testimonials",
@@ -246,13 +227,6 @@ export default function AdminDashboardPage() {
           >
             <Plus size={14} />
             <span>{locale === "id" ? "Tambah Tour Baru" : "Add New Tour"}</span>
-          </Link>
-          <Link
-            href="/admin/journal"
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all font-sans text-xs font-semibold uppercase tracking-wider"
-          >
-            <FileText size={14} />
-            <span>{locale === "id" ? "Artikel Jurnal" : "Journal Post"}</span>
           </Link>
         </div>
       </div>
