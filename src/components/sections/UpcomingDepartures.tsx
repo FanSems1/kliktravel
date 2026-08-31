@@ -78,14 +78,14 @@ export function UpcomingDepartures() {
             <span className="typography-caption !text-white/50 block mb-4">
               {t("departures_tag")}
             </span>
-            <Heading variant="display" className="text-white text-4xl md:text-6xl">
+            <h2 className="typography-section text-white">
               {t("departures_title")}
-            </Heading>
+            </h2>
           </div>
           <div>
             <Link 
               href="/destinations" 
-              className="inline-block border-b border-white/30 hover:border-white pb-1 font-sans text-xs uppercase tracking-widest text-white/80 hover:text-white transition-all duration-300"
+              className="inline-block border-b border-white/30 hover:border-white pb-1 typography-button !text-white/80 hover:!text-white transition-all duration-300"
             >
               {locale === "id" ? "Lihat Semua Perjalanan" : "View All Journeys"}
             </Link>
@@ -121,13 +121,13 @@ export function UpcomingDepartures() {
                   <h3 className="typography-package-title !text-white group-hover:!text-sky-200 transition-colors">
                     {departure.title}
                   </h3>
-                  <p className="font-sans text-xs text-white/60 uppercase tracking-wider mt-1">
+                  <p className="typography-caption !text-white/60 mt-1">
                     {departure.subtitle} • <span className="text-white/40">{locale === "id" ? departure.durationID : departure.durationEN}</span>
                   </p>
                 </div>
 
                 {/* Dates & Airline */}
-                <div className="col-span-6 md:col-span-2 font-mono text-xs text-white/50 hidden md:flex flex-col">
+                <div className="col-span-6 md:col-span-2 typography-caption !text-white/50 hidden md:flex flex-col">
                   <span>{locale === "id" ? departure.datesID : departure.datesEN}</span>
                   <span className="text-[10px] text-white/30 uppercase mt-0.5">{departure.airline}</span>
                 </div>

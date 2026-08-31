@@ -134,16 +134,29 @@ export function FeaturedJourneys() {
             if (p.status === "Draft" || p.status === "draft") {
               return;
             }
-            let displayPrice = p.price || "Hubungi Kami";
-            if (displayPrice && displayPrice !== "Hubungi Kami") {
-              const cleanNum = displayPrice.replace(/[^0-9]/g, "");
-              if (cleanNum && !displayPrice.toLowerCase().includes("rp") && !displayPrice.toLowerCase().includes("idr")) {
-                const num = Number(cleanNum);
-                if (num >= 1000) {
-                  const isMulai = displayPrice.toLowerCase().includes("mulai");
-                  displayPrice = `${isMulai ? "Mulai " : ""}Rp ${num.toLocaleString("id-ID")}`;
+            let rawPrice = p.price || "Hubungi Kami";
+            let displayPrice = "";
+            if (rawPrice !== undefined && rawPrice !== null && rawPrice !== "") {
+              const priceStr = String(rawPrice).trim();
+              if (priceStr && priceStr !== "Hubungi Kami") {
+                const cleanNum = priceStr.replace(/[^0-9]/g, "");
+                if (cleanNum && !priceStr.toLowerCase().includes("rp") && !priceStr.toLowerCase().includes("idr")) {
+                  const num = Number(cleanNum);
+                  if (num >= 1000) {
+                    const isMulai = priceStr.toLowerCase().includes("mulai");
+                    displayPrice = `${isMulai ? "Mulai " : ""}Rp ${num.toLocaleString("id-ID")}`;
+                  } else {
+                    displayPrice = priceStr;
+                  }
+                } else {
+                  displayPrice = priceStr;
                 }
+              } else {
+                displayPrice = priceStr;
               }
+            }
+            if (!displayPrice) {
+              displayPrice = "Hubungi Kami";
             }
 
             const mappedTour: Tour = {
@@ -374,10 +387,10 @@ export function FeaturedJourneys() {
               <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 mb-6 border border-amber-100 shadow-sm animate-pulse">
                 <AlertTriangle size={32} />
               </div>
-              <h3 className="font-serif text-2xl text-[#0F2C59] font-bold mb-3">
+              <h3 className="typography-card !text-[#0F2C59] font-bold mb-3">
                 {locale === "id" ? "Layanan Sedang Pemeliharaan" : "Service Under Maintenance"}
               </h3>
-              <p className="font-sans text-sm text-foreground/75 leading-relaxed max-w-md">
+              <p className="typography-body text-foreground/75 leading-relaxed max-w-md">
                 {locale === "id"
                   ? "Kami sedang melakukan pemeliharaan sistem berkala. Jadwal paket wisata pilihan Anda akan kembali tampil segera."
                   : "We are currently conducting scheduled system maintenance. Featured travel packages will be available shortly."}
@@ -395,10 +408,10 @@ export function FeaturedJourneys() {
               <div className="w-16 h-16 rounded-full bg-sky-50 flex items-center justify-center text-sky-500 mb-6 animate-bounce" style={{ animationDuration: '3s' }}>
                 <Compass className="w-8 h-8" />
               </div>
-              <h3 className="font-serif text-2xl text-[#0F2C59] font-bold mb-3">
+              <h3 className="typography-card !text-[#0F2C59] font-bold mb-3">
                 {locale === "id" ? "Belum Ada Jadwal Keberangkatan" : "No Scheduled Departures Yet"}
               </h3>
-              <p className="font-sans text-sm text-foreground/75 leading-relaxed max-w-md mb-8">
+              <p className="typography-body text-foreground/75 leading-relaxed max-w-md mb-8">
                 {locale === "id" 
                   ? `Saat ini belum ada paket tour open trip aktif untuk wilayah ${getCountryLabel(activeCountry)}. Silakan hubungi kami untuk merancang perjalanan privat kustom impian Anda.`
                   : `Currently, there are no active open trip packages for ${getCountryLabel(activeCountry)}. Please contact us to customize your private dream getaway.`}
@@ -411,7 +424,7 @@ export function FeaturedJourneys() {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2.5 bg-sky-600 hover:bg-sky-700 text-white py-3.5 px-8 rounded-xl font-sans font-bold text-xs tracking-widest uppercase transition-all duration-300 shadow-md hover:scale-[1.02] cursor-pointer"
+                className="btn-primary inline-flex items-center gap-2.5 hover:scale-[1.02] cursor-pointer"
               >
                 <span>{locale === "id" ? "Konsultasi Private Trip" : "Consult Custom Trip"}</span>
               </a>

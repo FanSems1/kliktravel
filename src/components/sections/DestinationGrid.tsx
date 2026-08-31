@@ -72,17 +72,17 @@ export function DestinationGrid() {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-24 gap-6">
           <div>
-            <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/50 block mb-4">
+            <span className="typography-caption !text-white/50 block mb-4">
               EXPLORE
             </span>
-            <Heading variant="display" className="text-white text-5xl md:text-6xl">
+            <h1 className="typography-hero text-white">
               Where will you go?
-            </Heading>
+            </h1>
           </div>
           <div>
             <Link 
               href="/destinations" 
-              className="inline-block border-b border-white/30 hover:border-white pb-1 font-sans text-xs uppercase tracking-widest text-white/80 hover:text-white transition-all duration-300"
+              className="inline-block border-b border-white/30 hover:border-white pb-1 typography-button !text-white/80 hover:!text-white transition-all duration-300"
             >
               View All Destinations
             </Link>
@@ -116,10 +116,10 @@ export function DestinationGrid() {
 
                 {/* Typography partially over or beside */}
                 <div className="absolute bottom-6 left-6 md:bottom-8 md:left-8 z-20 transition-transform duration-500 group-hover:translate-y-[-4px]">
-                  <h3 className="font-serif text-3xl md:text-4xl text-white drop-shadow-md">
+                  <h3 className="typography-editorial-title text-white drop-shadow-md">
                     {dest.name}
                   </h3>
-                  <span className="inline-block font-sans text-[9px] tracking-[0.35em] uppercase text-white/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-2">
+                  <span className="inline-block typography-caption !text-white/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-2">
                     Explore →
                   </span>
                 </div>

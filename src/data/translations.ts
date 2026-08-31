@@ -76,10 +76,11 @@ export const translations = {
     footer_rights: "Hak Cipta Dilindungi.",
     footer_explore: "Jelajahi",
     footer_company: "Perusahaan",
-    footer_social: "Sosial Media",
-    footer_newsletter_title: "Inspirasi perjalanan, sesekali.",
+    footer_social: "Ikuti Kami",
+    footer_newsletter_title: "Inspirasi perjalanan berikutnya",
+    footer_newsletter_desc: "Dapatkan update destinasi, open trip & promo terbaru",
     footer_newsletter_placeholder: "Masukkan alamat email Anda",
-    footer_brand_desc: "Kurasi perjalanan terkurasi & open trip berkualitas melintasi kepulauan Indonesia dan sekitarnya. Kenyamanan & fleksibilitas untuk semua kalangan.",
+    footer_brand_desc: "Menghadirkan perjalanan pilihan ke berbagai destinasi di Indonesia dan negara lainnya, dengan pengalaman liburan yang berkualitas, aman, nyaman dan berkesan",
 
     // DreamHolidaySelector
     dream_tag: "JELAJAHI DUNIA CIPTAKAN CERITA",
@@ -274,10 +275,11 @@ export const translations = {
     footer_rights: "All Rights Reserved.",
     footer_explore: "Explore",
     footer_company: "Company",
-    footer_social: "Social",
-    footer_newsletter_title: "Travel inspiration, occasionally.",
+    footer_social: "Follow Us",
+    footer_newsletter_title: "Next Travel Inspiration",
+    footer_newsletter_desc: "Get the latest destination updates, open trips & promos",
     footer_newsletter_placeholder: "Enter your email address",
-    footer_brand_desc: "Curating exceptional editorial journeys across the Indonesian archipelago and beyond. Redefining modern luxury travel.",
+    footer_brand_desc: "Delivering curated journeys to various destinations across Indonesia and other countries, offering quality, safe, comfortable, and memorable holiday experiences.",
 
     // DreamHolidaySelector
     dream_tag: "CURATED EXPEDITIONS",

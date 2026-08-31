@@ -244,7 +244,7 @@ export function FinalCTA() {
 
                 {/* Centered Text Overlay */}
                 <div className="absolute inset-0 flex items-center justify-center p-8 text-center z-10">
-                  <h3 className="text-white font-sans text-sm md:text-base lg:text-lg tracking-[0.15em] uppercase font-light leading-relaxed drop-shadow-md">
+                  <h3 className="typography-card !text-white tracking-[0.15em] uppercase font-light leading-relaxed drop-shadow-md">
                     {locale === "id" ? moment.titleID : moment.titleEN}
                   </h3>
                 </div>
@@ -279,7 +279,7 @@ export function FinalCTA() {
 
           <div className="flex flex-col sm:flex-row gap-6 items-center">
             <Link
-              href="/journeys"
+              href="/destinations"
               className="btn-primary"
             >
               {locale === "id" ? "Jelajahi Perjalanan" : "Explore Journeys"}
@@ -370,10 +370,10 @@ export function FinalCTA() {
               
               {!isZoomed && (
                 <div className="text-white max-w-xl mt-6 transition-all duration-300">
-                  <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[#0284C7] font-bold block mb-2">
+                  <span className="typography-caption !text-[#0284C7] block mb-2">
                     {locale === "id" ? "Detail Momen" : "Moment Detail"}
                   </span>
-                  <h3 className="font-serif text-lg md:text-xl text-white tracking-[0.1em] uppercase font-light leading-relaxed">
+                  <h3 className="typography-card !text-white tracking-[0.1em] uppercase font-light leading-relaxed">
                     {locale === "id" ? moments[selectedImageIndex].titleID : moments[selectedImageIndex].titleEN}
                   </h3>
                 </div>

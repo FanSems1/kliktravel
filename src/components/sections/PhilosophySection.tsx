@@ -75,11 +75,11 @@ export function PhilosophySection() {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
         >
-          <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/50 mb-12 block">
+          <span className="typography-caption !text-white/50 mb-12 block">
             {t("philosophy_tag")}
           </span>
 
-          <Heading variant="display" className="!text-white text-4xl md:text-6xl lg:text-7xl leading-tight font-sans tracking-tight font-light mb-16 text-balance drop-shadow-sm">
+          <h2 className="typography-hero !text-white leading-tight font-sans tracking-tight font-light mb-16 text-balance drop-shadow-sm">
             {locale === "id" ? (
               <>
                 Perjalanan seharusnya tidak <br className="hidden md:block" />
@@ -95,11 +95,11 @@ export function PhilosophySection() {
                 something <span className="font-serif italic text-white font-normal underline decoration-sky-300 decoration-1 underline-offset-8">behind</span>.
               </>
             )}
-          </Heading>
+          </h2>
 
-          <Text variant="large" className="text-white/80 balance mx-auto max-w-xl font-light text-base md:text-lg leading-relaxed drop-shadow-sm">
+          <p className="typography-body !text-white/80 balance mx-auto max-w-xl font-light drop-shadow-sm">
             {t("philosophy_desc")}
-          </Text>
+          </p>
         </motion.div>
       </div>
     </Section>

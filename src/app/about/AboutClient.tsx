@@ -3,7 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Compass, Award, ShieldCheck, HeartHandshake, Sparkles, MapPin, Users, Globe, ArrowRight } from "lucide-react";
+import { Compass, Award, ShieldCheck, HeartHandshake, Sparkles, MapPin, Users, Globe, ArrowRight, HelpCircle, Plus, Minus } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { VisionMissionSection } from "@/components/sections/VisionMissionSection";
 import { PhilosophySection } from "@/components/sections/PhilosophySection";
@@ -13,6 +13,7 @@ import { FinalCTA } from "@/components/sections/FinalCTA";
 
 export function AboutClient() {
   const { t, locale } = useLanguage();
+  const [activeFaq, setActiveFaq] = React.useState<number | null>(0);
 
   const stats = [
     {
@@ -119,7 +120,7 @@ export function AboutClient() {
               className="flex gap-4 items-center"
             >
               <Link
-                href="/journeys"
+                href="/destinations"
                 className="btn-secondary gap-2"
               >
                 <span>{locale === "id" ? "Jelajahi Destinasi" : "Explore Destinations"}</span>
@@ -298,8 +299,164 @@ export function AboutClient() {
       {/* REUSED PREMIUM SECTIONS */}
       <VisionMissionSection />
       <WhyChooseUsSection />
-      <PhilosophySection />
       <TestimonialsSection />
+
+      {/* FAQ SECTION */}
+      <section className="py-24 bg-[#FAF9F6] border-b border-slate-200/60 relative z-10">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+            
+            {/* Left Column: Heading & Info */}
+            <div className="lg:col-span-5 flex flex-col items-start text-left">
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#A89053]/10 border border-[#A89053]/30 text-[#A89053] typography-caption uppercase mb-6"
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>{locale === "id" ? "Pertanyaan Umum" : "Frequently Asked Questions"}</span>
+              </motion.div>
+
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+                className="typography-section text-[#0F2C59] tracking-tight mb-6"
+              >
+                {locale === "id" ? (
+                  <>
+                    Pertanyaan yang Sering <br />
+                    <span className="text-[#A89053] italic">Diajukan Traveler</span>
+                  </>
+                ) : (
+                  <>
+                    Frequently Asked <br />
+                    <span className="text-[#A89053] italic">Questions</span>
+                  </>
+                )}
+              </motion.h2>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="typography-body text-slate-600 mb-8"
+              >
+                {locale === "id"
+                  ? "Punya pertanyaan seputar pemesanan, pembayaran, atau opsi perjalanan bersama Klik Travel ID? Temukan jawaban lengkapnya di sini."
+                  : "Have questions regarding bookings, payments, or travel options with Klik Travel ID? Find comprehensive answers here."}
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+              >
+                <Link href="/faq" className="btn-outline border-[#0F2C59]/20 text-[#0F2C59] hover:bg-[#0F2C59] hover:text-white">
+                  <span>{locale === "id" ? "Lihat Semua FAQ →" : "View All FAQs →"}</span>
+                </Link>
+              </motion.div>
+            </div>
+
+            {/* Right Column: Accordion Items */}
+            <div className="lg:col-span-7 flex flex-col gap-4">
+              {[
+                {
+                  q: locale === "id" 
+                    ? "Bagaimana cara memesan paket tour di Klik Travel ID?" 
+                    : "How do I book a tour package with Klik Travel ID?",
+                  a: locale === "id"
+                    ? "Anda dapat memilih destinasi impian di website, lalu klik tombol 'Reservasi' atau langsung hubungi admin kami via WhatsApp (+62 812-3001-1027). Tim kami akan membantu cek ketersediaan slot dan memproses pendaftaran Anda."
+                    : "You can select your dream destination on the website and click the 'Reservasi' button or directly contact our admin via WhatsApp (+62 812-3001-1027). Our team will assist in checking slot availability and processing your booking."
+                },
+                {
+                  q: locale === "id"
+                    ? "Apa perbedaan antara Open Trip dan Private Trip?"
+                    : "What is the difference between Open Trip and Private Trip?",
+                  a: locale === "id"
+                    ? "Open Trip adalah tur gabungan dengan peserta lain sesuai jadwal yang telah ditentukan. Sedangkan Private Trip adalah tur khusus/eksklusif untuk grup Anda (keluarga, teman, instansi) dengan tanggal, rute, dan fasilitas yang disesuaikan."
+                    : "Open Trips are shared tours with fixed departure dates. Private Trips are exclusive tours for your private group (family, friends, corporate) with customizable dates, routes, and services."
+                },
+                {
+                  q: locale === "id"
+                    ? "Metode pembayaran apa saja yang diterima?"
+                    : "What payment methods are accepted?",
+                  a: locale === "id"
+                    ? "Pembayaran dilakukan via Transfer Bank resmi ke rekening perusahaan Klik Travel ID. Detail nomor rekening dan invoice akan diinfokan langsung oleh admin saat reservasi."
+                    : "Payments are made via official Bank Transfer to Klik Travel ID's corporate account. Official bank details and invoice will be provided directly by our admin upon reservation."
+                },
+                {
+                  q: locale === "id"
+                    ? "Bagaimana jika saya ingin berkonsultasi mengenai Visa atau jadwal keberangkatan?"
+                    : "What if I want to consult about Visa or departure schedules?",
+                  a: locale === "id"
+                    ? "Untuk informasi pengurusan dokumen (seperti Visa), ketersediaan jadwal keberangkatan, atau penyesuaian khusus, silakan langsung berkonsultasi dengan admin kami via WhatsApp (+62 812-3001-1027) agar mendapatkan informasi paling akurat."
+                    : "For travel document assistance (such as Visas), departure schedule updates, or special requests, please consult directly with our admin via WhatsApp (+62 812-3001-1027) for the most accurate details."
+                },
+                {
+                  q: locale === "id"
+                    ? "Apakah bisa membuat rancangan perjalanan khusus (Custom / Private Trip)?"
+                    : "Is it possible to make a custom travel design (Custom / Private Trip)?",
+                  a: locale === "id"
+                    ? "Tentu! Kami melayani pembuatan itinerary khusus sesuai kebutuhan dan budget Anda. Silakan hubungi admin via WhatsApp (+62 812-3001-1027) atau ajukan permohonan di halaman Private Trip."
+                    : "Absolutely! We design customized itineraries tailored to your preferences and budget. Feel free to contact our admin on WhatsApp (+62 812-3001-1027) or submit a request on the Private Trip page."
+                }
+              ].map((faq, index) => {
+                const isOpen = activeFaq === index;
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
+                      isOpen
+                        ? "bg-white border-[#A89053]/40 shadow-lg shadow-[#0F2C59]/5"
+                        : "bg-white/80 border-slate-200/80 hover:border-slate-300"
+                    }`}
+                  >
+                    <button
+                      onClick={() => setActiveFaq(isOpen ? null : index)}
+                      className="w-full p-6 text-left flex items-center justify-between gap-4 focus:outline-none cursor-pointer"
+                    >
+                      <span className="font-serif text-lg md:text-xl font-medium text-[#0F2C59] leading-snug">
+                        {faq.q}
+                      </span>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                        isOpen ? "bg-[#0F2C59] text-white" : "bg-slate-100 text-slate-500"
+                      }`}>
+                        {isOpen ? <Minus size={16} /> : <Plus size={16} />}
+                      </div>
+                    </button>
+
+                    {isOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="px-6 pb-6 pt-0 border-t border-slate-100/80 mt-1"
+                      >
+                        <p className="typography-body text-slate-600 font-light leading-relaxed pt-3">
+                          {faq.a}
+                        </p>
+                      </motion.div>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       <FinalCTA />
     </div>
   );

@@ -34,9 +34,12 @@ export function Footer() {
             
             {/* Newsletter */}
             <div className="w-full max-w-md">
-              <span className="typography-caption !text-white/50 block mb-3">
+              <span className="typography-caption !text-white/50 block mb-1">
                 {t("footer_newsletter_title")}
               </span>
+              <p className="font-sans text-xs text-white/60 font-light mb-4">
+                {t("footer_newsletter_desc")}
+              </p>
               <form onSubmit={(e) => e.preventDefault()} className="flex border-b border-white/30 focus-within:border-white transition-colors pb-2">
                 <input 
                   type="email" 
@@ -55,18 +58,18 @@ export function Footer() {
             <h4 className="typography-caption !text-white/40 mb-6">{t("footer_explore")}</h4>
             <ul className="space-y-3 font-sans text-xs uppercase tracking-wider">
               <li>
-                <Link href="/journeys" className="text-white/70 hover:text-white transition-colors">
+                <Link href="/destinations" className="text-white/70 hover:text-white transition-colors">
                   {t("nav_journeys")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/private-trip" className="text-white/70 hover:text-white transition-colors">
-                  {t("nav_experiences")}
                 </Link>
               </li>
               <li>
                 <Link href="/destinations" className="text-white/70 hover:text-white transition-colors">
                   {t("nav_destinations")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/private-trip" className="text-white/70 hover:text-white transition-colors">
+                  {t("nav_experiences")}
                 </Link>
               </li>
             </ul>
@@ -83,7 +86,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/contact" className="text-white/70 hover:text-white transition-colors">
-                  {locale === "id" ? "Kontak Kami" : "Contact Us"}
+                  {locale === "id" ? "Hubungi Kami" : "Contact Us"}
                 </Link>
               </li>
               <li>
@@ -99,7 +102,12 @@ export function Footer() {
             <h4 className="typography-caption !text-white/40 mb-6">{t("footer_social")}</h4>
             <ul className="space-y-4 font-sans text-xs uppercase tracking-wider">
               <li>
-                <a href="#" className="flex items-center gap-3 text-white/70 hover:text-white transition-colors group">
+                <a 
+                  href="https://www.instagram.com/kliktravel.id?igsi=OXByOGI5a2h1ZDFs" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center gap-3 text-white/70 hover:text-white transition-colors group"
+                >
                   <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover:border-white/60 transition-colors">
                     <svg className="w-3.5 h-3.5 stroke-current fill-none stroke-[2]" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
@@ -111,7 +119,12 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="flex items-center gap-3 text-white/70 hover:text-white transition-colors group">
+                <a 
+                  href="https://www.facebook.com/share/1CD3TyaEW8/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center gap-3 text-white/70 hover:text-white transition-colors group"
+                >
                   <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover:border-white/60 transition-colors">
                     <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                       <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
@@ -121,7 +134,12 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="flex items-center gap-3 text-white/70 hover:text-white transition-colors group">
+                <a 
+                  href="https://www.youtube.com/@kliktravelid" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center gap-3 text-white/70 hover:text-white transition-colors group"
+                >
                   <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover:border-white/60 transition-colors">
                     <svg className="w-3.5 h-3.5 stroke-current fill-none stroke-[2]" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z" />

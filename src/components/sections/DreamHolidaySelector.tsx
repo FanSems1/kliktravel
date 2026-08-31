@@ -327,10 +327,10 @@ export function DreamHolidaySelector() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent group-hover:from-black/80 transition-colors duration-500" />
                       <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end">
                         <div>
-                          <span className="font-mono text-[9px] tracking-[0.3em] text-white/80 uppercase block mb-1">
+                          <span className="typography-caption !text-white/80 block mb-1">
                             {t("dream_card_featured")}
                           </span>
-                          <h3 className="text-white text-3xl font-serif tracking-wide drop-shadow-md group-hover:translate-x-1 transition-transform">
+                          <h3 className="typography-editorial-title text-white group-hover:translate-x-1 transition-transform">
                             {locale === "id" ? dest.nameID : dest.nameEN}
                           </h3>
                         </div>
@@ -367,13 +367,13 @@ export function DreamHolidaySelector() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 group-hover:from-black/90 transition-colors duration-500" />
                       <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-end">
-                        <span className="font-mono text-[10px] tracking-[0.3em] text-[#38BDF8] uppercase font-bold mb-2">
+                        <span className="typography-caption !text-[#38BDF8] block mb-2">
                           KLIK TRAVEL EXCLUSIVE
                         </span>
-                        <h3 className="text-white text-3xl md:text-5xl font-serif tracking-wide mb-2 drop-shadow-lg">
+                        <h3 className="typography-editorial-title text-white mb-2 drop-shadow-lg">
                           {trip.name}
                         </h3>
-                        <p className="text-white/80 font-sans text-xs md:text-sm font-light max-w-md">
+                        <p className="text-white/80 typography-body max-w-md">
                           {trip.subtitle}
                         </p>
                       </div>
@@ -409,7 +409,7 @@ export function DreamHolidaySelector() {
                     <button
                       key={p.id}
                       onClick={() => setActivePeriod(p.id)}
-                      className={`px-5 py-2.5 rounded-full font-sans text-xs font-semibold tracking-wide transition-all duration-300 ${
+                      className={`px-5 py-2.5 rounded-full typography-button font-bold ${
                         activePeriod === p.id
                           ? "bg-[#0F2C59] text-white shadow-md shadow-[#0F2C59]/20"
                           : "bg-white text-[#0F2C59]/70 hover:bg-[#0F2C59]/5 border border-[#0F2C59]/10"
@@ -470,7 +470,7 @@ export function DreamHolidaySelector() {
 
                             {/* Airline Tag Bottom Left */}
                             {item.airline && (
-                              <div className="absolute bottom-3 left-4 text-white/90 font-sans text-[11px] font-medium flex items-center gap-1.5 drop-shadow-md">
+                              <div className="absolute bottom-3 left-4 text-white/90 typography-caption flex items-center gap-1.5 drop-shadow-md">
                                 <Plane className="w-3.5 h-3.5 text-[#38BDF8]" />
                                 <span>{item.airline}</span>
                               </div>
@@ -527,7 +527,7 @@ export function DreamHolidaySelector() {
                             )}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="bg-[#0F2C59] hover:bg-[#0284C7] text-white px-5 py-2.5 rounded-full font-sans text-xs font-bold uppercase tracking-wider transition-colors duration-300 shadow-md flex items-center gap-1.5 group-hover:translate-x-0.5"
+                            className="btn-secondary !py-2.5 !px-5 gap-1.5 group-hover:translate-x-0.5 cursor-pointer"
                           >
                             <span>{t("dream_card_reserve")}</span>
                             <ArrowRight className="w-3.5 h-3.5" />
@@ -541,7 +541,7 @@ export function DreamHolidaySelector() {
                 {/* Bottom Callout banner */}
                 <div className="p-8 rounded-3xl bg-gradient-to-r from-[#0F2C59] to-[#1E40AF] text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
                   <div>
-                    <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[#38BDF8] font-bold block mb-1">
+                    <span className="typography-caption !text-[#38BDF8] block mb-1">
                       {t("dream_custom_banner_tag")}
                     </span>
                     <h4 className="typography-section !text-2xl md:!text-3xl text-white">
@@ -554,7 +554,7 @@ export function DreamHolidaySelector() {
 
                   <Link
                     href="/private-trip"
-                    className="shrink-0 bg-white hover:bg-ivory text-[#0F2C59] font-sans font-bold text-xs uppercase tracking-widest px-8 py-4 rounded-full transition-colors shadow-lg"
+                    className="btn-primary !bg-white hover:!bg-ivory !text-[#0F2C59] hover:scale-[1.02] shadow-lg shrink-0 cursor-pointer"
                   >
                     {t("dream_custom_banner_btn")}
                   </Link>

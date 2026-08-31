@@ -53,6 +53,10 @@ body {
   @apply font-sans text-[15px] md:text-base lg:text-lg font-bold text-[#A89053] tracking-wide;
 }
 
+@utility typography-editorial-title {
+  @apply font-serif text-2xl md:text-3xl lg:text-4xl font-normal leading-tight tracking-tight;
+}
+
 @utility typography-section-spacing {
   @apply py-16 md:py-24;
 }

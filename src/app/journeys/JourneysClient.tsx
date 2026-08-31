@@ -32,14 +32,24 @@ export function JourneysClient() {
             const fallbackContent = item.contentId || item.contentID || item.contentEn || item.contentEN || {};
             const activeContent = content || fallbackContent;
 
-            let formattedPrice = activeContent.price || item.priceRaw;
-            if (formattedPrice) {
-              const cleanNum = formattedPrice.replace(/[^0-9]/g, "");
-              if (cleanNum && !formattedPrice.toLowerCase().includes("rp") && !formattedPrice.toLowerCase().includes("idr")) {
-                const num = Number(cleanNum);
-                if (num >= 1000) {
-                  formattedPrice = `Rp ${num.toLocaleString("id-ID")}`;
+            let rawPrice = activeContent.price || item.priceRaw;
+            let formattedPrice = "";
+            if (rawPrice !== undefined && rawPrice !== null && rawPrice !== "") {
+              const priceStr = String(rawPrice).trim();
+              if (!priceStr.toLowerCase().includes("rp") && !priceStr.toLowerCase().includes("idr")) {
+                const cleanNum = priceStr.replace(/[^0-9]/g, "");
+                if (cleanNum) {
+                  const num = Number(cleanNum);
+                  if (num >= 1000) {
+                    formattedPrice = `Rp ${num.toLocaleString("id-ID")}`;
+                  } else {
+                    formattedPrice = priceStr;
+                  }
+                } else {
+                  formattedPrice = priceStr;
                 }
+              } else {
+                formattedPrice = priceStr;
               }
             }
             if (!formattedPrice) {

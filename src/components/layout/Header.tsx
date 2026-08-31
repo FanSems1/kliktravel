@@ -118,11 +118,10 @@ export function Header() {
   const isSingleDestinationPage = pathname?.startsWith("/destinations/") && pathname.split("/").filter(Boolean).length === 2;
   const isHomePage = pathname === "/";
   const isPrivateTripPage = pathname === "/private-trip";
-  const isJourneysPage = pathname?.startsWith("/journeys");
 
-  const isDestinationsPage = pathname === "/destinations";
+  const isDestinationsPage = pathname?.startsWith("/destinations");
 
-  const isLightPage = !isHomePage && !isSingleDestinationPage && !isDestinationsPage && !isPrivateTripPage && !isJourneysPage;
+  const isLightPage = !isHomePage && !isSingleDestinationPage && !isDestinationsPage && !isPrivateTripPage;
 
   const showDarkHeader = isScrolled || isLightPage;
 
@@ -148,12 +147,10 @@ export function Header() {
     let isActive = false;
     if (href === "/") {
       isActive = pathname === "/";
-    } else if (href === "/journeys") {
-      isActive = pathname?.startsWith("/journeys");
+    } else if (href === "/destinations") {
+      isActive = pathname?.startsWith("/destinations");
     } else if (href === "/private-trip") {
       isActive = pathname === "/private-trip";
-    } else if (href === "/destinations") {
-      isActive = pathname === "/destinations" || (pathname?.startsWith("/destinations/") && !pathname?.startsWith("/destinations/"));
     } else if (href === "/about") {
       isActive = pathname === "/about";
     }
@@ -173,12 +170,10 @@ export function Header() {
     let isActive = false;
     if (href === "/") {
       isActive = pathname === "/";
-    } else if (href === "/journeys") {
-      isActive = pathname?.startsWith("/journeys");
+    } else if (href === "/destinations") {
+      isActive = pathname?.startsWith("/destinations");
     } else if (href === "/private-trip") {
       isActive = pathname === "/private-trip";
-    } else if (href === "/destinations") {
-      isActive = pathname === "/destinations";
     } else if (href === "/about") {
       isActive = pathname === "/about";
     }
@@ -222,11 +217,11 @@ export function Header() {
             </Link>
 
             <Link 
-              href="/journeys"
-              className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${getNavLinkClass("/journeys")}`}
+              href="/destinations"
+              className={`font-sans text-[10px] md:text-[11px] uppercase tracking-[0.25em] transition-all duration-300 relative py-2 group ${getNavLinkClass("/destinations")}`}
             >
               {t("nav_journeys")}
-              <span className={getNavUnderlineClass("/journeys")} />
+              <span className={getNavUnderlineClass("/destinations")} />
             </Link>
 
             <Link 
@@ -339,7 +334,7 @@ export function Header() {
           {/* Mobile Actions */}
           <div className="flex md:hidden items-center space-x-3.5">
             <Link 
-              href="/journeys"
+              href="/destinations"
               className={`font-sans text-[10px] uppercase tracking-wider transition-all duration-300 font-bold shrink-0 ${
                 showDarkHeader ? "text-[#0F2C59]/80 hover:text-[#0284C7]" : "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)] hover:text-white/90"
               }`}
@@ -413,7 +408,7 @@ export function Header() {
               </Link>
 
               <Link 
-                href="/journeys"
+                href="/destinations"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="font-sans text-xs uppercase tracking-[0.2em] font-semibold text-[#0F2C59] hover:text-[#0284C7] transition-colors py-3 border-b border-[#0F2C59]/10 flex items-center justify-between"
               >

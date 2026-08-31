@@ -206,7 +206,7 @@ export function TestimonialsSection() {
                 </div>
 
                 {/* Quote Text */}
-                <p className="font-sans text-gray-700 text-sm md:text-base leading-relaxed mb-8 italic font-light">
+                <p className="typography-body !text-slate-600 mb-8 italic font-light">
                   "{locale === "id" ? item.reviewID : item.reviewEN}"
                 </p>
               </div>
@@ -224,12 +224,12 @@ export function TestimonialsSection() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <h4 className="font-sans font-bold text-[#0F2C59] text-base truncate">
+                    <h4 className="typography-card !text-[#0F2C59] font-bold truncate">
                       {item.name}
                     </h4>
                     <CheckCircle2 className="w-4 h-4 text-[#0284C7] shrink-0" />
                   </div>
-                  <p className="font-sans text-[11px] text-[#A89053] font-semibold uppercase tracking-wider truncate mt-0.5">
+                  <p className="typography-caption truncate mt-0.5">
                     {item.trip}
                   </p>
                 </div>

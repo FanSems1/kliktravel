@@ -107,8 +107,8 @@ export default function FAQPage() {
             ? "Apakah ada jaminan keberangkatan (Pasti Jalan)?"
             : "Is departure guaranteed?",
           a: isIndo
-            ? "Ya, sebagian besar perjalanan kami berstatus 'AVAILABLE' yang berarti dijamin pasti jalan tanpa syarat jumlah minimal peserta tertentu. Anda dapat melihat penanda status ini di daftar pilihan liburan."
-            : "Yes, the majority of our trips have an 'AVAILABLE' status indicating guaranteed departure regardless of minimum group size. You can see this status label on each journey card."
+            ? "Untuk status keberangkatan terupdate pada setiap tanggal/rute perjalanan, Anda dapat berkonsultasi langsung dengan admin via WhatsApp (+62 812-3001-1027) sebelum melakukan pemesanan."
+            : "For the most up-to-date departure status of each travel date/route, please consult directly with our admin via WhatsApp (+62 812-3001-1027) before making your booking."
         }
       ]
     },
@@ -123,8 +123,8 @@ export default function FAQPage() {
             ? "Apakah Klik Travel ID membantu pengurusan Visa?"
             : "Does Klik Travel ID assist with Visa applications?",
           a: isIndo
-            ? "Tentu, kami menyediakan layanan bantuan dan konsultasi pengurusan dokumen perjalanan seperti visa kunjungan wisata, visa grup, hingga asuransi perjalanan internasional untuk kelancaran liburan Anda."
-            : "Yes, we provide consultation and assistance for processing travel documents including tourist visas, group visas, and international travel insurance to ensure a hassle-free trip."
+            ? "Untuk konsultasi pengurusan Visa, persyaratan dokumen perjalanan terbaru, dan asuransi perjalanan internasional, silakan hubungi admin via WhatsApp (+62 812-3001-1027) agar dipandu secara detail."
+            : "For inquiries regarding Visa application assistance, current travel document requirements, and international travel insurance, please contact our admin on WhatsApp (+62 812-3001-1027) for personalized guidance."
         },
         {
           q: isIndo
